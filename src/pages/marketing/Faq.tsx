@@ -1,4 +1,6 @@
 
+import { Link } from 'react-router-dom';
+
 export default function Faq() {
     return (
         <>
@@ -174,10 +176,10 @@ export default function Faq() {
                         <h2 className="text-2xl font-bold text-slate-900 mb-4">Didn't find what you were looking for?</h2>
                         <p className="text-slate-600 mb-8">Our support team is always ready to help you with any questions.</p>
                         <div className="flex flex-col sm:flex-row justify-center gap-4">
-                            <a href="contact.html"
+                            <Link to="/contact"
                                 className="px-6 py-3 bg-indigo-600 text-white font-bold rounded-xl shadow-lg hover:bg-indigo-500 transition-transform transform hover:-translate-y-1">
                                 Contact Support
-                            </a>
+                            </Link>
                             <a href="#"
                                 className="px-6 py-3 bg-white text-slate-700 font-bold rounded-xl border border-slate-200 hover:bg-slate-50 transition-colors">
                                 Visit Help Center

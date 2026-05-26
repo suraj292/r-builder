@@ -1,4 +1,6 @@
 
+import { Link } from 'react-router-dom';
+
 export default function Pricing() {
     return (
         <>
@@ -252,12 +254,12 @@ export default function Pricing() {
                     <h2 className="text-3xl md:text-4xl font-display font-bold mb-6 animate-fade-up">Land More Interviews Today</h2>
                     <p className="text-indigo-200 text-lg mb-10 max-w-2xl mx-auto animate-fade-up" >Stop guessing and start applying with confidence. Join thousands of job seekers getting hired faster.</p>
                     <div className="flex flex-col sm:flex-row justify-center gap-4 animate-fade-up" >
-                        <a href="resume_builder.html" className="px-8 py-4 bg-white text-indigo-900 font-bold rounded-xl shadow-lg hover:bg-indigo-50 transition-colors transform hover:-translate-y-1">
+                        <Link to="/builder" className="px-8 py-4 bg-white text-indigo-900 font-bold rounded-xl shadow-lg hover:bg-indigo-50 transition-colors transform hover:-translate-y-1">
                             Build Resume Free
-                        </a>
-                        <a href="ats_checker.html" className="px-8 py-4 bg-transparent border border-indigo-400 text-white font-bold rounded-xl hover:bg-indigo-800 transition-colors transform hover:-translate-y-1">
+                        </Link>
+                        <Link to="/ats-checker" className="px-8 py-4 bg-transparent border border-indigo-400 text-white font-bold rounded-xl hover:bg-indigo-800 transition-colors transform hover:-translate-y-1">
                             Check ATS Score
-                        </a>
+                        </Link>
                     </div>
                 </section>
 

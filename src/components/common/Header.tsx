@@ -22,7 +22,6 @@ export default function Header() {
                     <Link to="/" className={`text-sm font-medium transition-colors ${currentPath === '/' ? 'text-indigo-600' : 'text-slate-600 hover:text-indigo-600'}`}>Home</Link>
                     <Link to="/builder" className={`text-sm font-medium transition-colors ${currentPath.startsWith('/builder') ? 'text-indigo-600' : 'text-slate-600 hover:text-indigo-600'}`}>Resume Builder</Link>
                     <Link to="/ats-checker" className={`text-sm font-medium transition-colors ${currentPath === '/ats-checker' ? 'text-indigo-600' : 'text-slate-600 hover:text-indigo-600'}`}>ATS Checker</Link>
-                    <Link to="/#templates" className="text-sm font-medium text-slate-600 hover:text-indigo-600 transition-colors">Templates</Link>
                     <Link to="/pricing" className={`text-sm font-medium transition-colors ${currentPath === '/pricing' ? 'text-indigo-600' : 'text-slate-600 hover:text-indigo-600'}`}>Pricing</Link>
                 </div>
 

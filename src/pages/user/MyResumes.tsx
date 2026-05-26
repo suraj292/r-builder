@@ -1,4 +1,6 @@
 
+import { Link } from 'react-router-dom';
+
 export default function MyResumes() {
   return (
     <>
@@ -7,14 +9,14 @@ export default function MyResumes() {
     {/*  1. HEADER  */}
     <header className="glass-header sticky top-0 z-50">
         <div className="container mx-auto px-6 h-16 flex items-center justify-between">
-            <a href="index.html" className="flex items-center gap-2.5 group">
+            <Link to="/" className="flex items-center gap-2.5 group">
                 <div
                     className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-600 to-blue-600 flex items-center justify-center text-white text-sm shadow-md group-hover:rotate-6 transition-transform">
                     <i className="fa-solid fa-file-contract"></i>
                 </div>
                 <span className="text-lg font-display font-bold text-slate-800 tracking-tight">Resume<span
                         className="text-indigo-600">AI</span></span>
-            </a>
+            </Link>
 
             
 
@@ -44,10 +46,10 @@ export default function MyResumes() {
                     className="px-4 py-2.5 bg-white border border-slate-200 text-slate-700 text-sm font-bold rounded-xl hover:bg-slate-50 transition-colors flex items-center gap-2 shadow-sm">
                     <i className="fa-solid fa-file-import"></i> Import
                 </button>
-                <a href="resume_builder.html"
+                <Link to="/builder"
                     className="px-5 py-2.5 bg-slate-900 text-white text-sm font-bold rounded-xl hover:bg-slate-800 transition-colors flex items-center gap-2 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transform duration-200">
                     <i className="fa-solid fa-plus"></i> New Resume
-                </a>
+                </Link>
             </div>
         </div>
 
@@ -91,7 +93,7 @@ export default function MyResumes() {
                             className="text-green-600 font-bold">78/100</span>. Aim for 85+.</p>
                 </div>
             </div>
-            <a href="ats_checker.html" className="text-xs font-bold text-indigo-600 hover:underline">Check ATS Score →</a>
+            <Link to="/ats-checker" className="text-xs font-bold text-indigo-600 hover:underline">Check ATS Score →</Link>
         </div>
 
         {/*  2. RESUME GRID  */}
@@ -99,7 +101,7 @@ export default function MyResumes() {
              id="resume-grid">
 
             {/*  Create New Card (Placeholder)  */}
-            <a href="resume_builder.html"
+            <Link to="/builder"
                 className="border-2 border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center p-8 hover:border-indigo-400 hover:bg-indigo-50/30 transition-all group h-[320px] cursor-pointer">
                 <div
                     className="w-14 h-14 rounded-full bg-slate-50 group-hover:bg-white text-slate-400 group-hover:text-indigo-600 flex items-center justify-center mb-4 shadow-sm transition-colors text-xl">
@@ -107,7 +109,7 @@ export default function MyResumes() {
                 </div>
                 <h3 className="font-bold text-slate-600 group-hover:text-slate-900 transition-colors">Create New Resume</h3>
                 <p className="text-xs text-slate-400 mt-1">Start from scratch or template</p>
-            </a>
+            </Link>
 
             {/*  Resume Card 1  */}
             <div
@@ -128,10 +130,10 @@ export default function MyResumes() {
 
                     {/*  Overlay Actions  */}
                     <div className="card-overlay absolute inset-0 flex flex-col items-center justify-center gap-2">
-                        <a href="resume_builder.html"
+                        <Link to="/builder"
                             className="px-4 py-2 bg-white text-slate-900 rounded-lg text-xs font-bold shadow hover:bg-indigo-50 transition-colors transform hover:scale-105">
                             <i className="fa-solid fa-pen mr-1"></i> Edit
-                        </a>
+                        </Link>
                         <button
                             className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-xs font-bold shadow hover:bg-indigo-500 transition-colors transform hover:scale-105">
                             <i className="fa-solid fa-download mr-1"></i> PDF
@@ -191,11 +193,11 @@ export default function MyResumes() {
                         <div className="w-full h-1 bg-slate-200 mb-1 rounded"></div>
                     </div>
                     <div className="card-overlay absolute inset-0 flex flex-col items-center justify-center gap-2">
-                        <a href="resume_builder.html"
-                            className="px-4 py-2 bg-white text-slate-900 rounded-lg text-xs font-bold shadow hover:bg-indigo-50 transition-colors">Edit</a>
-                        <a href="ats_checker.html"
+                        <Link to="/builder"
+                            className="px-4 py-2 bg-white text-slate-900 rounded-lg text-xs font-bold shadow hover:bg-indigo-50 transition-colors">Edit</Link>
+                        <Link to="/ats-checker"
                             className="px-4 py-2 bg-slate-900 text-white rounded-lg text-xs font-bold shadow hover:bg-slate-800 transition-colors">Check
-                            ATS</a>
+                            ATS</Link>
                     </div>
                 </div>
                 <div className="p-5 flex flex-col flex-grow">
@@ -225,9 +227,9 @@ export default function MyResumes() {
                         <div className="w-full h-1 bg-slate-200 mb-1 rounded"></div>
                     </div>
                     <div className="card-overlay absolute inset-0 flex flex-col items-center justify-center gap-2">
-                        <a href="resume_builder.html"
+                        <Link to="/builder"
                             className="px-4 py-2 bg-white text-slate-900 rounded-lg text-xs font-bold shadow hover:bg-indigo-50 transition-colors">Continue
-                            Editing</a>
+                            Editing</Link>
                     </div>
                 </div>
                 <div className="p-5 flex flex-col flex-grow">

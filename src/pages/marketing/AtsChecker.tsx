@@ -1,4 +1,6 @@
 
+import { Link } from 'react-router-dom';
+
 export default function AtsChecker() {
     return (
         <>
@@ -447,10 +449,10 @@ export default function AtsChecker() {
 
                     {/*  Fix Actions  */}
                     <div className="mt-8 flex justify-center animate-slide-up" >
-                        <a href="resume_builder.html"
+                        <Link to="/builder"
                             className="inline-flex items-center justify-center px-8 py-4 text-base font-bold text-white transition-all duration-200 bg-indigo-600 border border-transparent rounded-full shadow-lg hover:bg-indigo-700 hover:shadow-indigo-500/30 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600 transform hover:-translate-y-1">
                             <i className="fa-solid fa-wrench mr-2"></i> Fix These Issues in Resume Builder
-                        </a>
+                        </Link>
                     </div>
 
                 </section>

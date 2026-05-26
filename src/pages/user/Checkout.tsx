@@ -1,4 +1,6 @@
 
+import { Link } from 'react-router-dom';
+
 export default function Checkout() {
   return (
     <>
@@ -8,14 +10,14 @@ export default function Checkout() {
     <header className="glass-header sticky top-0 z-50">
         <div className="container mx-auto px-6 h-16 flex items-center justify-between">
             {/*  Logo  */}
-            <a href="index.html" className="flex items-center gap-2.5 group">
+            <Link to="/" className="flex items-center gap-2.5 group">
                 <div
                     className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-600 to-blue-600 flex items-center justify-center text-white text-sm shadow-md">
                     <i className="fa-solid fa-file-contract"></i>
                 </div>
                 <span className="text-lg font-display font-bold text-slate-800 tracking-tight">Resume<span
                         className="text-indigo-600">AI</span></span>
-            </a>
+            </Link>
 
             {/*  Secure Indicator  */}
             <div
@@ -51,9 +53,9 @@ export default function Checkout() {
                                     className="text-slate-400 font-normal mx-2">|</span> Monthly</h3>
                             <p className="text-sm text-slate-500">Unlimited resumes, AI optimization, PDF downloads</p>
                         </div>
-                        <a href="pricing.html"
+                        <Link to="/pricing"
                             className="text-sm font-bold text-indigo-600 hover:text-indigo-700 hover:underline">Change
-                            Plan</a>
+                            Plan</Link>
                     </div>
                 </div>
 

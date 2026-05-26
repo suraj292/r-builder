@@ -1,4 +1,6 @@
 
+import { Link } from 'react-router-dom';
+
 export default function BlogListing() {
     return (
         <>
@@ -32,7 +34,7 @@ export default function BlogListing() {
                 <section className="container mx-auto px-6 py-12">
                     <article
                         className="relative group rounded-3xl overflow-hidden shadow-lg animate-slide-up hover:shadow-2xl transition-all duration-300">
-                        <a href="blog-detail.html" className="block relative h-[400px] md:h-[500px]">
+                        <Link to="/blog/detail" className="block relative h-[400px] md:h-[500px]">
                             <img src="https://picsum.photos/seed/resume/1200/600" alt="Featured Post"
                                 className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
                             <div
@@ -60,7 +62,7 @@ export default function BlogListing() {
                                     <span>8 min read</span>
                                 </div>
                             </div>
-                        </a>
+                        </Link>
                     </article>
                 </section>
 
@@ -74,16 +76,16 @@ export default function BlogListing() {
                                 {/*  Post 1  */}
                                 <article
                                     className="blog-card bg-white rounded-2xl overflow-hidden border border-slate-100 flex flex-col h-full animate-slide-up">
-                                    <a href="blog-detail.html" className="block h-48 overflow-hidden relative">
+                                    <Link to="/blog/detail" className="block h-48 overflow-hidden relative">
                                         <img src="https://picsum.photos/seed/work/600/400"
                                             className="w-full h-full object-cover transition-transform duration-500 hover:scale-110" />
                                         <span
                                             className="absolute top-4 left-4 bg-white/90 backdrop-blur text-slate-800 text-xs font-bold px-3 py-1 rounded-full">Guides</span>
-                                    </a>
+                                    </Link>
                                     <div className="p-6 flex flex-col flex-grow">
                                         <h3
                                             className="text-xl font-bold text-slate-900 mb-3 hover:text-indigo-600 transition-colors">
-                                            <a href="blog-detail.html">How to Explain Employment Gaps on Your Resume</a>
+                                            <Link to="/blog/detail">How to Explain Employment Gaps on Your Resume</Link>
                                         </h3>
                                         <p className="text-slate-500 text-sm mb-4 line-clamp-2 flex-grow">
                                             Don't let a career break hurt your chances. Here are 5 ATS-friendly ways to frame
@@ -101,16 +103,16 @@ export default function BlogListing() {
                                 <article
                                     className="blog-card bg-white rounded-2xl overflow-hidden border border-slate-100 flex flex-col h-full animate-slide-up"
                                 >
-                                    <a href="blog-detail.html" className="block h-48 overflow-hidden relative">
+                                    <Link to="/blog/detail" className="block h-48 overflow-hidden relative">
                                         <img src="https://picsum.photos/seed/office/600/400"
                                             className="w-full h-full object-cover transition-transform duration-500 hover:scale-110" />
                                         <span
                                             className="absolute top-4 left-4 bg-white/90 backdrop-blur text-slate-800 text-xs font-bold px-3 py-1 rounded-full">Templates</span>
-                                    </a>
+                                    </Link>
                                     <div className="p-6 flex flex-col flex-grow">
                                         <h3
                                             className="text-xl font-bold text-slate-900 mb-3 hover:text-indigo-600 transition-colors">
-                                            <a href="blog-detail.html">Best Fonts for Resumes: What Recruiters Actually Read</a>
+                                            <Link to="/blog/detail">Best Fonts for Resumes: What Recruiters Actually Read</Link>
                                         </h3>
                                         <p className="text-slate-500 text-sm mb-4 line-clamp-2 flex-grow">
                                             Is Times New Roman dead? We rank the top 10 fonts for readability and parsing
@@ -148,16 +150,16 @@ export default function BlogListing() {
                                 {/*  Post 3  */}
                                 <article
                                     className="blog-card bg-white rounded-2xl overflow-hidden border border-slate-100 flex flex-col h-full animate-slide-up">
-                                    <a href="blog-detail.html" className="block h-48 overflow-hidden relative">
+                                    <Link to="/blog/detail" className="block h-48 overflow-hidden relative">
                                         <img src="https://picsum.photos/seed/tech/600/400"
                                             className="w-full h-full object-cover transition-transform duration-500 hover:scale-110" />
                                         <span
                                             className="absolute top-4 left-4 bg-white/90 backdrop-blur text-slate-800 text-xs font-bold px-3 py-1 rounded-full">Tech</span>
-                                    </a>
+                                    </Link>
                                     <div className="p-6 flex flex-col flex-grow">
                                         <h3
                                             className="text-xl font-bold text-slate-900 mb-3 hover:text-indigo-600 transition-colors">
-                                            <a href="blog-detail.html">Resume vs CV: Which One Do You Really Need?</a>
+                                            <Link to="/blog/detail">Resume vs CV: Which One Do You Really Need?</Link>
                                         </h3>
                                         <p className="text-slate-500 text-sm mb-4 line-clamp-2 flex-grow">
                                             The definitive guide to understanding the differences and when to use each format.
@@ -174,17 +176,17 @@ export default function BlogListing() {
                                 <article
                                     className="blog-card bg-white rounded-2xl overflow-hidden border border-slate-100 flex flex-col h-full animate-slide-up"
                                 >
-                                    <a href="blog-detail.html" className="block h-48 overflow-hidden relative">
+                                    <Link to="/blog/detail" className="block h-48 overflow-hidden relative">
                                         <img src="https://picsum.photos/seed/writing/600/400"
                                             className="w-full h-full object-cover transition-transform duration-500 hover:scale-110" />
                                         <span
                                             className="absolute top-4 left-4 bg-white/90 backdrop-blur text-slate-800 text-xs font-bold px-3 py-1 rounded-full">Writing</span>
-                                    </a>
+                                    </Link>
                                     <div className="p-6 flex flex-col flex-grow">
                                         <h3
                                             className="text-xl font-bold text-slate-900 mb-3 hover:text-indigo-600 transition-colors">
-                                            <a href="blog-detail.html">Action Verbs List: 100+ Words to Replace "Responsible
-                                                For"</a>
+                                            <Link to="/blog/detail">Action Verbs List: 100+ Words to Replace "Responsible
+                                                For"</Link>
                                         </h3>
                                         <p className="text-slate-500 text-sm mb-4 line-clamp-2 flex-grow">
                                             Stop using passive language. Energize your bullet points with these powerful action
@@ -277,7 +279,7 @@ export default function BlogListing() {
                             <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
                                 <h4 className="font-bold text-slate-900 mb-4">Trending Now</h4>
                                 <div className="space-y-4">
-                                    <a href="blog-detail.html" className="flex gap-4 group">
+                                    <Link to="/blog/detail" className="flex gap-4 group">
                                         <div className="w-16 h-16 rounded-lg bg-slate-200 overflow-hidden flex-shrink-0">
                                             <img src="https://picsum.photos/seed/trend1/100/100"
                                                 className="w-full h-full object-cover" />
@@ -288,8 +290,8 @@ export default function BlogListing() {
                                                 5 Things You Should Remove From Your Resume Immediately</h5>
                                             <span className="text-xs text-slate-400 mt-1 block">Oct 22, 2023</span>
                                         </div>
-                                    </a>
-                                    <a href="blog-detail.html" className="flex gap-4 group">
+                                    </Link>
+                                    <Link to="/blog/detail" className="flex gap-4 group">
                                         <div className="w-16 h-16 rounded-lg bg-slate-200 overflow-hidden flex-shrink-0">
                                             <img src="https://picsum.photos/seed/trend2/100/100"
                                                 className="w-full h-full object-cover" />
@@ -300,7 +302,7 @@ export default function BlogListing() {
                                                 How to Beat the Applicant Tracking System</h5>
                                             <span className="text-xs text-slate-400 mt-1 block">Oct 19, 2023</span>
                                         </div>
-                                    </a>
+                                    </Link>
                                 </div>
                             </div>
 

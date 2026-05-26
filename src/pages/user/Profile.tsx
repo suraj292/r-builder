@@ -1,4 +1,6 @@
 
+import { Link } from 'react-router-dom';
+
 export default function Profile() {
   return (
     <>
@@ -7,12 +9,12 @@ export default function Profile() {
     {/*  1. HEADER  */}
     <header className="glass-header sticky top-0 z-50">
         <div className="container mx-auto px-6 h-16 flex items-center justify-between">
-            <a href="index.html" className="flex items-center gap-2.5 group">
+            <Link to="/" className="flex items-center gap-2.5 group">
                 <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-600 to-blue-600 flex items-center justify-center text-white text-sm shadow-md group-hover:scale-105 transition-transform">
                     <i className="fa-solid fa-file-contract"></i>
                 </div>
                 <span className="text-lg font-display font-bold text-slate-800 tracking-tight">Resume<span className="text-indigo-600">AI</span></span>
-            </a>
+            </Link>
 
             
 

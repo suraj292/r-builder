@@ -1,4 +1,6 @@
 
+import { Link } from 'react-router-dom';
+
 export default function About() {
     return (
         <>
@@ -94,7 +96,7 @@ export default function About() {
                                 Creation</span>
                             <span className="w-1 h-1 bg-slate-600 rounded-full my-auto"></span>
                             <span className="flex items-center gap-2"><i className="fa-solid fa-check text-green-400"></i> Beat ATS
-                                Ethically</span>
+                                Ethical</span>
                             <span className="w-1 h-1 bg-slate-600 rounded-full my-auto"></span>
                             <span className="flex items-center gap-2"><i className="fa-solid fa-check text-green-400"></i> Empower
                                 Candidates</span>
@@ -290,14 +292,14 @@ export default function About() {
                         <h2 className="text-3xl md:text-5xl font-display font-bold mb-6">Your Next Job Starts with a <br />Better
                             Resume</h2>
                         <div className="flex flex-col sm:flex-row justify-center gap-4">
-                            <a href="resume_builder.html"
+                            <Link to="/builder"
                                 className="px-8 py-4 bg-white text-indigo-900 font-bold rounded-xl shadow-lg hover:bg-indigo-50 transition-colors transform hover:-translate-y-1">
                                 Build Resume Free
-                            </a>
-                            <a href="ats_checker.html"
+                            </Link>
+                            <Link to="/ats-checker"
                                 className="px-8 py-4 bg-transparent border border-indigo-400 text-white font-bold rounded-xl hover:bg-indigo-900/50 transition-colors transform hover:-translate-y-1">
                                 Check ATS Score
-                            </a>
+                            </Link>
                         </div>
                     </div>
                 </section>

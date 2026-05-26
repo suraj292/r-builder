@@ -1,4 +1,6 @@
 
+import { Link } from 'react-router-dom';
+
 export default function Contact() {
     return (
         <>
@@ -231,14 +233,14 @@ export default function Contact() {
                     <div className="relative z-10">
                         <h2 className="text-3xl md:text-5xl font-display font-bold mb-6">Ready to Build Your Resume with AI?</h2>
                         <div className="flex flex-col sm:flex-row justify-center gap-4">
-                            <a href="resume_builder.html"
+                            <Link to="/builder"
                                 className="px-8 py-4 bg-white text-indigo-900 font-bold rounded-xl shadow-lg hover:bg-indigo-50 transition-colors">
                                 Build Resume Free
-                            </a>
-                            <a href="ats_checker.html"
+                            </Link>
+                            <Link to="/ats-checker"
                                 className="px-8 py-4 bg-transparent border border-indigo-400 text-white font-bold rounded-xl hover:bg-indigo-800 transition-colors">
                                 Check ATS Score
-                            </a>
+                            </Link>
                         </div>
                     </div>
                 </section>

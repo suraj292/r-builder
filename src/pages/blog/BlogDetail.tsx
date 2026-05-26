@@ -1,4 +1,6 @@
 
+import { Link } from 'react-router-dom';
+
 export default function BlogDetail() {
     return (
         <>
@@ -9,9 +11,9 @@ export default function BlogDetail() {
                 <section className="bg-white pt-10 pb-12 border-b border-slate-100">
                     <div className="container mx-auto px-6 max-w-5xl animate-fade-in">
                         <div className="text-center mb-8">
-                            <a href="blog-list.html"
+                            <Link to="/blog"
                                 className="inline-block px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full text-xs font-bold uppercase tracking-wide mb-4 hover:bg-indigo-100 transition-colors">ATS
-                                Strategy</a>
+                                Strategy</Link>
                             <h1 className="text-3xl md:text-5xl font-display font-bold text-slate-900 mb-6 leading-tight">
                                 10 Hidden Keywords That Will Triple Your Interview Chances in 2024
                             </h1>
@@ -102,9 +104,9 @@ export default function BlogDetail() {
                                         <h4 className="font-bold text-slate-900 text-lg">Is your resume missing these?</h4>
                                         <p className="text-sm text-slate-500">Run a free ATS scan now to find out.</p>
                                     </div>
-                                    <a href="ats_checker.html"
+                                    <Link to="/ats-checker"
                                         className="px-6 py-2 bg-slate-900 text-white font-bold rounded-lg hover:bg-slate-800 transition-colors whitespace-nowrap">Check
-                                        Score</a>
+                                        Score</Link>
                                 </div>
                             </div>
 

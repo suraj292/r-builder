@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { Link } from 'react-router-dom';
 
 export default function Home() {
   useEffect(() => {
@@ -77,12 +78,12 @@ export default function Home() {
                 </p>
 
                 <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 animate-fade-in-up" >
-                    <a href="resume_builder.html" className="w-full sm:w-auto px-8 py-4 rounded-xl bg-indigo-600 text-white font-bold shadow-lg hover:bg-indigo-500 hover:shadow-indigo-500/30 transition-all transform hover:-translate-y-1 flex items-center justify-center gap-2">
+                    <Link to="/builder" className="w-full sm:w-auto px-8 py-4 rounded-xl bg-indigo-600 text-white font-bold shadow-lg hover:bg-indigo-500 hover:shadow-indigo-500/30 transition-all transform hover:-translate-y-1 flex items-center justify-center gap-2">
                         <i className="fa-solid fa-wand-magic-sparkles"></i> Build Resume
-                    </a>
-                    <a href="ats_checker.html" className="w-full sm:w-auto px-8 py-4 rounded-xl bg-white text-slate-700 border border-slate-200 font-bold hover:bg-slate-50 transition-all flex items-center justify-center gap-2 hover:border-indigo-300">
+                    </Link>
+                    <Link to="/ats-checker" className="w-full sm:w-auto px-8 py-4 rounded-xl bg-white text-slate-700 border border-slate-200 font-bold hover:bg-slate-50 transition-all flex items-center justify-center gap-2 hover:border-indigo-300">
                         <i className="fa-solid fa-shield-halved"></i> Check ATS Score
-                    </a>
+                    </Link>
                 </div>
                 
                 <div className="mt-8 flex items-center justify-center lg:justify-start gap-4 text-sm text-slate-500 animate-fade-in-up" >
@@ -254,9 +255,9 @@ export default function Home() {
                         </li>
                     </ul>
 
-                    <a href="ats_checker.html" className="group text-indigo-600 font-bold hover:text-indigo-700 border-b-2 border-indigo-200 hover:border-indigo-600 transition-all inline-flex items-center gap-2">
+                    <Link to="/ats-checker" className="group text-indigo-600 font-bold hover:text-indigo-700 border-b-2 border-indigo-200 hover:border-indigo-600 transition-all inline-flex items-center gap-2">
                         Check your resume score now <i className="fa-solid fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
-                    </a>
+                    </Link>
                 </div>
 
                 <div className="lg:w-1/2 w-full reveal delay-200">
@@ -318,7 +319,7 @@ export default function Home() {
                         
                         {/*  Overlay  */}
                         <div className="absolute inset-0 bg-slate-900/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
-                            <a href="resume_builder.html" className="px-6 py-3 bg-white text-slate-900 rounded-lg font-bold transform translate-y-4 group-hover:translate-y-0 transition-transform">Use Template</a>
+                            <Link to="/builder" className="px-6 py-3 bg-white text-slate-900 rounded-lg font-bold transform translate-y-4 group-hover:translate-y-0 transition-transform">Use Template</Link>
                         </div>
                     </div>
                     <div className="p-4 border-t border-slate-100 text-center">
@@ -339,7 +340,7 @@ export default function Home() {
                             </div>
                         </div>
                         <div className="absolute inset-0 bg-slate-900/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
-                            <a href="resume_builder.html" className="px-6 py-3 bg-white text-slate-900 rounded-lg font-bold transform translate-y-4 group-hover:translate-y-0 transition-transform">Use Template</a>
+                            <Link to="/builder" className="px-6 py-3 bg-white text-slate-900 rounded-lg font-bold transform translate-y-4 group-hover:translate-y-0 transition-transform">Use Template</Link>
                         </div>
                     </div>
                     <div className="p-4 border-t border-slate-100 text-center">
@@ -357,7 +358,7 @@ export default function Home() {
                             <div className="h-2 w-3/4 bg-slate-200"></div>
                         </div>
                         <div className="absolute inset-0 bg-slate-900/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
-                            <a href="resume_builder.html" className="px-6 py-3 bg-white text-slate-900 rounded-lg font-bold transform translate-y-4 group-hover:translate-y-0 transition-transform">Use Template</a>
+                            <Link to="/builder" className="px-6 py-3 bg-white text-slate-900 rounded-lg font-bold transform translate-y-4 group-hover:translate-y-0 transition-transform">Use Template</Link>
                         </div>
                     </div>
                     <div className="p-4 border-t border-slate-100 text-center">
@@ -486,7 +487,7 @@ export default function Home() {
                         <li>AI Optimization</li>
                         <li>PDF Downloads</li>
                     </ul>
-                    <a href="pricing.html" className="block w-full py-3 bg-indigo-600 rounded-xl font-bold hover:bg-indigo-500 transition-colors shadow-lg hover:shadow-indigo-500/50">View Plans</a>
+                    <Link to="/pricing" className="block w-full py-3 bg-indigo-600 rounded-xl font-bold hover:bg-indigo-500 transition-colors shadow-lg hover:shadow-indigo-500/50">View Plans</Link>
                 </div>
 
                 <div className="p-6 border border-slate-200 rounded-xl text-slate-500 reveal delay-200 hover:border-indigo-200 transition-colors">
@@ -512,12 +513,12 @@ export default function Home() {
             <h2 className="text-3xl md:text-5xl font-display font-bold mb-6">Land your dream job today</h2>
             <p className="text-indigo-200 text-lg mb-10 max-w-2xl mx-auto">Join thousands of professionals using AI to advance their careers.</p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
-                <a href="resume_builder.html" className="px-8 py-4 bg-white text-indigo-900 font-bold rounded-xl shadow-lg hover:bg-indigo-50 transition-colors transform hover:-translate-y-1">
+                <Link to="/builder" className="px-8 py-4 bg-white text-indigo-900 font-bold rounded-xl shadow-lg hover:bg-indigo-50 transition-colors transform hover:-translate-y-1">
                     Build Resume Free
-                </a>
-                <a href="ats_checker.html" className="px-8 py-4 bg-transparent border border-indigo-400 text-white font-bold rounded-xl hover:bg-indigo-900/50 transition-colors transform hover:-translate-y-1">
+                </Link>
+                <Link to="/ats-checker" className="px-8 py-4 bg-transparent border border-indigo-400 text-white font-bold rounded-xl hover:bg-indigo-900/50 transition-colors transform hover:-translate-y-1">
                     Check ATS Score
-                </a>
+                </Link>
             </div>
         </div>
     </section>
