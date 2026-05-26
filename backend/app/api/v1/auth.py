@@ -1,19 +1,166 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
+from fastapi.responses import RedirectResponse
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 from fastapi.security import OAuth2PasswordRequestForm
 from app.api.deps import get_db
 from app.schemas.auth import UserCreate, Token, UserLogin
 from app.schemas.user import UserOut
-# Placeholder imports for actual auth logic (hashing, jwt creation)
+from app.models.user import User
+from app.core.security import get_password_hash, verify_password, create_access_token
+from app.services.email_service import EmailService
+from app.config import settings
+from authlib.integrations.starlette_client import OAuth
 
 router = APIRouter()
 
+# OAuth setup
+oauth = OAuth()
+oauth.register(
+    name='google',
+    client_id=settings.GOOGLE_CLIENT_ID,
+    client_secret=settings.GOOGLE_CLIENT_SECRET,
+    server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
+    client_kwargs={'scope': 'openid email profile'}
+)
+
+oauth.register(
+    name='github',
+    client_id=settings.GITHUB_CLIENT_ID,
+    client_secret=settings.GITHUB_CLIENT_SECRET,
+    access_token_url='https://github.com/login/oauth/access_token',
+    access_token_params=None,
+    authorize_url='https://github.com/login/oauth/authorize',
+    authorize_params=None,
+    api_base_url='https://api.github.com/',
+    client_kwargs={'scope': 'user:email'},
+)
+
+oauth.register(
+    name='linkedin',
+    client_id=settings.LINKEDIN_CLIENT_ID,
+    client_secret=settings.LINKEDIN_CLIENT_SECRET,
+    access_token_url='https://www.linkedin.com/oauth/v2/accessToken',
+    authorize_url='https://www.linkedin.com/oauth/v2/authorization',
+    api_base_url='https://api.linkedin.com/v2/',
+    client_kwargs={'scope': 'openid profile email'},
+)
+
 @router.post("/register", response_model=UserOut)
 async def register(user_in: UserCreate, db: AsyncSession = Depends(get_db)):
-    # TODO: Hash password, create user, handle duplicates
-    raise HTTPException(status_code=501, detail="Not implemented yet")
+    # Check if user exists
+    stmt = select(User).where(User.email == user_in.email)
+    result = await db.execute(stmt)
+    if result.scalars().first():
+        raise HTTPException(
+            status_code=400,
+            detail="User with this email already exists"
+        )
+    
+    # Create user
+    db_user = User(
+        email=user_in.email,
+        hashed_password=get_password_hash(user_in.password),
+        full_name=user_in.full_name,
+        is_active=True
+    )
+    db.add(db_user)
+    await db.commit()
+    await db.refresh(db_user)
+    
+    # Send welcome email
+    EmailService.send_welcome_email(db_user.email, db_user.full_name or "")
+    
+    return db_user
 
 @router.post("/login", response_model=Token)
 async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)):
-    # TODO: Verify credentials, generate JWT
-    raise HTTPException(status_code=501, detail="Not implemented yet")
+    # Find user
+    stmt = select(User).where(User.email == form_data.username)
+    result = await db.execute(stmt)
+    user = result.scalars().first()
+    
+    if not user or not user.hashed_password:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect email or password",
+        )
+    
+    if not verify_password(form_data.password, user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect email or password",
+        )
+    
+    return {
+        "access_token": create_access_token(user.email),
+        "token_type": "bearer",
+    }
+
+# SOCIAL LOGIN ENDPOINTS
+
+@router.get("/{provider}/login")
+async def social_login(provider: str, request: Request):
+    if provider not in ['google', 'github', 'linkedin']:
+        raise HTTPException(status_code=400, detail="Invalid provider")
+    
+    redirect_uri = ""
+    if provider == 'google': redirect_uri = settings.GOOGLE_REDIRECT_URI
+    elif provider == 'github': redirect_uri = settings.GITHUB_REDIRECT_URI
+    elif provider == 'linkedin': redirect_uri = settings.LINKEDIN_REDIRECT_URI
+    
+    if not redirect_uri:
+        # Fallback to default if not configured in settings
+        redirect_uri = f"http://localhost:8000/api/v1/auth/{provider}/callback"
+        
+    return await oauth.create_client(provider).authorize_redirect(request, redirect_uri)
+
+@router.get("/{provider}/callback")
+async def social_callback(provider: str, request: Request, db: AsyncSession = Depends(get_db)):
+    if provider not in ['google', 'github', 'linkedin']:
+        raise HTTPException(status_code=400, detail="Invalid provider")
+    
+    client = oauth.create_client(provider)
+    try:
+        token = await client.authorize_access_token(request)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Failed to authorize: {str(e)}")
+    
+    user_info = None
+    if provider == 'google':
+        user_info = token.get('userinfo')
+    elif provider == 'github':
+        resp = await client.get('user', token=token)
+        user_info = resp.json()
+        if not user_info.get('email'):
+            email_resp = await client.get('user/emails', token=token)
+            emails = email_resp.json()
+            user_info['email'] = next((e['email'] for e in emails if e['primary']), emails[0]['email'])
+    elif provider == 'linkedin':
+        user_info = token.get('userinfo')
+        
+    if not user_info or not user_info.get('email'):
+        raise HTTPException(status_code=400, detail="Failed to retrieve user info from provider")
+    
+    email = user_info.get('email')
+    name = user_info.get('name') or user_info.get('full_name') or user_info.get('login')
+    
+    # Find or create user
+    stmt = select(User).where(User.email == email)
+    result = await db.execute(stmt)
+    user = result.scalars().first()
+    
+    if not user:
+        user = User(
+            email=email,
+            full_name=name,
+            is_active=True
+        )
+        db.add(user)
+        await db.commit()
+        await db.refresh(user)
+        EmailService.send_welcome_email(user.email, user.full_name or "")
+    
+    access_token = create_access_token(user.email)
+    
+    return RedirectResponse(url=f"http://localhost:5173/auth/callback?token={access_token}")

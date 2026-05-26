@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { api, setAuthToken } from '../../lib/api';
 
 export default function LoginSignup() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'login' | 'signup'>('login');
+  const [error, setError] = useState<string | null>(null);
   
   // Login Form States
   const [loginEmail, setLoginEmail] = useState('');
@@ -31,25 +33,57 @@ export default function LoginSignup() {
 
   const signupStrength = getPasswordStrength(signupPassword);
 
-  const handleLoginSubmit = (e: React.FormEvent) => {
+  const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoginLoading(true);
+    setError(null);
 
-    setTimeout(() => {
-      setLoginLoading(false);
+    try {
+      const formData = new FormData();
+      formData.append('username', loginEmail);
+      formData.append('password', loginPassword);
+
+      const response = await api.post<{ access_token: string }>('/v1/auth/login', formData);
+      setAuthToken(response.access_token);
       navigate('/builder');
-    }, 1500);
+    } catch (err: any) {
+      setError(err.message || 'Login failed. Please check your credentials.');
+    } finally {
+      setLoginLoading(false);
+    }
   };
 
-  const handleSignupSubmit = (e: React.FormEvent) => {
+  const handleSignupSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!agreedToTerms) return;
     setSignupLoading(true);
+    setError(null);
 
-    setTimeout(() => {
-      setSignupLoading(false);
+    try {
+      await api.post('/v1/auth/register', {
+        email: signupEmail,
+        password: signupPassword,
+        full_name: signupName,
+      });
+      
+      // Auto-login after signup
+      const formData = new FormData();
+      formData.append('username', signupEmail);
+      formData.append('password', signupPassword);
+      const loginResp = await api.post<{ access_token: string }>('/v1/auth/login', formData);
+      setAuthToken(loginResp.access_token);
+      
       navigate('/builder');
-    }, 1500);
+    } catch (err: any) {
+      setError(err.message || 'Signup failed. Email might already be in use.');
+    } finally {
+      setSignupLoading(false);
+    }
+  };
+
+  const handleSocialLogin = (provider: string) => {
+    // Redirect to backend social login endpoint
+    window.location.href = `/api/v1/auth/${provider}/login`;
   };
 
   return (
@@ -108,7 +142,7 @@ export default function LoginSignup() {
           <div className="flex bg-slate-100 p-1 rounded-xl mb-8 w-full max-w-xs mx-auto">
             <button 
               type="button"
-              onClick={() => setActiveTab('login')} 
+              onClick={() => { setActiveTab('login'); setError(null); }} 
               id="tab-btn-login" 
               className={`flex-1 py-2 rounded-lg text-sm transition-all cursor-pointer ${
                 activeTab === 'login' 
@@ -120,7 +154,7 @@ export default function LoginSignup() {
             </button>
             <button 
               type="button"
-              onClick={() => setActiveTab('signup')} 
+              onClick={() => { setActiveTab('signup'); setError(null); }} 
               id="tab-btn-signup" 
               className={`flex-1 py-2 rounded-lg text-sm transition-all cursor-pointer ${
                 activeTab === 'signup' 
@@ -131,6 +165,13 @@ export default function LoginSignup() {
               Sign Up
             </button>
           </div>
+
+          {error && (
+            <div className="mb-6 p-3 bg-red-50 border border-red-100 text-red-600 text-sm rounded-xl flex items-center gap-2 animate-shake max-w-xs mx-auto w-full">
+              <i className="fa-solid fa-circle-exclamation"></i>
+              <span>{error}</span>
+            </div>
+          )}
 
           {/* LOGIN FORM */}
           <div id="login-form" className={`tab-content ${activeTab === 'login' ? 'active' : ''} max-w-xs mx-auto w-full`}>
@@ -301,13 +342,22 @@ export default function LoginSignup() {
             </div>
 
             <div className="flex gap-3 justify-center">
-              <button className="social-btn w-12 h-12 rounded-full border border-slate-200 flex items-center justify-center text-slate-600 hover:border-indigo-200 hover:bg-slate-50 cursor-pointer">
+              <button 
+                onClick={() => handleSocialLogin('google')}
+                className="social-btn w-12 h-12 rounded-full border border-slate-200 flex items-center justify-center text-slate-600 hover:border-indigo-200 hover:bg-slate-50 cursor-pointer"
+              >
                 <i className="fa-brands fa-google text-lg"></i>
               </button>
-              <button className="social-btn w-12 h-12 rounded-full border border-slate-200 flex items-center justify-center text-slate-600 hover:border-indigo-200 hover:bg-slate-50 cursor-pointer">
+              <button 
+                onClick={() => handleSocialLogin('linkedin')}
+                className="social-btn w-12 h-12 rounded-full border border-slate-200 flex items-center justify-center text-slate-600 hover:border-indigo-200 hover:bg-slate-50 cursor-pointer"
+              >
                 <i className="fa-brands fa-linkedin-in text-lg text-blue-700"></i>
               </button>
-              <button className="social-btn w-12 h-12 rounded-full border border-slate-200 flex items-center justify-center text-slate-600 hover:border-indigo-200 hover:bg-slate-50 cursor-pointer">
+              <button 
+                onClick={() => handleSocialLogin('github')}
+                className="social-btn w-12 h-12 rounded-full border border-slate-200 flex items-center justify-center text-slate-600 hover:border-indigo-200 hover:bg-slate-50 cursor-pointer"
+              >
                 <i className="fa-brands fa-github text-lg"></i>
               </button>
             </div>

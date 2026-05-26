@@ -11,6 +11,7 @@ import Checkout from '../pages/user/Checkout';
 import MyResumes from '../pages/user/MyResumes';
 import Profile from '../pages/user/Profile';
 import LoginSignup from '../pages/auth/LoginSignup';
+import AuthCallback from '../pages/auth/AuthCallback';
 import Privacy from '../pages/legal/Privacy';
 import Terms from '../pages/legal/Terms';
 import RefundPolicy from '../pages/legal/RefundPolicy';
@@ -58,6 +59,7 @@ const router = createBrowserRouter([
     children: [
       { path: 'login', element: <LoginSignup /> },
       { path: 'signup', element: <LoginSignup /> },
+      { path: 'callback', element: <AuthCallback /> },
     ]
   },
   {
