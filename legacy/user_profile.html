@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Settings | ResumeAI</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Plus Jakarta Sans', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: { 50: '#eff6ff', 100: '#dbeafe', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8' },
+                        slate: { 850: '#1e293b', 900: '#0f172a' } 
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-out forwards',
+                        'slide-up': 'slideUp 0.5s ease-out forwards',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(10px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { background-color: #f8fafc; color: #0f172a; }
+        
+        .glass-header {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+        }
+
+        /* Form Input Animation */
+        .form-input {
+            transition: all 0.2s ease;
+        }
+        .form-input:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        }
+
+        /* Toggle Switch */
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #6366f1;
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #6366f1;
+        }
+
+        /* Tabs Transition */
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.4s ease-out;
+        }
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen">
+
+    <!-- 1. HEADER -->
+    <header class="glass-header sticky top-0 z-50">
+        <div class="container mx-auto px-6 h-16 flex items-center justify-between">
+            <a href="index.html" class="flex items-center gap-2.5 group">
+                <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-600 to-blue-600 flex items-center justify-center text-white text-sm shadow-md group-hover:scale-105 transition-transform">
+                    <i class="fa-solid fa-file-contract"></i>
+                </div>
+                <span class="text-lg font-display font-bold text-slate-800 tracking-tight">Resume<span class="text-indigo-600">AI</span></span>
+            </a>
+
+            <nav class="hidden md:flex items-center gap-8">
+                <a href="resume_builder.html" class="text-sm font-medium text-slate-600 hover:text-indigo-600 transition-colors">Dashboard</a>
+                <a href="resume_builder.html" class="text-sm font-medium text-slate-600 hover:text-indigo-600 transition-colors">Builder</a>
+                <a href="ats_checker.html" class="text-sm font-medium text-slate-600 hover:text-indigo-600 transition-colors">ATS Check</a>
+                <a href="templates.html" class="text-sm font-medium text-slate-600 hover:text-indigo-600 transition-colors">Templates</a>
+                <a href="#" class="text-sm font-medium text-indigo-600 bg-indigo-50 px-3 py-1 rounded-md">Profile</a>
+            </nav>
+
+            <div class="flex items-center gap-4">
+                <div class="hidden md:block text-right">
+                    <p class="text-xs font-bold text-slate-900">Alex Morgan</p>
+                    <p class="text-[10px] text-slate-500">Pro Member</p>
+                </div>
+                <div class="relative group cursor-pointer">
+                    <img src="https://ui-avatars.com/api/?name=Alex+Morgan&background=6366f1&color=fff" class="w-9 h-9 rounded-full border-2 border-white shadow-sm hover:border-indigo-200 transition-all">
+                    <!-- Dropdown could go here -->
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow container mx-auto px-6 py-10 max-w-5xl">
+        
+        <div class="grid lg:grid-cols-12 gap-8">
+            
+            <!-- LEFT: Navigation & Profile Card -->
+            <div class="lg:col-span-3 space-y-6">
+                
+                <!-- 2. PROFILE OVERVIEW -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 text-center animate-slide-up">
+                    <div class="relative w-24 h-24 mx-auto mb-4 group cursor-pointer">
+                        <img src="https://ui-avatars.com/api/?name=Alex+Morgan&background=6366f1&color=fff&size=128" class="w-full h-full rounded-full border-4 border-slate-50 shadow-inner" id="avatar-preview">
+                        <div class="absolute inset-0 bg-slate-900/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white backdrop-blur-[2px]">
+                            <i class="fa-solid fa-camera"></i>
+                        </div>
+                        <input type="file" class="absolute inset-0 opacity-0 cursor-pointer" onchange="previewAvatar(this)">
+                    </div>
+                    <h2 class="text-lg font-bold text-slate-900">Alex Morgan</h2>
+                    <p class="text-xs text-slate-500 mb-4">alex.morgan@example.com</p>
+                    
+                    <div class="inline-block px-3 py-1 bg-indigo-100 text-indigo-700 text-xs font-bold rounded-full mb-4">Pro Plan</div>
+                    
+                    <button class="w-full py-2 bg-slate-900 text-white text-xs font-bold rounded-lg hover:bg-slate-800 transition-colors">Upgrade to Premium</button>
+                </div>
+
+                <!-- 3. SIDE NAV (Tabs) -->
+                <nav class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden animate-slide-up" style="animation-delay: 0.1s;">
+                    <button onclick="switchTab('personal', this)" class="tab-btn active w-full text-left px-5 py-3.5 text-sm font-medium flex items-center gap-3 border-l-4 border-indigo-600 bg-indigo-50/50 text-indigo-700">
+                        <i class="fa-regular fa-user w-5"></i> Personal Info
+                    </button>
+                    <button onclick="switchTab('security', this)" class="tab-btn w-full text-left px-5 py-3.5 text-sm font-medium flex items-center gap-3 border-l-4 border-transparent text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all">
+                        <i class="fa-solid fa-shield-halved w-5"></i> Security
+                    </button>
+                    <button onclick="switchTab('preferences', this)" class="tab-btn w-full text-left px-5 py-3.5 text-sm font-medium flex items-center gap-3 border-l-4 border-transparent text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all">
+                        <i class="fa-solid fa-sliders w-5"></i> Preferences
+                    </button>
+                    <button onclick="switchTab('subscription', this)" class="tab-btn w-full text-left px-5 py-3.5 text-sm font-medium flex items-center gap-3 border-l-4 border-transparent text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all">
+                        <i class="fa-regular fa-credit-card w-5"></i> Subscription
+                    </button>
+                </nav>
+
+                <!-- 8. QUICK STATS -->
+                <div class="bg-slate-900 text-white p-6 rounded-2xl shadow-lg animate-slide-up" style="animation-delay: 0.2s;">
+                    <h3 class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-4">Account Stats</h3>
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-slate-300">Resumes Created</span>
+                            <span class="font-bold">12</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-slate-300">ATS Scans</span>
+                            <span class="font-bold">48</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-slate-300">Member Since</span>
+                            <span class="font-bold text-xs">Oct 2023</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT: Content Area -->
+            <div class="lg:col-span-9">
+                
+                <!-- 4. PERSONAL INFO TAB -->
+                <div id="tab-personal" class="tab-content active bg-white p-8 rounded-2xl shadow-sm border border-slate-100 h-full">
+                    <div class="mb-8 border-b border-slate-100 pb-6">
+                        <h2 class="text-xl font-bold text-slate-900">Personal Information</h2>
+                        <p class="text-sm text-slate-500">Update your personal details and contact information.</p>
+                    </div>
+
+                    <form onsubmit="handleSave(event)" class="space-y-6 max-w-2xl">
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Full Name</label>
+                                <input type="text" value="Alex Morgan" class="form-input w-full px-4 py-2.5 rounded-xl border border-slate-200 text-slate-900 text-sm placeholder-slate-400 focus:outline-none focus:border-indigo-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Job Title</label>
+                                <input type="text" value="Product Designer" class="form-input w-full px-4 py-2.5 rounded-xl border border-slate-200 text-slate-900 text-sm placeholder-slate-400 focus:outline-none focus:border-indigo-500">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Email Address</label>
+                            <input type="email" value="alex.morgan@example.com" class="form-input w-full px-4 py-2.5 rounded-xl border border-slate-200 text-slate-900 text-sm placeholder-slate-400 focus:outline-none focus:border-indigo-500">
+                        </div>
+
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Phone Number</label>
+                                <input type="tel" value="+1 (555) 123-4567" class="form-input w-full px-4 py-2.5 rounded-xl border border-slate-200 text-slate-900 text-sm placeholder-slate-400 focus:outline-none focus:border-indigo-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Location</label>
+                                <input type="text" value="San Francisco, CA" class="form-input w-full px-4 py-2.5 rounded-xl border border-slate-200 text-slate-900 text-sm placeholder-slate-400 focus:outline-none focus:border-indigo-500">
+                            </div>
+                        </div>
+
+                        <div class="pt-4">
+                            <button type="submit" class="save-btn px-6 py-2.5 bg-indigo-600 text-white text-sm font-bold rounded-xl shadow-lg hover:bg-indigo-500 transition-all transform active:scale-95 flex items-center gap-2">
+                                <span>Save Changes</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- 5. SECURITY TAB -->
+                <div id="tab-security" class="tab-content bg-white p-8 rounded-2xl shadow-sm border border-slate-100 h-full">
+                    <div class="mb-8 border-b border-slate-100 pb-6">
+                        <h2 class="text-xl font-bold text-slate-900">Account Security</h2>
+                        <p class="text-sm text-slate-500">Manage your password and security settings.</p>
+                    </div>
+
+                    <form onsubmit="handleSave(event)" class="space-y-6 max-w-xl">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Current Password</label>
+                            <input type="password" placeholder="••••••••" class="form-input w-full px-4 py-2.5 rounded-xl border border-slate-200 text-slate-900 text-sm focus:outline-none focus:border-indigo-500">
+                        </div>
+                        
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-2">New Password</label>
+                                <input type="password" placeholder="New password" class="form-input w-full px-4 py-2.5 rounded-xl border border-slate-200 text-slate-900 text-sm focus:outline-none focus:border-indigo-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Confirm Password</label>
+                                <input type="password" placeholder="Confirm password" class="form-input w-full px-4 py-2.5 rounded-xl border border-slate-200 text-slate-900 text-sm focus:outline-none focus:border-indigo-500">
+                            </div>
+                        </div>
+
+                        <div class="bg-blue-50 p-4 rounded-xl border border-blue-100 flex items-start gap-3">
+                            <i class="fa-solid fa-circle-info text-blue-500 mt-0.5"></i>
+                            <div class="text-xs text-blue-800">
+                                <p class="font-bold mb-1">Password Requirements</p>
+                                <ul class="list-disc pl-4 space-y-1">
+                                    <li>Minimum 8 characters long</li>
+                                    <li>At least one uppercase character</li>
+                                    <li>At least one number or symbol</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="pt-4 flex items-center justify-between">
+                            <button type="submit" class="save-btn px-6 py-2.5 bg-slate-900 text-white text-sm font-bold rounded-xl shadow-lg hover:bg-slate-800 transition-all transform active:scale-95">
+                                Update Password
+                            </button>
+                            <span class="text-xs text-slate-400">Last updated: 3 months ago</span>
+                        </div>
+                    </form>
+
+                    <!-- 9. DANGER ZONE (Inside Security) -->
+                    <div class="mt-12 pt-8 border-t border-slate-100">
+                        <h3 class="text-red-600 font-bold mb-4">Danger Zone</h3>
+                        <div class="flex items-center justify-between p-4 bg-red-50 rounded-xl border border-red-100">
+                            <div>
+                                <h4 class="text-sm font-bold text-slate-900">Delete Account</h4>
+                                <p class="text-xs text-slate-500">Permanently remove your account and all data.</p>
+                            </div>
+                            <button class="px-4 py-2 bg-white border border-red-200 text-red-600 text-xs font-bold rounded-lg hover:bg-red-50 transition-colors">Delete</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 6. PREFERENCES TAB -->
+                <div id="tab-preferences" class="tab-content bg-white p-8 rounded-2xl shadow-sm border border-slate-100 h-full">
+                    <div class="mb-8 border-b border-slate-100 pb-6">
+                        <h2 class="text-xl font-bold text-slate-900">Preferences</h2>
+                        <p class="text-sm text-slate-500">Customize your experience and notification settings.</p>
+                    </div>
+
+                    <div class="space-y-8">
+                        <!-- Notifications -->
+                        <div>
+                            <h3 class="text-sm font-bold text-slate-900 mb-4 uppercase tracking-wide">Email Notifications</h3>
+                            <div class="space-y-4">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm font-medium text-slate-800">Job Alerts</p>
+                                        <p class="text-xs text-slate-500">Get notified when new jobs match your resume.</p>
+                                    </div>
+                                    <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+                                        <input type="checkbox" name="toggle" id="toggle1" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 border-slate-200 appearance-none cursor-pointer transition-all duration-300 checked:right-0 checked:border-indigo-600" checked/>
+                                        <label for="toggle1" class="toggle-label block overflow-hidden h-5 rounded-full bg-slate-200 cursor-pointer transition-colors duration-300"></label>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm font-medium text-slate-800">Product Updates</p>
+                                        <p class="text-xs text-slate-500">Receive news about new features and templates.</p>
+                                    </div>
+                                    <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+                                        <input type="checkbox" name="toggle" id="toggle2" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 border-slate-200 appearance-none cursor-pointer transition-all duration-300 checked:right-0 checked:border-indigo-600"/>
+                                        <label for="toggle2" class="toggle-label block overflow-hidden h-5 rounded-full bg-slate-200 cursor-pointer transition-colors duration-300"></label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="h-px bg-slate-100 w-full"></div>
+
+                        <!-- Resume Defaults -->
+                        <div>
+                            <h3 class="text-sm font-bold text-slate-900 mb-4 uppercase tracking-wide">Resume Defaults</h3>
+                            <div class="grid md:grid-cols-2 gap-6 max-w-2xl">
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Default Narrative Tone</label>
+                                    <select class="form-input w-full px-4 py-2.5 rounded-xl border border-slate-200 text-slate-900 text-sm focus:outline-none focus:border-indigo-500">
+                                        <option>Professional</option>
+                                        <option>Confident</option>
+                                        <option>Technical</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Date Format</label>
+                                    <select class="form-input w-full px-4 py-2.5 rounded-xl border border-slate-200 text-slate-900 text-sm focus:outline-none focus:border-indigo-500">
+                                        <option>MM/YYYY</option>
+                                        <option>Month Year</option>
+                                        <option>YYYY-MM-DD</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="pt-4">
+                            <button class="px-6 py-2.5 bg-slate-900 text-white text-sm font-bold rounded-xl shadow-lg hover:bg-slate-800 transition-colors">Save Preferences</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 7. SUBSCRIPTION TAB -->
+                <div id="tab-subscription" class="tab-content bg-white p-8 rounded-2xl shadow-sm border border-slate-100 h-full">
+                    <div class="mb-8 border-b border-slate-100 pb-6">
+                        <h2 class="text-xl font-bold text-slate-900">Subscription & Billing</h2>
+                        <p class="text-sm text-slate-500">Manage your plan and payment methods.</p>
+                    </div>
+
+                    <!-- Current Plan -->
+                    <div class="bg-indigo-50 rounded-2xl p-6 border border-indigo-100 flex flex-col md:flex-row items-center justify-between mb-8">
+                        <div>
+                            <div class="flex items-center gap-3 mb-2">
+                                <h3 class="text-lg font-bold text-indigo-900">Pro Plan</h3>
+                                <span class="px-2 py-0.5 bg-green-100 text-green-700 text-[10px] font-bold uppercase rounded-full">Active</span>
+                            </div>
+                            <p class="text-sm text-indigo-700 mb-1">Your next billing date is <span class="font-bold">Nov 24, 2023</span></p>
+                            <p class="text-xs text-indigo-500">Visa ending in •••• 4242</p>
+                        </div>
+                        <div class="mt-4 md:mt-0 flex gap-3">
+                            <button class="px-4 py-2 bg-white text-indigo-600 text-xs font-bold rounded-lg border border-indigo-200 hover:bg-indigo-50 transition-colors">Manage Billing</button>
+                            <button class="px-4 py-2 bg-indigo-600 text-white text-xs font-bold rounded-lg shadow-md hover:bg-indigo-500 transition-colors">Upgrade Plan</button>
+                        </div>
+                    </div>
+
+                    <!-- History -->
+                    <div>
+                        <h4 class="text-sm font-bold text-slate-900 mb-4">Billing History</h4>
+                        <div class="border border-slate-200 rounded-xl overflow-hidden">
+                            <table class="w-full text-sm text-left">
+                                <thead class="bg-slate-50 text-slate-500 border-b border-slate-200">
+                                    <tr>
+                                        <th class="px-6 py-3 font-medium">Date</th>
+                                        <th class="px-6 py-3 font-medium">Amount</th>
+                                        <th class="px-6 py-3 font-medium">Status</th>
+                                        <th class="px-6 py-3 font-medium text-right">Invoice</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100">
+                                    <tr class="hover:bg-slate-50 transition-colors">
+                                        <td class="px-6 py-4 text-slate-700">Oct 24, 2023</td>
+                                        <td class="px-6 py-4 text-slate-700">$19.00</td>
+                                        <td class="px-6 py-4"><span class="text-green-600 font-bold text-xs bg-green-50 px-2 py-1 rounded-full">Paid</span></td>
+                                        <td class="px-6 py-4 text-right"><a href="#" class="text-indigo-600 hover:underline">Download</a></td>
+                                    </tr>
+                                    <tr class="hover:bg-slate-50 transition-colors">
+                                        <td class="px-6 py-4 text-slate-700">Sep 24, 2023</td>
+                                        <td class="px-6 py-4 text-slate-700">$19.00</td>
+                                        <td class="px-6 py-4"><span class="text-green-600 font-bold text-xs bg-green-50 px-2 py-1 rounded-full">Paid</span></td>
+                                        <td class="px-6 py-4 text-right"><a href="#" class="text-indigo-600 hover:underline">Download</a></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-slate-950 text-slate-400 py-8 border-t border-slate-800 text-sm mt-auto">
+        <div class="container mx-auto px-6 text-center">
+            <p>&copy; 2023 ResumeAI. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // --- Tab Switching Logic ---
+        function switchTab(tabId, btn) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            // Show target tab
+            document.getElementById(`tab-${tabId}`).classList.add('active');
+
+            // Reset buttons
+            document.querySelectorAll('.tab-btn').forEach(button => {
+                button.className = 'tab-btn w-full text-left px-5 py-3.5 text-sm font-medium flex items-center gap-3 border-l-4 border-transparent text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all';
+            });
+
+            // Activate button
+            btn.className = 'tab-btn active w-full text-left px-5 py-3.5 text-sm font-medium flex items-center gap-3 border-l-4 border-indigo-600 bg-indigo-50/50 text-indigo-700';
+        }
+
+        // --- Avatar Preview ---
+        function previewAvatar(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('avatar-preview').src = e.target.result;
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        // --- Save Simulation ---
+        function handleSave(e) {
+            e.preventDefault();
+            const btn = e.target.querySelector('.save-btn');
+            const originalContent = btn.innerHTML;
+            
+            // Loading State
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin mr-2"></i> Saving...`;
+            btn.classList.add('opacity-75', 'cursor-not-allowed');
+
+            setTimeout(() => {
+                btn.disabled = false;
+                btn.innerHTML = `<i class="fa-solid fa-check mr-2"></i> Saved!`;
+                btn.classList.remove('opacity-75', 'cursor-not-allowed', 'bg-slate-900', 'bg-indigo-600');
+                btn.classList.add('bg-green-600');
+
+                // Reset after delay
+                setTimeout(() => {
+                    btn.innerHTML = originalContent;
+                    btn.classList.remove('bg-green-600');
+                    if (originalContent.includes('Update Password')) {
+                        btn.classList.add('bg-slate-900');
+                    } else {
+                        btn.classList.add('bg-indigo-600');
+                    }
+                }, 2000);
+            }, 1000);
+        }
+    </script>
+</body>
+</html>

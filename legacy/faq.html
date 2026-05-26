@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frequently Asked Questions | ResumeAI</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Plus Jakarta Sans', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: { 50: '#eff6ff', 100: '#dbeafe', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8' },
+                        slate: { 850: '#1e293b', 900: '#0f172a' }
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.6s ease-out forwards',
+                        'slide-up': 'slideUp 0.6s ease-out forwards',
+                        'float': 'float 6s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(20px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #f8fafc;
+            color: #0f172a;
+        }
+
+        .glass-header {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+        }
+
+        /* Accordion Animation */
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease, padding 0.3s ease;
+            opacity: 0;
+        }
+
+        .faq-item.active .faq-answer {
+            max-height: 500px;
+            /* Arbitrary large height */
+            opacity: 1;
+            padding-bottom: 1.5rem;
+            /* pb-6 equivalent */
+        }
+
+        .faq-item.active .faq-icon {
+            transform: rotate(180deg);
+            color: #4f46e5;
+        }
+
+        .faq-item.active .faq-question {
+            color: #4f46e5;
+        }
+
+        /* Filter Pill Active State */
+        .filter-pill.active {
+            background-color: #0f172a;
+            color: white;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+
+<body class="flex flex-col min-h-screen">
+
+    <!-- 1. HEADER -->
+    <header class="glass-header sticky top-0 z-50">
+        <div class="container mx-auto px-6 h-16 flex items-center justify-between">
+            <a href="index.html" class="flex items-center gap-2.5 group">
+                <div
+                    class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-600 to-blue-600 flex items-center justify-center text-white text-sm shadow-md group-hover:rotate-6 transition-transform">
+                    <i class="fa-solid fa-file-contract"></i>
+                </div>
+                <span class="text-lg font-display font-bold text-slate-800 tracking-tight">Resume<span
+                        class="text-indigo-600">AI</span></span>
+            </a>
+
+            <nav class="hidden md:flex items-center gap-8">
+                <a href="resume_builder.html"
+                    class="text-sm font-medium text-slate-600 hover:text-indigo-600 transition-colors">Resume
+                    Builder</a>
+                <a href="ats_checker.html"
+                    class="text-sm font-medium text-slate-600 hover:text-indigo-600 transition-colors">ATS Check</a>
+                <a href="pricing.html"
+                    class="text-sm font-medium text-slate-600 hover:text-indigo-600 transition-colors">Pricing</a>
+                <a href="#" class="text-sm font-medium text-indigo-600 bg-indigo-50 px-3 py-1 rounded-md">FAQ</a>
+            </nav>
+
+            <a href="resume_builder.html"
+                class="bg-slate-900 hover:bg-slate-800 text-white text-sm font-semibold px-5 py-2.5 rounded-lg transition-all shadow-md hover:shadow-lg flex items-center gap-2 hover:-translate-y-0.5">
+                Build Resume Free
+            </a>
+        </div>
+    </header>
+
+    <main class="flex-grow">
+
+        <!-- 2. HERO SECTION -->
+        <section class="relative pt-20 pb-16 text-center px-6 overflow-hidden">
+            <!-- Background Decoration -->
+            <div
+                class="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full overflow-hidden -z-10 pointer-events-none">
+                <div
+                    class="absolute top-0 left-1/4 w-96 h-96 bg-indigo-100 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-float">
+                </div>
+                <div class="absolute top-20 right-1/4 w-96 h-96 bg-blue-100 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-float"
+                    style="animation-delay: 2s"></div>
+            </div>
+
+            <h1 class="text-4xl md:text-5xl font-display font-bold text-slate-900 mb-6 animate-slide-up">
+                Frequently Asked <span class="text-indigo-600">Questions</span>
+            </h1>
+            <p class="text-slate-500 text-lg mb-10 max-w-2xl mx-auto animate-slide-up" style="animation-delay: 0.1s;">
+                Everything you need to know about building ATS-friendly resumes, our pricing, and how our AI technology
+                works.
+            </p>
+
+            <!-- 6. SEARCH FAQ -->
+            <div class="max-w-xl mx-auto relative mb-12 animate-slide-up" style="animation-delay: 0.2s;">
+                <input type="text" id="faq-search" placeholder="Search for answers..."
+                    class="w-full pl-12 pr-4 py-4 rounded-2xl border border-slate-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all bg-white text-slate-800"
+                    onkeyup="searchFAQ()">
+                <i class="fa-solid fa-magnifying-glass absolute left-5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+            </div>
+        </section>
+
+        <!-- 3. FAQ FILTER -->
+        <section class="container mx-auto px-6 max-w-4xl mb-12">
+            <div class="flex flex-wrap justify-center gap-3 animate-fade-in">
+                <button onclick="filterFAQ('all', this)"
+                    class="filter-pill active px-5 py-2 rounded-full text-sm font-bold bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 transition-all">All
+                    Questions</button>
+                <button onclick="filterFAQ('general', this)"
+                    class="filter-pill px-5 py-2 rounded-full text-sm font-bold bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 transition-all">General</button>
+                <button onclick="filterFAQ('ats', this)"
+                    class="filter-pill px-5 py-2 rounded-full text-sm font-bold bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 transition-all">ATS
+                    Checker</button>
+                <button onclick="filterFAQ('pricing', this)"
+                    class="filter-pill px-5 py-2 rounded-full text-sm font-bold bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 transition-all">Pricing</button>
+                <button onclick="filterFAQ('security', this)"
+                    class="filter-pill px-5 py-2 rounded-full text-sm font-bold bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 transition-all">Security</button>
+            </div>
+        </section>
+
+        <!-- 4. FAQ LIST -->
+        <section class="container mx-auto px-6 max-w-3xl pb-24">
+            <div id="faq-container" class="space-y-4">
+
+                <!-- Category: General -->
+                <div class="faq-item bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden transition-all duration-300 hover:shadow-md animate-slide-up"
+                    data-category="general">
+                    <button class="w-full flex justify-between items-center p-6 text-left focus:outline-none"
+                        onclick="toggleAccordion(this)">
+                        <span class="text-lg font-bold text-slate-800 faq-question transition-colors">What is an
+                            ATS-friendly resume?</span>
+                        <i
+                            class="fa-solid fa-chevron-down text-slate-400 faq-icon transition-transform duration-300"></i>
+                    </button>
+                    <div class="faq-answer px-6 text-slate-600 leading-relaxed">
+                        <p>An ATS (Applicant Tracking System) friendly resume is formatted in a way that allows software
+                            to easily read and parse your information. This means avoiding complex layouts, graphics,
+                            and unreadable fonts so that your skills and experience are correctly identified by the
+                            system used by recruiters.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden transition-all duration-300 hover:shadow-md animate-slide-up"
+                    data-category="general" style="animation-delay: 0.1s;">
+                    <button class="w-full flex justify-between items-center p-6 text-left focus:outline-none"
+                        onclick="toggleAccordion(this)">
+                        <span class="text-lg font-bold text-slate-800 faq-question transition-colors">How does the AI
+                            optimization work?</span>
+                        <i
+                            class="fa-solid fa-chevron-down text-slate-400 faq-icon transition-transform duration-300"></i>
+                    </button>
+                    <div class="faq-answer px-6 text-slate-600 leading-relaxed">
+                        <p>Our AI analyzes millions of job descriptions to understand what recruiters are looking for.
+                            It then suggests specific keywords, action verbs, and formatting improvements for your
+                            resume to maximize your match score for your target role.</p>
+                    </div>
+                </div>
+
+                <!-- Category: ATS -->
+                <div class="faq-item bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden transition-all duration-300 hover:shadow-md animate-slide-up"
+                    data-category="ats" style="animation-delay: 0.2s;">
+                    <button class="w-full flex justify-between items-center p-6 text-left focus:outline-none"
+                        onclick="toggleAccordion(this)">
+                        <span class="text-lg font-bold text-slate-800 faq-question transition-colors">Can I upload my
+                            existing resume?</span>
+                        <i
+                            class="fa-solid fa-chevron-down text-slate-400 faq-icon transition-transform duration-300"></i>
+                    </button>
+                    <div class="faq-answer px-6 text-slate-600 leading-relaxed">
+                        <p>Yes! You can upload your existing PDF or DOCX resume. Our system will scan it, extract the
+                            content, and give you a detailed score along with actionable tips to improve it instantly.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Category: Pricing -->
+                <div class="faq-item bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden transition-all duration-300 hover:shadow-md animate-slide-up"
+                    data-category="pricing" style="animation-delay: 0.3s;">
+                    <button class="w-full flex justify-between items-center p-6 text-left focus:outline-none"
+                        onclick="toggleAccordion(this)">
+                        <span class="text-lg font-bold text-slate-800 faq-question transition-colors">Is there a free
+                            plan available?</span>
+                        <i
+                            class="fa-solid fa-chevron-down text-slate-400 faq-icon transition-transform duration-300"></i>
+                    </button>
+                    <div class="faq-answer px-6 text-slate-600 leading-relaxed">
+                        <p>Absolutely. Our Free plan allows you to build one resume, use our basic templates, and
+                            download it as a text file. You also get a basic ATS score check for free.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden transition-all duration-300 hover:shadow-md animate-slide-up"
+                    data-category="pricing" style="animation-delay: 0.4s;">
+                    <button class="w-full flex justify-between items-center p-6 text-left focus:outline-none"
+                        onclick="toggleAccordion(this)">
+                        <span class="text-lg font-bold text-slate-800 faq-question transition-colors">Can I cancel my
+                            subscription anytime?</span>
+                        <i
+                            class="fa-solid fa-chevron-down text-slate-400 faq-icon transition-transform duration-300"></i>
+                    </button>
+                    <div class="faq-answer px-6 text-slate-600 leading-relaxed">
+                        <p>Yes, you can cancel your subscription at any time from your account settings. You will retain
+                            access to premium features until the end of your current billing cycle.</p>
+                    </div>
+                </div>
+
+                <!-- Category: Security -->
+                <div class="faq-item bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden transition-all duration-300 hover:shadow-md animate-slide-up"
+                    data-category="security" style="animation-delay: 0.5s;">
+                    <button class="w-full flex justify-between items-center p-6 text-left focus:outline-none"
+                        onclick="toggleAccordion(this)">
+                        <span class="text-lg font-bold text-slate-800 faq-question transition-colors">Is my personal
+                            data secure?</span>
+                        <i
+                            class="fa-solid fa-chevron-down text-slate-400 faq-icon transition-transform duration-300"></i>
+                    </button>
+                    <div class="faq-answer px-6 text-slate-600 leading-relaxed">
+                        <p>Security is our top priority. We use industry-standard encryption to protect your data. We do
+                            not sell your personal information to third parties or recruiters without your explicit
+                            consent.</p>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- No Results Message -->
+            <div id="no-results" class="hidden text-center py-12">
+                <div
+                    class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-400 text-2xl">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </div>
+                <h3 class="text-lg font-bold text-slate-900">No questions found</h3>
+                <p class="text-slate-500">Try adjusting your search terms.</p>
+            </div>
+        </section>
+
+        <!-- 7. STILL HAVE QUESTIONS -->
+        <section class="bg-indigo-50 py-16 border-t border-indigo-100">
+            <div class="container mx-auto px-6 text-center animate-fade-in">
+                <h2 class="text-2xl font-bold text-slate-900 mb-4">Didn't find what you were looking for?</h2>
+                <p class="text-slate-600 mb-8">Our support team is always ready to help you with any questions.</p>
+                <div class="flex flex-col sm:flex-row justify-center gap-4">
+                    <a href="contact.html"
+                        class="px-6 py-3 bg-indigo-600 text-white font-bold rounded-xl shadow-lg hover:bg-indigo-500 transition-transform transform hover:-translate-y-1">
+                        Contact Support
+                    </a>
+                    <a href="#"
+                        class="px-6 py-3 bg-white text-slate-700 font-bold rounded-xl border border-slate-200 hover:bg-slate-50 transition-colors">
+                        Visit Help Center
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- 8. TRUST CARDS -->
+        <section class="bg-white py-12 border-b border-slate-100">
+            <div class="container mx-auto px-6 max-w-4xl grid md:grid-cols-3 gap-6">
+                <div class="flex items-center gap-4 p-4 rounded-xl hover:bg-slate-50 transition-colors">
+                    <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-600">
+                        <i class="fa-solid fa-lock"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-slate-900 text-sm">Secure Payments</h4>
+                        <p class="text-xs text-slate-500">256-bit SSL Encryption</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4 p-4 rounded-xl hover:bg-slate-50 transition-colors">
+                    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                        <i class="fa-solid fa-ban"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-slate-900 text-sm">No Hidden Fees</h4>
+                        <p class="text-xs text-slate-500">Transparent pricing always</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4 p-4 rounded-xl hover:bg-slate-50 transition-colors">
+                    <div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-600">
+                        <i class="fa-regular fa-circle-xmark"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-slate-900 text-sm">Cancel Anytime</h4>
+                        <p class="text-xs text-slate-500">No long-term contracts</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-slate-950 text-slate-400 py-12 border-t border-slate-800 text-sm">
+        <div class="container mx-auto px-6 text-center">
+            <div class="flex justify-center gap-6 mb-4">
+                <a href="#" class="hover:text-white transition-colors">Privacy Policy</a>
+                <a href="#" class="hover:text-white transition-colors">Terms of Service</a>
+                <a href="contact.html" class="hover:text-white transition-colors">Contact</a>
+            </div>
+            <p>&copy; 2023 ResumeAI. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // --- Accordion Logic ---
+        function toggleAccordion(button) {
+            const item = button.parentElement;
+            const isActive = item.classList.contains('active');
+
+            // Close all others
+            document.querySelectorAll('.faq-item').forEach(el => {
+                el.classList.remove('active');
+            });
+
+            // Toggle current
+            if (!isActive) {
+                item.classList.add('active');
+            }
+        }
+
+        // --- Category Filter Logic ---
+        function filterFAQ(category, btn) {
+            // Update buttons
+            document.querySelectorAll('.filter-pill').forEach(el => {
+                el.classList.remove('active', 'bg-slate-900', 'text-white', 'border-transparent');
+                el.classList.add('bg-white', 'text-slate-600', 'border-slate-200');
+            });
+            btn.classList.add('active', 'bg-slate-900', 'text-white', 'border-transparent');
+            btn.classList.remove('bg-white', 'text-slate-600', 'border-slate-200');
+
+            // Filter items
+            const items = document.querySelectorAll('.faq-item');
+            let hasVisible = false;
+
+            items.forEach(item => {
+                if (category === 'all' || item.dataset.category === category) {
+                    item.style.display = 'block';
+                    hasVisible = true;
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+
+            // Show/Hide no results (though unlikely for category filter)
+            document.getElementById('no-results').style.display = hasVisible ? 'none' : 'block';
+        }
+
+        // --- Search Logic ---
+        function searchFAQ() {
+            const input = document.getElementById('faq-search').value.toLowerCase();
+            const items = document.querySelectorAll('.faq-item');
+            let hasVisible = false;
+
+            items.forEach(item => {
+                const question = item.querySelector('.faq-question').innerText.toLowerCase();
+                const answer = item.querySelector('.faq-answer').innerText.toLowerCase();
+
+                if (question.includes(input) || answer.includes(input)) {
+                    item.style.display = 'block';
+                    hasVisible = true;
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+
+            document.getElementById('no-results').style.display = hasVisible ? 'none' : 'block';
+        }
+    </script>
+</body>
+
+</html>

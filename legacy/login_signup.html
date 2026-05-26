@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | ResumeAI</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Plus Jakarta Sans', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: { 50: '#eff6ff', 100: '#dbeafe', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8' },
+                        slate: { 850: '#1e293b' } 
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'blob': 'blob 7s infinite',
+                        'fade-in': 'fadeIn 0.3s ease-out forwards',
+                        'slide-up': 'slideUp 0.4s ease-out forwards',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-20px)' },
+                        },
+                        blob: {
+                            '0%': { transform: 'translate(0px, 0px) scale(1)' },
+                            '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
+                            '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
+                            '100%': { transform: 'translate(0px, 0px) scale(1)' },
+                        },
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(10px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { background-color: #f8fafc; }
+        
+        /* Custom Form Styles */
+        .input-group {
+            position: relative;
+            transition: all 0.2s;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 2.5rem; /* Left padding for icon */
+            border-radius: 0.75rem;
+            border: 1px solid #e2e8f0;
+            background-color: #fff;
+            transition: all 0.2s;
+            font-size: 0.95rem;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        }
+        
+        .input-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            transition: color 0.2s;
+        }
+
+        .form-input:focus + .input-icon,
+        .form-input:focus ~ .input-icon {
+            color: #6366f1;
+        }
+
+        /* Tab Transitions */
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        /* Social Button Hover */
+        .social-btn {
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .social-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4 text-slate-900 bg-slate-50 relative overflow-hidden">
+
+    <!-- Background Elements -->
+    <div class="absolute top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
+        <div class="absolute top-10 left-10 w-72 h-72 bg-indigo-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
+        <div class="absolute bottom-10 right-10 w-72 h-72 bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
+    </div>
+
+    <!-- Main Card -->
+    <main class="bg-white w-full max-w-4xl rounded-2xl shadow-2xl overflow-hidden flex flex-col md:flex-row relative z-10 animate-slide-up">
+        
+        <!-- LEFT: Branding Section -->
+        <div class="md:w-5/12 bg-gradient-to-br from-indigo-600 to-violet-700 p-8 md:p-12 text-white flex flex-col justify-between relative overflow-hidden">
+            <!-- Decorative overlay -->
+            <div class="absolute inset-0 bg-white/5 backdrop-blur-[1px]"></div>
+            <div class="absolute top-[-50px] right-[-50px] w-40 h-40 bg-white/10 rounded-full blur-2xl animate-float"></div>
+            <div class="absolute bottom-[-20px] left-[-20px] w-60 h-60 bg-indigo-500/30 rounded-full blur-2xl animate-float" style="animation-delay: 2s;"></div>
+
+            <!-- Content -->
+            <div class="relative z-10">
+                <a href="index.html" class="flex items-center gap-2 mb-8 group w-max">
+                    <div class="w-8 h-8 rounded-lg bg-white/20 backdrop-blur-md flex items-center justify-center text-white text-sm border border-white/20 group-hover:scale-105 transition-transform">
+                        <i class="fa-solid fa-layer-group"></i>
+                    </div>
+                    <span class="font-bold text-lg tracking-tight">Resume<span class="text-indigo-200">AI</span></span>
+                </a>
+                
+                <h1 class="text-3xl font-display font-bold mb-4 leading-tight">Build Smarter Resumes with AI</h1>
+                <p class="text-indigo-100 text-sm leading-relaxed mb-6">Create ATS-friendly resumes in minutes and land 3x more interviews with our intelligent optimization engine.</p>
+                
+                <!-- Mini Testimonial -->
+                <div class="bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/10 mt-auto">
+                    <div class="flex text-yellow-400 text-xs mb-2">
+                        <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                    </div>
+                    <p class="text-xs italic text-indigo-50 mb-2">"This tool completely transformed my job search. I got hired at my dream company within 2 weeks!"</p>
+                    <div class="flex items-center gap-2">
+                        <div class="w-6 h-6 rounded-full bg-indigo-400 flex items-center justify-center text-[10px] font-bold">JD</div>
+                        <span class="text-xs font-bold">John D., Software Engineer</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Links (Desktop) -->
+            <div class="relative z-10 mt-8 hidden md:flex gap-4 text-xs text-indigo-200">
+                <a href="#" class="hover:text-white transition-colors">Privacy</a>
+                <a href="#" class="hover:text-white transition-colors">Terms</a>
+                <a href="#" class="hover:text-white transition-colors">Contact</a>
+            </div>
+        </div>
+
+        <!-- RIGHT: Auth Forms -->
+        <div class="md:w-7/12 p-8 md:p-12 bg-white flex flex-col justify-center">
+            
+            <!-- Tab Switcher -->
+            <div class="flex bg-slate-100 p-1 rounded-xl mb-8 w-full max-w-xs mx-auto">
+                <button onclick="switchTab('login')" id="tab-btn-login" class="flex-1 py-2 rounded-lg text-sm font-bold text-slate-800 bg-white shadow-sm transition-all">
+                    Login
+                </button>
+                <button onclick="switchTab('signup')" id="tab-btn-signup" class="flex-1 py-2 rounded-lg text-sm font-medium text-slate-500 hover:text-slate-700 transition-all">
+                    Sign Up
+                </button>
+            </div>
+
+            <!-- LOGIN FORM -->
+            <div id="login-form" class="tab-content active max-w-xs mx-auto w-full">
+                <div class="text-center mb-6">
+                    <h2 class="text-2xl font-bold text-slate-900">Welcome Back</h2>
+                    <p class="text-sm text-slate-500">Enter your details to access your account</p>
+                </div>
+
+                <form onsubmit="handleLogin(event)" class="space-y-4">
+                    <div class="input-group">
+                        <i class="fa-regular fa-envelope input-icon"></i>
+                        <input type="email" placeholder="Email Address" class="form-input" required>
+                    </div>
+                    
+                    <div class="input-group">
+                        <i class="fa-solid fa-lock input-icon"></i>
+                        <input type="password" id="login-pass" placeholder="Password" class="form-input" required>
+                        <button type="button" onclick="togglePassword('login-pass')" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs">
+                            <i class="fa-regular fa-eye"></i>
+                        </button>
+                    </div>
+
+                    <div class="flex items-center justify-between text-xs">
+                        <label class="flex items-center gap-2 cursor-pointer text-slate-600">
+                            <input type="checkbox" class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
+                            Remember me
+                        </label>
+                        <a href="#" class="text-indigo-600 font-semibold hover:underline">Forgot Password?</a>
+                    </div>
+
+                    <button type="submit" id="login-btn" class="w-full py-3 rounded-xl bg-slate-900 text-white font-bold shadow-lg hover:bg-slate-800 hover:shadow-xl transition-all flex items-center justify-center gap-2 group">
+                        <span>Login</span>
+                        <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+                    </button>
+                </form>
+            </div>
+
+            <!-- SIGN UP FORM -->
+            <div id="signup-form" class="tab-content max-w-xs mx-auto w-full">
+                <div class="text-center mb-6">
+                    <h2 class="text-2xl font-bold text-slate-900">Create Account</h2>
+                    <p class="text-sm text-slate-500">Get started with your free resume builder</p>
+                </div>
+
+                <form onsubmit="handleSignup(event)" class="space-y-4">
+                    <div class="input-group">
+                        <i class="fa-regular fa-user input-icon"></i>
+                        <input type="text" placeholder="Full Name" class="form-input" required>
+                    </div>
+
+                    <div class="input-group">
+                        <i class="fa-regular fa-envelope input-icon"></i>
+                        <input type="email" placeholder="Email Address" class="form-input" required>
+                    </div>
+                    
+                    <div class="input-group">
+                        <i class="fa-solid fa-lock input-icon"></i>
+                        <input type="password" id="signup-pass" placeholder="Password" class="form-input" required oninput="checkStrength(this.value)">
+                        <button type="button" onclick="togglePassword('signup-pass')" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs">
+                            <i class="fa-regular fa-eye"></i>
+                        </button>
+                    </div>
+
+                    <!-- Password Strength -->
+                    <div class="flex gap-1 h-1 mt-1 opacity-0 transition-opacity" id="strength-bar">
+                        <div class="flex-1 bg-slate-200 rounded-full transition-colors duration-300" id="bar-1"></div>
+                        <div class="flex-1 bg-slate-200 rounded-full transition-colors duration-300" id="bar-2"></div>
+                        <div class="flex-1 bg-slate-200 rounded-full transition-colors duration-300" id="bar-3"></div>
+                        <div class="flex-1 bg-slate-200 rounded-full transition-colors duration-300" id="bar-4"></div>
+                    </div>
+
+                    <label class="flex items-start gap-2 cursor-pointer text-xs text-slate-600 mt-2">
+                        <input type="checkbox" required class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 mt-0.5">
+                        <span>I agree to the <a href="#" class="text-indigo-600 hover:underline">Terms of Service</a> & <a href="#" class="text-indigo-600 hover:underline">Privacy Policy</a></span>
+                    </label>
+
+                    <button type="submit" id="signup-btn" class="w-full py-3 rounded-xl bg-indigo-600 text-white font-bold shadow-lg hover:bg-indigo-500 hover:shadow-indigo-500/30 transition-all flex items-center justify-center gap-2 group">
+                        <span>Create Account</span>
+                        <i class="fa-solid fa-user-plus group-hover:scale-110 transition-transform"></i>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Social Login -->
+            <div class="max-w-xs mx-auto w-full mt-8">
+                <div class="relative flex items-center justify-center mb-6">
+                    <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-slate-200"></div></div>
+                    <span class="relative bg-white px-3 text-xs text-slate-500 font-medium">Or continue with</span>
+                </div>
+
+                <div class="flex gap-3 justify-center">
+                    <button class="social-btn w-12 h-12 rounded-full border border-slate-200 flex items-center justify-center text-slate-600 hover:border-indigo-200 hover:bg-slate-50">
+                        <i class="fa-brands fa-google text-lg"></i>
+                    </button>
+                    <button class="social-btn w-12 h-12 rounded-full border border-slate-200 flex items-center justify-center text-slate-600 hover:border-indigo-200 hover:bg-slate-50">
+                        <i class="fa-brands fa-linkedin-in text-lg text-blue-700"></i>
+                    </button>
+                    <button class="social-btn w-12 h-12 rounded-full border border-slate-200 flex items-center justify-center text-slate-600 hover:border-indigo-200 hover:bg-slate-50">
+                        <i class="fa-brands fa-github text-lg"></i>
+                    </button>
+                </div>
+
+                <div class="mt-8 text-center flex items-center justify-center gap-2 text-[10px] text-slate-400 uppercase tracking-widest font-bold">
+                    <i class="fa-solid fa-lock text-green-500"></i> Secure SSL Encrypted
+                </div>
+            </div>
+
+            <!-- Footer Links (Mobile Only) -->
+            <div class="md:hidden mt-8 text-center text-xs text-slate-400 flex justify-center gap-4">
+                <a href="#">Privacy</a>
+                <a href="#">Terms</a>
+                <a href="#">Help</a>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        // --- 1. Tab Switching ---
+        function switchTab(tab) {
+            const loginForm = document.getElementById('login-form');
+            const signupForm = document.getElementById('signup-form');
+            const loginBtn = document.getElementById('tab-btn-login');
+            const signupBtn = document.getElementById('tab-btn-signup');
+
+            if (tab === 'login') {
+                loginForm.classList.add('active');
+                signupForm.classList.remove('active');
+                
+                // Style Active Tab
+                loginBtn.classList.add('bg-white', 'shadow-sm', 'text-slate-800', 'font-bold');
+                loginBtn.classList.remove('text-slate-500', 'font-medium');
+                
+                // Style Inactive Tab
+                signupBtn.classList.remove('bg-white', 'shadow-sm', 'text-slate-800', 'font-bold');
+                signupBtn.classList.add('text-slate-500', 'font-medium');
+            } else {
+                signupForm.classList.add('active');
+                loginForm.classList.remove('active');
+                
+                // Style Active Tab
+                signupBtn.classList.add('bg-white', 'shadow-sm', 'text-slate-800', 'font-bold');
+                signupBtn.classList.remove('text-slate-500', 'font-medium');
+                
+                // Style Inactive Tab
+                loginBtn.classList.remove('bg-white', 'shadow-sm', 'text-slate-800', 'font-bold');
+                loginBtn.classList.add('text-slate-500', 'font-medium');
+            }
+        }
+
+        // --- 2. Password Visibility Toggle ---
+        function togglePassword(inputId) {
+            const input = document.getElementById(inputId);
+            const icon = input.nextElementSibling.querySelector('i');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+
+        // --- 3. Password Strength Visualizer ---
+        function checkStrength(password) {
+            const strengthBar = document.getElementById('strength-bar');
+            const bars = [
+                document.getElementById('bar-1'),
+                document.getElementById('bar-2'),
+                document.getElementById('bar-3'),
+                document.getElementById('bar-4')
+            ];
+
+            if (password.length > 0) {
+                strengthBar.classList.remove('opacity-0');
+            } else {
+                strengthBar.classList.add('opacity-0');
+            }
+
+            // Simple logic for demo
+            let strength = 0;
+            if (password.length > 5) strength++;
+            if (password.length > 8) strength++;
+            if (/[A-Z]/.test(password)) strength++;
+            if (/[0-9]/.test(password)) strength++;
+
+            // Colors based on strength
+            const colors = ['bg-red-400', 'bg-yellow-400', 'bg-blue-400', 'bg-green-500'];
+            const activeColor = colors[Math.max(0, strength - 1)];
+
+            bars.forEach((bar, index) => {
+                if (index < strength) {
+                    bar.className = `flex-1 rounded-full transition-colors duration-300 ${activeColor}`;
+                } else {
+                    bar.className = 'flex-1 bg-slate-200 rounded-full transition-colors duration-300';
+                }
+            });
+        }
+
+        // --- 4. Loading Simulation ---
+        function handleLogin(e) {
+            e.preventDefault();
+            const btn = document.getElementById('login-btn');
+            const originalContent = btn.innerHTML;
+            
+            // Loading State
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> Logging in...`;
+            btn.classList.add('opacity-75', 'cursor-not-allowed');
+
+            setTimeout(() => {
+                // Success State (Redirect Simulation)
+                window.location.href = 'resume_builder.html';
+            }, 1500);
+        }
+
+        function handleSignup(e) {
+            e.preventDefault();
+            const btn = document.getElementById('signup-btn');
+            
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> Creating Account...`;
+            btn.classList.add('opacity-75', 'cursor-not-allowed');
+
+            setTimeout(() => {
+                window.location.href = 'resume_builder.html';
+            }, 1500);
+        }
+    </script>
+</body>
+</html>
