@@ -110,7 +110,7 @@ export const Workspace: React.FC = () => {
           <button 
             onClick={() => setActiveSidebar('elements')}
             className={cn("p-2.5 rounded-xl transition-all", activeSidebar === 'elements' ? 'bg-purple-100 text-purple-600' : 'text-gray-400 hover:bg-gray-50')}
-            title="Add Elements 33"
+            title="Add Elements"
           >
             <PlusSquare className="w-5 h-5" />
           </button>

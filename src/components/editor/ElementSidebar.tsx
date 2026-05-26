@@ -54,7 +54,7 @@ export const ElementSidebar: React.FC = () => {
       <div className="p-4 border-b border-gray-200 bg-white shrink-0">
         <h2 className="font-bold text-gray-900 flex items-center gap-2 text-lg">
           <Plus className="w-5 h-5 text-purple-600" />
-          <span>Add Elements 22</span>
+          <span>Add Elements</span>
         </h2>
         <p className="text-xs text-gray-500 mt-1">Drag or click to add to resume.</p>
       </div>

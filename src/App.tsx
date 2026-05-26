@@ -1,9 +1,9 @@
-import { Workspace } from './components/editor/Workspace'
+import { AppRouter } from './router';
 
 function App() {
   return (
-    <Workspace />
+    <AppRouter />
   )
 }
 
-export default App
+export default App;
