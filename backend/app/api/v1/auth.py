@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.responses import RedirectResponse
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -6,7 +7,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from app.api.deps import get_db
 from app.schemas.auth import UserCreate, Token, UserLogin
 from app.schemas.user import UserOut
-from app.models.user import User
+from app.models.user import User, RegistrationSource
 from app.core.security import get_password_hash, verify_password, create_access_token
 from app.services.email_service import EmailService
 from app.config import settings
@@ -62,6 +63,7 @@ async def register(user_in: UserCreate, db: AsyncSession = Depends(get_db)):
         email=user_in.email,
         hashed_password=get_password_hash(user_in.password),
         full_name=user_in.full_name,
+        registration_source=RegistrationSource.EMAIL,
         is_active=True
     )
     db.add(db_user)
@@ -91,6 +93,10 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSessi
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password",
         )
+    
+    # Update last login
+    user.last_login = datetime.now(timezone.utc)
+    await db.commit()
     
     return {
         "access_token": create_access_token(user.email),
@@ -154,12 +160,16 @@ async def social_callback(provider: str, request: Request, db: AsyncSession = De
         user = User(
             email=email,
             full_name=name,
+            registration_source=RegistrationSource(provider),
             is_active=True
         )
         db.add(user)
-        await db.commit()
-        await db.refresh(user)
         EmailService.send_welcome_email(user.email, user.full_name or "")
+    
+    # Update last login
+    user.last_login = datetime.now(timezone.utc)
+    await db.commit()
+    await db.refresh(user)
     
     access_token = create_access_token(user.email)
     

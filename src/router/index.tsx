@@ -12,6 +12,14 @@ import MyResumes from '../pages/user/MyResumes';
 import Profile from '../pages/user/Profile';
 import LoginSignup from '../pages/auth/LoginSignup';
 import AuthCallback from '../pages/auth/AuthCallback';
+import AdminLayout from '../layouts/AdminLayout';
+import AdminGuard from '../components/auth/AdminGuard';
+import AdminDashboard from '../pages/admin/AdminDashboard';
+import AdminUsers from '../pages/admin/AdminUsers';
+import AdminResumes from '../pages/admin/AdminResumes';
+import AdminAI from '../pages/admin/AdminAI';
+import AdminSettings from '../pages/admin/AdminSettings';
+import AdminPlaceholder from '../components/admin/AdminPlaceholder';
 import Privacy from '../pages/legal/Privacy';
 import Terms from '../pages/legal/Terms';
 import RefundPolicy from '../pages/legal/RefundPolicy';
@@ -60,6 +68,18 @@ const router = createBrowserRouter([
       { path: 'login', element: <LoginSignup /> },
       { path: 'signup', element: <LoginSignup /> },
       { path: 'callback', element: <AuthCallback /> },
+    ]
+  },
+  {
+    path: '/admin',
+    element: <AdminGuard><AdminLayout /></AdminGuard>,
+    children: [
+      { index: true, element: <AdminDashboard /> },
+      { path: 'users', element: <AdminUsers /> },
+      { path: 'resumes', element: <AdminResumes /> },
+      { path: 'templates', element: <AdminPlaceholder title="Template Management" /> },
+      { path: 'ai', element: <AdminAI /> },
+      { path: 'settings', element: <AdminSettings /> },
     ]
   },
   {
