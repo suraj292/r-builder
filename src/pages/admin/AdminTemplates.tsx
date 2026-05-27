@@ -1,7 +1,8 @@
 import { useState, useMemo } from 'react';
 import { TEMPLATE_REGISTRY } from '../../templates/registry';
 import { cn } from '../../lib/utils';
-import { Shield, Palette, Briefcase, GraduationCap, Sparkles, Lock, CheckCircle2 } from 'lucide-react';
+import { Shield, Palette, Briefcase, GraduationCap, Sparkles, Lock, CheckCircle2, LayoutTemplate, X, Wand2, Info } from 'lucide-react';
+import type { ResumeTemplate, ExperienceLevel } from '../../types/template';
 
 const CATEGORY_ICONS: Record<string, React.ReactNode> = {
   ATS: <Shield className="w-4 h-4" />,
@@ -21,8 +22,14 @@ const TIER_COLORS: Record<string, string> = {
 export default function AdminTemplates() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTier, setSelectedTier] = useState<'all' | 'free' | 'pro' | 'career_plus'>('all');
-
-  const templates = useMemo(() => Object.values(TEMPLATE_REGISTRY), []);
+  
+  // Use local state for templates to simulate edits
+  const [templates, setTemplates] = useState<ResumeTemplate[]>(Object.values(TEMPLATE_REGISTRY));
+  
+  // Modal State
+  const [previewTemplate, setPreviewTemplate] = useState<ResumeTemplate | null>(null);
+  const [manageTemplate, setManageTemplate] = useState<ResumeTemplate | null>(null);
+  const [rulesTemplate, setRulesTemplate] = useState<ResumeTemplate | null>(null);
 
   const filteredTemplates = useMemo(() => {
     return templates.filter(t => {
@@ -40,6 +47,24 @@ export default function AdminTemplates() {
     career_plus: templates.filter(t => t.requiredTier === 'career_plus').length,
   }), [templates]);
 
+  const updateTemplate = (id: string, updates: Partial<ResumeTemplate>) => {
+    setTemplates(prev => prev.map(t => t.id === id ? { ...t, ...updates } : t));
+  };
+
+  const handleSaveTier = (id: string, tier: 'free' | 'pro' | 'career_plus') => {
+    updateTemplate(id, { requiredTier: tier });
+    setManageTemplate(null);
+  };
+
+  const handleSaveRules = (id: string, metadata: Partial<ResumeTemplate['metadata']>) => {
+    const template = templates.find(t => t.id === id);
+    if (!template) return;
+    updateTemplate(id, { 
+        metadata: { ...template.metadata, ...metadata } 
+    });
+    setRulesTemplate(null);
+  };
+
   return (
     <div className="space-y-6">
       {/* Header & Stats */}
@@ -55,7 +80,7 @@ export default function AdminTemplates() {
                     <p className="text-lg font-bold text-slate-900">{stats.total}</p>
                 </div>
                 <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
-                    <i className="fa-solid fa-layer-group text-sm"></i>
+                    <LayoutTemplate className="w-4 h-4" />
                 </div>
             </div>
         </div>
@@ -79,7 +104,7 @@ export default function AdminTemplates() {
                     key={tier}
                     onClick={() => setSelectedTier(tier)}
                     className={cn(
-                        "flex-1 md:flex-none px-4 py-1.5 rounded-lg text-xs font-bold transition-all capitalize",
+                        "flex-1 md:flex-none px-4 py-1.5 rounded-lg text-xs font-bold transition-all capitalize cursor-pointer",
                         selectedTier === tier ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-700"
                     )}
                 >
@@ -92,7 +117,7 @@ export default function AdminTemplates() {
       {/* Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {filteredTemplates.map(template => (
-          <div key={template.id} className="group bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col hover:border-indigo-300 transition-all">
+          <div key={template.id} className="group bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col hover:border-indigo-300 transition-all animate-fade-in">
             <div className="relative aspect-[1/1.3] bg-slate-100 overflow-hidden">
                 <img 
                     src={template.thumbnail} 
@@ -113,10 +138,16 @@ export default function AdminTemplates() {
                     </div>
                 )}
                 <div className="absolute inset-0 bg-slate-900/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 backdrop-blur-[2px]">
-                    <button className="px-4 py-2 bg-white text-slate-900 rounded-xl text-xs font-bold hover:bg-indigo-50 transition-colors">
+                    <button 
+                        onClick={() => setPreviewTemplate(template)}
+                        className="px-4 py-2 bg-white text-slate-900 rounded-xl text-xs font-bold hover:bg-indigo-50 transition-colors cursor-pointer"
+                    >
                         Preview
                     </button>
-                    <button className="p-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors">
+                    <button 
+                        onClick={() => setManageTemplate(template)}
+                        className="p-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors cursor-pointer"
+                    >
                         <i className="fa-solid fa-gear text-xs"></i>
                     </button>
                 </div>
@@ -143,29 +174,169 @@ export default function AdminTemplates() {
 
                 <div className="pt-2 border-t border-slate-50 flex items-center justify-between">
                     <div className="flex items-center gap-1 text-[10px] text-slate-500">
-                        <i className="fa-solid fa- wand-magic-sparkles text-indigo-400"></i>
+                        <Wand2 className="w-3 h-3 text-indigo-400" />
                         <span>Creativity: {template.metadata.creativityLevel}/5</span>
                     </div>
-                    <button className="text-[10px] font-bold text-indigo-600 hover:underline">
+                    <button 
+                        onClick={() => setRulesTemplate(template)}
+                        className="text-[10px] font-bold text-indigo-600 hover:underline cursor-pointer"
+                    >
                         Edit Rules
                     </button>
                 </div>
             </div>
           </div>
         ))}
-
-        {filteredTemplates.length === 0 && (
-            <div className="col-span-full py-20 text-center bg-white rounded-3xl border border-dashed border-slate-300">
-                <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-400">
-                    <i className="fa-solid fa-layer-group text-2xl"></i>
-                </div>
-                <h3 className="text-lg font-bold text-slate-800">No templates found</h3>
-                <p className="text-sm text-slate-500">Try adjusting your filters or search query.</p>
-            </div>
-        )}
       </div>
+
+      {/* 1. PREVIEW MODAL */}
+      {previewTemplate && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-fade-in" onClick={() => setPreviewTemplate(null)}>
+              <div className="relative bg-white rounded-3xl shadow-2xl max-w-lg w-full overflow-hidden" onClick={e => e.stopPropagation()}>
+                  <button onClick={() => setPreviewTemplate(null)} className="absolute top-4 right-4 w-8 h-8 rounded-full bg-black/10 flex items-center justify-center hover:bg-black/20 transition-all z-10 cursor-pointer">
+                      <X className="w-4 h-4" />
+                  </button>
+                  <div className="aspect-[1/1.41] overflow-y-auto max-h-[85vh]">
+                      <img src={previewTemplate.thumbnail} className="w-full" alt="Full Preview" />
+                  </div>
+                  <div className="p-6 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
+                      <div>
+                          <h3 className="font-bold text-slate-900">{previewTemplate.name}</h3>
+                          <p className="text-xs text-slate-500">{previewTemplate.category} Template</p>
+                      </div>
+                      <button className="px-6 py-2 bg-indigo-600 text-white font-bold rounded-xl shadow-lg shadow-indigo-600/20">
+                          Use Template
+                      </button>
+                  </div>
+              </div>
+          </div>
+      )}
+
+      {/* 2. MANAGE TIER MODAL */}
+      {manageTemplate && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-fade-in" onClick={() => setManageTemplate(null)}>
+              <div className="bg-white rounded-3xl shadow-2xl max-w-sm w-full p-8" onClick={e => e.stopPropagation()}>
+                  <div className="text-center mb-6">
+                      <div className="w-16 h-16 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center mx-auto mb-4">
+                          <LayoutTemplate className="w-8 h-8" />
+                      </div>
+                      <h3 className="text-xl font-bold text-slate-900">Manage Template</h3>
+                      <p className="text-sm text-slate-500">{manageTemplate.name}</p>
+                  </div>
+
+                  <div className="space-y-3">
+                      <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Select Access Level</p>
+                      {(['free', 'pro', 'career_plus'] as const).map(tier => (
+                          <button 
+                            key={tier}
+                            onClick={() => handleSaveTier(manageTemplate.id, tier)}
+                            className={cn(
+                                "w-full flex items-center justify-between p-4 rounded-2xl border transition-all group cursor-pointer",
+                                manageTemplate.requiredTier === tier ? "border-indigo-600 bg-indigo-50/50" : "border-slate-100 hover:border-slate-300"
+                            )}
+                          >
+                              <div className="flex items-center gap-3">
+                                  <div className={cn(
+                                      "w-8 h-8 rounded-lg flex items-center justify-center text-xs",
+                                      tier === 'free' ? "bg-slate-100 text-slate-500" : tier === 'pro' ? "bg-indigo-100 text-indigo-600" : "bg-amber-100 text-amber-600"
+                                  )}>
+                                      <i className={`fa-solid ${tier === 'free' ? 'fa-leaf' : tier === 'pro' ? 'fa-bolt' : 'fa-crown'}`}></i>
+                                  </div>
+                                  <span className="text-sm font-bold text-slate-800 capitalize">{tier.replace('_', '+')}</span>
+                              </div>
+                              {manageTemplate.requiredTier === tier && <div className="w-2 h-2 rounded-full bg-indigo-600"></div>}
+                          </button>
+                      ))}
+                  </div>
+
+                  <button 
+                    onClick={() => setManageTemplate(null)}
+                    className="w-full mt-6 py-3 text-sm font-bold text-slate-500 hover:text-slate-800 transition-colors cursor-pointer"
+                  >
+                      Cancel
+                  </button>
+              </div>
+          </div>
+      )}
+
+      {/* 3. EDIT RULES MODAL */}
+      {rulesTemplate && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-fade-in" onClick={() => setRulesTemplate(null)}>
+              <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full p-8" onClick={e => e.stopPropagation()}>
+                  <div className="flex items-center gap-4 mb-8">
+                      <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shadow-sm">
+                          <Wand2 className="w-6 h-6" />
+                      </div>
+                      <div>
+                          <h3 className="text-xl font-bold text-slate-900">Edit Rules</h3>
+                          <p className="text-xs text-slate-500">{rulesTemplate.name}</p>
+                      </div>
+                  </div>
+
+                  <form className="space-y-6">
+                      <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 border border-slate-100">
+                          <div className="flex items-center gap-3">
+                              <Shield className="w-5 h-5 text-emerald-600" />
+                              <div>
+                                  <p className="text-sm font-bold text-slate-800">ATS Optimized</p>
+                                  <p className="text-[10px] text-slate-500">Enable deep-scan compatibility</p>
+                              </div>
+                          </div>
+                          <button 
+                            type="button"
+                            onClick={() => handleSaveRules(rulesTemplate.id, { atsOptimized: !rulesTemplate.metadata.atsOptimized })}
+                            className={cn(
+                                "w-12 h-6 rounded-full relative transition-all duration-300 cursor-pointer",
+                                rulesTemplate.metadata.atsOptimized ? "bg-emerald-500" : "bg-slate-300"
+                            )}
+                          >
+                              <div className={cn(
+                                  "absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-all",
+                                  rulesTemplate.metadata.atsOptimized ? "translate-x-6" : ""
+                              )}></div>
+                          </button>
+                      </div>
+
+                      <div className="space-y-2">
+                          <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest px-1">Creativity Level (1-5)</label>
+                          <div className="flex gap-2">
+                              {[1, 2, 3, 4, 5].map(lvl => (
+                                  <button
+                                    key={lvl}
+                                    type="button"
+                                    onClick={() => handleSaveRules(rulesTemplate.id, { creativityLevel: lvl })}
+                                    className={cn(
+                                        "flex-1 py-2 rounded-xl border font-bold text-sm transition-all cursor-pointer",
+                                        rulesTemplate.metadata.creativityLevel === lvl 
+                                        ? "bg-indigo-600 border-indigo-600 text-white shadow-lg shadow-indigo-200" 
+                                        : "border-slate-100 hover:border-slate-300 text-slate-500"
+                                    )}
+                                  >
+                                      {lvl}
+                                  </button>
+                              ))}
+                          </div>
+                      </div>
+
+                      <div className="bg-blue-50 p-4 rounded-2xl border border-blue-100 flex items-start gap-3">
+                          <Info className="w-4 h-4 text-blue-500 mt-0.5" />
+                          <p className="text-[10px] text-blue-700 leading-relaxed">
+                              Changing rules affects how our AI recommendation engine suggests this template to users based on their target industry and job title.
+                          </p>
+                      </div>
+
+                      <button 
+                        type="button"
+                        onClick={() => setRulesTemplate(null)}
+                        className="w-full py-3 bg-slate-900 text-white font-bold rounded-2xl shadow-xl hover:bg-slate-800 transition-all cursor-pointer"
+                      >
+                          Close Rules
+                      </button>
+                  </form>
+              </div>
+          </div>
+      )}
+
     </div>
   );
 }
-
-import { LayoutTemplate } from 'lucide-react';
