@@ -12,7 +12,80 @@ from app.config import settings
 from app.schemas.subscription import PlanCreate, PlanUpdate, PlanOut, CreditAdjustment
 from app.models.subscription import Plan
 
+from app.schemas.ai import AIPromptCreate, AIPromptUpdate, AIPromptOut
+from app.models.ai import AIPrompt
+
 router = APIRouter()
+
+# --- AI PROMPT MANAGEMENT ---
+
+@router.get("/prompts", response_model=List[AIPromptOut])
+async def list_prompts(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_role([UserRole.SUPER_ADMIN, UserRole.ADMIN]))
+):
+    """
+    List all AI prompt templates.
+    """
+    stmt = select(AIPrompt)
+    result = await db.execute(stmt)
+    prompts = result.scalars().all()
+    
+    if not prompts:
+        # Seed initial prompts if table is empty
+        initial = [
+            AIPrompt(
+                slug="summary_gen", 
+                name="Summary Generation", 
+                system_prompt="You are a professional resume writer.", 
+                user_prompt_template="Write a summary for: {data}",
+                description="Used for generating resume summaries."
+            ),
+            AIPrompt(
+                slug="exp_opt", 
+                name="Experience Optimization", 
+                system_prompt="You are an ATS expert.", 
+                user_prompt_template="Optimize this job description: {data}",
+                description="Used for optimizing experience bullets."
+            ),
+            AIPrompt(
+                slug="ats_calc", 
+                name="ATS Score Calculation", 
+                system_prompt="You are a recruiter.", 
+                user_prompt_template="Score this resume: {data}",
+                description="Used for calculating ATS scores."
+            )
+        ]
+        for p in initial:
+            db.add(p)
+        await db.commit()
+        return initial
+        
+    return prompts
+
+@router.patch("/prompts/{prompt_id}", response_model=AIPromptOut)
+async def update_prompt(
+    prompt_id: int,
+    prompt_in: AIPromptUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_role([UserRole.SUPER_ADMIN]))
+):
+    """
+    Update an AI prompt template. Super Admin only.
+    """
+    stmt = select(AIPrompt).where(AIPrompt.id == prompt_id)
+    result = await db.execute(stmt)
+    prompt = result.scalars().first()
+    if not prompt:
+        raise HTTPException(404, "Prompt not found")
+        
+    update_data = prompt_in.model_dump(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(prompt, field, value)
+        
+    await db.commit()
+    await db.refresh(prompt)
+    return prompt
 
 # --- PLAN MANAGEMENT ---
 
