@@ -6,6 +6,10 @@ interface User {
   email: string;
   full_name: string | null;
   role: 'user' | 'admin' | 'super_admin' | 'content_manager' | 'support';
+  tier: 'free' | 'pro' | 'career_plus';
+  ai_credits_used: number;
+  ats_scans_used: number;
+  quota_reset_date: string | null;
   is_active: boolean;
   is_premium: boolean;
 }

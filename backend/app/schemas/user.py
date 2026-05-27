@@ -9,6 +9,11 @@ class UserRole(str, Enum):
     CONTENT_MANAGER = "content_manager"
     SUPPORT = "support"
 
+class SubscriptionTier(str, Enum):
+    FREE = "free"
+    PRO = "pro"
+    CAREER_PLUS = "career_plus"
+
 class RegistrationSource(str, Enum):
     EMAIL = "email"
     GOOGLE = "google"
@@ -26,6 +31,10 @@ class UserBase(BaseModel):
 class UserOut(UserBase):
     id: int
     role: UserRole
+    tier: SubscriptionTier
+    ai_credits_used: int
+    ats_scans_used: int
+    quota_reset_date: datetime | None = None
     registration_source: RegistrationSource
     last_login: datetime | None = None
     last_password_reset: datetime | None = None

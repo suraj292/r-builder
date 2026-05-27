@@ -9,7 +9,108 @@ from app.schemas.user import UserOut
 from app.models.resume import Resume
 from app.config import settings
 
+from app.schemas.subscription import PlanCreate, PlanUpdate, PlanOut, CreditAdjustment
+from app.models.subscription import Plan
+
 router = APIRouter()
+
+# --- PLAN MANAGEMENT ---
+
+@router.get("/plans", response_model=List[PlanOut])
+async def list_plans(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_role([UserRole.SUPER_ADMIN, UserRole.ADMIN]))
+):
+    """
+    List all subscription plans.
+    """
+    stmt = select(Plan)
+    result = await db.execute(stmt)
+    return result.scalars().all()
+
+@router.post("/plans", response_model=PlanOut)
+async def create_plan(
+    plan_in: PlanCreate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_role([UserRole.SUPER_ADMIN]))
+):
+    """
+    Create a new subscription plan.
+    """
+    db_plan = Plan(**plan_in.model_dump())
+    db.add(db_plan)
+    await db.commit()
+    await db.refresh(db_plan)
+    return db_plan
+
+@router.patch("/plans/{plan_id}", response_model=PlanOut)
+async def update_plan(
+    plan_id: int,
+    plan_in: PlanUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_role([UserRole.SUPER_ADMIN]))
+):
+    """
+    Update an existing subscription plan.
+    """
+    stmt = select(Plan).where(Plan.id == plan_id)
+    result = await db.execute(stmt)
+    plan = result.scalars().first()
+    if not plan:
+        raise HTTPException(404, "Plan not found")
+    
+    update_data = plan_in.model_dump(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(plan, field, value)
+    
+    await db.commit()
+    await db.refresh(plan)
+    return plan
+
+# --- USER USAGE & QUOTA MANAGEMENT ---
+
+@router.post("/users/{user_id}/adjust-credits", response_model=UserOut)
+async def adjust_user_credits(
+    user_id: int,
+    adjustment: CreditAdjustment,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_role([UserRole.SUPER_ADMIN, UserRole.ADMIN]))
+):
+    """
+    Manually add or remove AI credits for a specific user.
+    """
+    stmt = select(User).where(User.id == user_id)
+    result = await db.execute(stmt)
+    user = result.scalars().first()
+    if not user:
+        raise HTTPException(404, "User not found")
+    
+    # Negative adjustment means adding credits (reducing credits_used)
+    user.ai_credits_used = max(0, user.ai_credits_used - adjustment.amount)
+    await db.commit()
+    await db.refresh(user)
+    return user
+
+@router.post("/users/{user_id}/reset-quotas", response_model=UserOut)
+async def reset_user_quotas(
+    user_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_role([UserRole.SUPER_ADMIN, UserRole.ADMIN]))
+):
+    """
+    Reset a user's AI and ATS usage quotas to zero.
+    """
+    stmt = select(User).where(User.id == user_id)
+    result = await db.execute(stmt)
+    user = result.scalars().first()
+    if not user:
+        raise HTTPException(404, "User not found")
+    
+    user.ai_credits_used = 0
+    user.ats_scans_used = 0
+    await db.commit()
+    await db.refresh(user)
+    return user
 
 @router.get("/ai-config")
 async def get_ai_config(

@@ -1,4 +1,4 @@
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider, Outlet } from 'react-router-dom';
 import Home from '../pages/marketing/Home';
 import About from '../pages/marketing/About';
 import AtsChecker from '../pages/marketing/AtsChecker';
@@ -19,6 +19,7 @@ import GuestGuard from '../components/auth/GuestGuard';
 import AdminDashboard from '../pages/admin/AdminDashboard';
 import AdminUsers from '../pages/admin/AdminUsers';
 import AdminResumes from '../pages/admin/AdminResumes';
+import AdminPlans from '../pages/admin/AdminPlans';
 import AdminAI from '../pages/admin/AdminAI';
 import AdminSettings from '../pages/admin/AdminSettings';
 import AdminPlaceholder from '../components/admin/AdminPlaceholder';
@@ -32,75 +33,83 @@ import BuilderLayout from '../layouts/BuilderLayout';
 import AuthLayout from '../layouts/AuthLayout';
 import UserDashboardLayout from '../layouts/UserDashboardLayout';
 import LegalLayout from '../layouts/LegalLayout';
+import UpgradeModal from '../components/subscription/UpgradeModal';
 
 const router = createBrowserRouter([
   {
     path: '/',
-    element: <MarketingLayout />,
+    element: <><Outlet /><UpgradeModal /></>,
     children: [
-      { index: true, element: <Home /> },
-      { path: 'about', element: <About /> },
-      { path: 'ats-checker', element: <AtsChecker /> },
-      { path: 'contact', element: <Contact /> },
-      { path: 'faq', element: <Faq /> },
-      { path: 'pricing', element: <Pricing /> },
-    ]
-  },
-  {
-    path: '/blog',
-    element: <MarketingLayout />,
-    children: [
-      { index: true, element: <BlogListing /> },
-      { path: ':slug', element: <BlogDetail /> },
-    ]
-  },
-  {
-    path: '/builder',
-    element: <AuthGuard><BuilderLayout /></AuthGuard>,
-    children: [
-      { index: true, element: <Workspace /> },
-      { path: 'editor', element: <Workspace /> },
-      // Templates and themes will go here
-    ]
-  },
-  {
-    path: '/auth',
-    element: <GuestGuard><AuthLayout /></GuestGuard>,
-    children: [
-      { path: 'login', element: <LoginSignup /> },
-      { path: 'signup', element: <LoginSignup /> },
-      { path: 'callback', element: <AuthCallback /> },
-    ]
-  },
-  {
-    path: '/admin',
-    element: <AuthGuard><AdminGuard><AdminLayout /></AdminGuard></AuthGuard>,
-    children: [
-      { index: true, element: <AdminDashboard /> },
-      { path: 'users', element: <AdminUsers /> },
-      { path: 'resumes', element: <AdminResumes /> },
-      { path: 'templates', element: <AdminPlaceholder title="Template Management" /> },
-      { path: 'ai', element: <AdminAI /> },
-      { path: 'settings', element: <AdminSettings /> },
-    ]
-  },
-  {
-    path: '/user',
-    element: <AuthGuard><UserDashboardLayout /></AuthGuard>,
-    children: [
-      { path: 'profile', element: <Profile /> },
-      { path: 'resumes', element: <MyResumes /> },
-      { path: 'checkout', element: <Checkout /> },
-    ]
-  },
-  {
-    path: '/legal',
-    element: <LegalLayout />,
-    children: [
-      { path: 'privacy', element: <Privacy /> },
-      { path: 'terms', element: <Terms /> },
-      { path: 'refund-policy', element: <RefundPolicy /> },
-      { path: 'shipping-policy', element: <ShippingPolicy /> },
+      {
+        path: '/',
+        element: <MarketingLayout />,
+        children: [
+          { index: true, element: <Home /> },
+          { path: 'about', element: <About /> },
+          { path: 'ats-checker', element: <AtsChecker /> },
+          { path: 'contact', element: <Contact /> },
+          { path: 'faq', element: <Faq /> },
+          { path: 'pricing', element: <Pricing /> },
+        ]
+      },
+      {
+        path: '/blog',
+        element: <MarketingLayout />,
+        children: [
+          { index: true, element: <BlogListing /> },
+          { path: ':slug', element: <BlogDetail /> },
+        ]
+      },
+      {
+        path: '/builder',
+        element: <AuthGuard><BuilderLayout /></AuthGuard>,
+        children: [
+          { index: true, element: <Workspace /> },
+          { path: 'editor', element: <Workspace /> },
+        ]
+      },
+      {
+        path: '/auth',
+        element: <GuestGuard><AuthLayout /></GuestGuard>,
+        children: [
+          { path: 'login', element: <LoginSignup /> },
+          { path: 'signup', element: <LoginSignup /> },
+          { path: 'callback', element: <AuthCallback /> },
+        ]
+      },
+      {
+        path: '/admin',
+        element: <AuthGuard><AdminGuard><AdminLayout /></AdminGuard></AuthGuard>,
+        children: [
+          { index: true, element: <AdminDashboard /> },
+          { path: 'users', element: <AdminUsers /> },
+          { path: 'resumes', element: <AdminResumes /> },
+          { path: 'plans', element: <AdminPlans /> },
+          { path: 'templates', element: <AdminPlaceholder title="Template Management" /> },
+
+          { path: 'ai', element: <AdminAI /> },
+          { path: 'settings', element: <AdminSettings /> },
+        ]
+      },
+      {
+        path: '/user',
+        element: <AuthGuard><UserDashboardLayout /></AuthGuard>,
+        children: [
+          { path: 'profile', element: <Profile /> },
+          { path: 'resumes', element: <MyResumes /> },
+          { path: 'checkout', element: <Checkout /> },
+        ]
+      },
+      {
+        path: '/legal',
+        element: <LegalLayout />,
+        children: [
+          { path: 'privacy', element: <Privacy /> },
+          { path: 'terms', element: <Terms /> },
+          { path: 'refund-policy', element: <RefundPolicy /> },
+          { path: 'shipping-policy', element: <ShippingPolicy /> },
+        ]
+      }
     ]
   }
 ]);

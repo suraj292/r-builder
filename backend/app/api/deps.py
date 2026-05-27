@@ -47,3 +47,43 @@ def require_role(allowed_roles: List[UserRole]):
             )
         return current_user
     return role_checker
+
+# Feature gating logic
+# In production, this would be fetched from the `plans` table in the database
+PLAN_LIMITS = {
+    "free": {"ai_credits": 10, "ats_scans": 3, "premium_templates": False},
+    "pro": {"ai_credits": 500, "ats_scans": -1, "premium_templates": True},
+    "career_plus": {"ai_credits": -1, "ats_scans": -1, "premium_templates": True},
+}
+
+def check_feature_access(feature: str, cost: int = 1):
+    async def _checker(user: User = Depends(get_current_user)):
+        # Fallback to free if tier is somehow not set
+        tier = user.tier.value if hasattr(user.tier, 'value') else (user.tier or 'free')
+        limits = PLAN_LIMITS.get(tier, PLAN_LIMITS["free"])
+        
+        if feature == "premium_templates":
+            if not limits.get("premium_templates"):
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Upgrade to Pro or Career+ to access premium templates."
+                )
+                
+        elif feature == "ai_generation":
+            limit = limits.get("ai_credits")
+            if limit != -1 and (user.ai_credits_used + cost) > limit:
+                raise HTTPException(
+                    status_code=status.HTTP_402_PAYMENT_REQUIRED,
+                    detail="AI Credit limit reached. Please upgrade your plan."
+                )
+                
+        elif feature == "ats_scan":
+            limit = limits.get("ats_scans")
+            if limit != -1 and (user.ats_scans_used + cost) > limit:
+                raise HTTPException(
+                    status_code=status.HTTP_402_PAYMENT_REQUIRED,
+                    detail="ATS Scan limit reached. Please upgrade your plan."
+                )
+                
+        return True
+    return _checker

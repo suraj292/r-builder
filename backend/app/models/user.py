@@ -3,6 +3,11 @@ from sqlalchemy import Column, Integer, String, Boolean, DateTime, Enum
 from sqlalchemy.sql import func
 from app.db.base import Base
 
+class SubscriptionTier(str, enum.Enum):
+    FREE = "free"
+    PRO = "pro"
+    CAREER_PLUS = "career_plus"
+
 class UserRole(str, enum.Enum):
     USER = "user"
     SUPER_ADMIN = "super_admin"
@@ -28,6 +33,10 @@ class User(Base):
     location = Column(String(255), nullable=True)
     avatar_url = Column(String(500), nullable=True)
     role = Column(Enum(UserRole), default=UserRole.USER, nullable=False)
+    tier = Column(Enum(SubscriptionTier), default=SubscriptionTier.FREE, nullable=False)
+    ai_credits_used = Column(Integer, default=0, nullable=False)
+    ats_scans_used = Column(Integer, default=0, nullable=False)
+    quota_reset_date = Column(DateTime(timezone=True), nullable=True)
     registration_source = Column(Enum(RegistrationSource), default=RegistrationSource.EMAIL, nullable=False)
     last_login = Column(DateTime(timezone=True), nullable=True)
     last_password_reset = Column(DateTime(timezone=True), nullable=True)
