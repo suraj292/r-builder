@@ -112,6 +112,26 @@ async def reset_user_quotas(
     await db.refresh(user)
     return user
 
+@router.post("/users/{user_id}/toggle-status", response_model=UserOut)
+async def toggle_user_status(
+    user_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_role([UserRole.SUPER_ADMIN, UserRole.ADMIN]))
+):
+    """
+    Toggle a user's active status (ban/unban).
+    """
+    stmt = select(User).where(User.id == user_id)
+    result = await db.execute(stmt)
+    user = result.scalars().first()
+    if not user:
+        raise HTTPException(404, "User not found")
+    
+    user.is_active = not user.is_active
+    await db.commit()
+    await db.refresh(user)
+    return user
+
 @router.get("/ai-config")
 async def get_ai_config(
     current_user: User = Depends(require_role([UserRole.SUPER_ADMIN, UserRole.ADMIN]))
@@ -152,6 +172,22 @@ async def get_all_users(
     stmt = select(User)
     result = await db.execute(stmt)
     return result.scalars().all()
+
+@router.get("/users/{user_id}", response_model=UserOut)
+async def get_user_by_id(
+    user_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_role([UserRole.SUPER_ADMIN, UserRole.ADMIN]))
+):
+    """
+    Get a specific user's details. Admin only.
+    """
+    stmt = select(User).where(User.id == user_id)
+    result = await db.execute(stmt)
+    user = result.scalars().first()
+    if not user:
+        raise HTTPException(404, "User not found")
+    return user
 
 @router.get("/resumes")
 async def get_all_resumes(

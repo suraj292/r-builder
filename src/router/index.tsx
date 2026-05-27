@@ -18,6 +18,7 @@ import AuthGuard from '../components/auth/AuthGuard';
 import GuestGuard from '../components/auth/GuestGuard';
 import AdminDashboard from '../pages/admin/AdminDashboard';
 import AdminUsers from '../pages/admin/AdminUsers';
+import AdminUserDetail from '../pages/admin/AdminUserDetail';
 import AdminResumes from '../pages/admin/AdminResumes';
 import AdminPlans from '../pages/admin/AdminPlans';
 import AdminAI from '../pages/admin/AdminAI';
@@ -83,7 +84,9 @@ const router = createBrowserRouter([
         children: [
           { index: true, element: <AdminDashboard /> },
           { path: 'users', element: <AdminUsers /> },
+          { path: 'users/:id', element: <AdminUserDetail /> },
           { path: 'resumes', element: <AdminResumes /> },
+
           { path: 'plans', element: <AdminPlans /> },
           { path: 'templates', element: <AdminPlaceholder title="Template Management" /> },
 
