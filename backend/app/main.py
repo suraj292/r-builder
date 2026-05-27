@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
-from app.api.v1 import auth, users, resumes, payments, ai, admin, subscriptions
+from app.api.v1 import auth, users, resumes, payments, ai, admin, subscriptions, location
 from app.config import settings
 
 app = FastAPI(
@@ -22,6 +22,7 @@ app.add_middleware(
 
 # Routers
 app.include_router(auth.router, prefix="/api/v1/auth", tags=["auth"])
+app.include_router(location.router, prefix="/api/v1/location", tags=["location"])
 app.include_router(admin.router, prefix="/api/v1/admin", tags=["admin"])
 app.include_router(users.router, prefix="/api/v1/users", tags=["users"])
 app.include_router(resumes.router, prefix="/api/v1/resumes", tags=["resumes"])

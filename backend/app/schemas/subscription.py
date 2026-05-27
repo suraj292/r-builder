@@ -8,6 +8,7 @@ class PlanBase(BaseModel):
     name: str
     price_monthly: int
     price_yearly: int
+    regional_prices: Optional[Dict[str, Dict[str, int]]] = None
     features: Dict[str, Any]
     is_active: bool = True
 
@@ -18,6 +19,7 @@ class PlanUpdate(BaseModel):
     name: Optional[str] = None
     price_monthly: Optional[int] = None
     price_yearly: Optional[int] = None
+    regional_prices: Optional[Dict[str, Dict[str, int]]] = None
     features: Optional[Dict[str, Any]] = None
     is_active: Optional[bool] = None
 

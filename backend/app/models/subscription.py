@@ -25,6 +25,7 @@ class Plan(Base):
     price_yearly = Column(Integer, nullable=False) # In cents/paise
     razorpay_plan_id_monthly = Column(String(255), nullable=True)
     razorpay_plan_id_yearly = Column(String(255), nullable=True)
+    regional_prices = Column(JSON, nullable=True) # e.g. {"INR": {"monthly": 49900, "yearly": 499000}}
     features = Column(JSON, nullable=False)
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())

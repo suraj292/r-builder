@@ -9,6 +9,7 @@ interface Plan {
   name: string;
   price_monthly: number;
   price_yearly: number;
+  regional_prices: any;
   features: any;
   is_active: boolean;
 }
@@ -20,6 +21,7 @@ export default function Checkout() {
 
   const planTier = searchParams.get('plan') || 'pro';
   const billingPeriod = searchParams.get('period') || 'monthly';
+  const currencyParam = searchParams.get('currency') || 'USD';
 
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
@@ -40,36 +42,7 @@ export default function Checkout() {
       setPlans(data);
     } catch (err) {
       console.error('Failed to fetch plans', err);
-      // Fallback
-      setPlans([
-        {
-          id: 1,
-          tier_code: 'free',
-          name: 'Free',
-          price_monthly: 0,
-          price_yearly: 0,
-          features: {},
-          is_active: true
-        },
-        {
-          id: 2,
-          tier_code: 'pro',
-          name: 'Pro',
-          price_monthly: 900,
-          price_yearly: 9000,
-          features: {},
-          is_active: true
-        },
-        {
-          id: 3,
-          tier_code: 'career_plus',
-          name: 'Career+',
-          price_monthly: 1900,
-          price_yearly: 19000,
-          features: {},
-          is_active: true
-        }
-      ]);
+      setPlans([]);
     } finally {
       setLoading(false);
     }
@@ -79,10 +52,25 @@ export default function Checkout() {
     name: planTier.toUpperCase(),
     price_monthly: 900,
     price_yearly: 9000,
-    tier_code: planTier
+    tier_code: planTier,
+    regional_prices: {
+      INR: { monthly: 49900, yearly: 499000 },
+      EUR: { monthly: 900, yearly: 9000 }
+    }
   };
 
-  const basePrice = billingPeriod === 'yearly' ? selectedPlan.price_yearly : selectedPlan.price_monthly;
+  // Resolve base price using regional currency if available
+  const getPriceForCurrency = () => {
+    if (selectedPlan.tier_code === 'free') return 0;
+    if (selectedPlan.regional_prices && selectedPlan.regional_prices[currencyParam]) {
+      return billingPeriod === 'yearly' 
+        ? selectedPlan.regional_prices[currencyParam].yearly 
+        : selectedPlan.regional_prices[currencyParam].monthly;
+    }
+    return billingPeriod === 'yearly' ? selectedPlan.price_yearly : selectedPlan.price_monthly;
+  };
+
+  const basePrice = getPriceForCurrency();
   const basePriceInCurrency = basePrice / 100;
   const gstRate = 0.18; // 18% GST
   const discountRate = discountApplied ? 0.20 : 0.0; // 20% discount coupon
@@ -91,6 +79,11 @@ export default function Checkout() {
   const subtotalAfterDiscount = basePriceInCurrency - discountAmount;
   const gstAmount = subtotalAfterDiscount * gstRate;
   const totalPayable = subtotalAfterDiscount + gstAmount;
+
+  const formatCheckoutPrice = (amount: number) => {
+    const symbol = currencyParam === 'INR' ? '₹' : currencyParam === 'EUR' ? '€' : '$';
+    return `${symbol}${amount.toFixed(2)}`;
+  };
 
   const handleApplyCoupon = (e: React.FormEvent) => {
     e.preventDefault();
@@ -104,9 +97,8 @@ export default function Checkout() {
   const handlePayment = async () => {
     try {
       setProcessing(true);
-      // Mock payment gateway success via our backend dev mock-upgrade API
       await api.post(`/v1/subscriptions/mock-upgrade?tier=${planTier}`);
-      await fetchUser(); // Reload user state in frontend
+      await fetchUser();
       setSuccess(true);
       setTimeout(() => {
         navigate('/user/resumes');
@@ -145,7 +137,7 @@ export default function Checkout() {
             </div>
             <div className="flex justify-between">
               <span>Amount Paid:</span>
-              <span className="font-semibold text-slate-900">${totalPayable.toFixed(2)}</span>
+              <span className="font-semibold text-slate-900">{formatCheckoutPrice(totalPayable)}</span>
             </div>
             <div className="flex justify-between">
               <span>Transaction status:</span>
@@ -292,17 +284,17 @@ export default function Checkout() {
               <div className="space-y-4 mb-6">
                 <div className="flex justify-between text-sm text-slate-600">
                   <span>{selectedPlan.name} Plan ({billingPeriod === 'yearly' ? 'Yearly' : 'Monthly'})</span>
-                  <span className="font-medium text-slate-900">${basePriceInCurrency.toFixed(2)}</span>
+                  <span className="font-medium text-slate-900">{formatCheckoutPrice(basePriceInCurrency)}</span>
                 </div>
                 {discountApplied && (
                   <div className="flex justify-between text-sm text-green-600 font-bold">
                     <span>Coupon Discount (20%)</span>
-                    <span>-${discountAmount.toFixed(2)}</span>
+                    <span>-{formatCheckoutPrice(discountAmount)}</span>
                   </div>
                 )}
                 <div className="flex justify-between text-sm text-slate-600">
                   <span>GST (18%)</span>
-                  <span className="font-medium text-slate-900">${gstAmount.toFixed(2)}</span>
+                  <span className="font-medium text-slate-900">{formatCheckoutPrice(gstAmount)}</span>
                 </div>
               </div>
 
@@ -329,7 +321,7 @@ export default function Checkout() {
                 <div className="flex justify-between items-end">
                   <span className="text-slate-500 font-medium">Total Payable</span>
                   <div className="text-right">
-                    <span className="block text-3xl font-display font-bold text-slate-900">${totalPayable.toFixed(2)}</span>
+                    <span className="block text-3xl font-display font-bold text-slate-900">{formatCheckoutPrice(totalPayable)}</span>
                     <span className="text-[10px] text-slate-400">Includes all taxes</span>
                   </div>
                 </div>
