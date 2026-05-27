@@ -14,6 +14,8 @@ import LoginSignup from '../pages/auth/LoginSignup';
 import AuthCallback from '../pages/auth/AuthCallback';
 import AdminLayout from '../layouts/AdminLayout';
 import AdminGuard from '../components/auth/AdminGuard';
+import AuthGuard from '../components/auth/AuthGuard';
+import GuestGuard from '../components/auth/GuestGuard';
 import AdminDashboard from '../pages/admin/AdminDashboard';
 import AdminUsers from '../pages/admin/AdminUsers';
 import AdminResumes from '../pages/admin/AdminResumes';
@@ -54,7 +56,7 @@ const router = createBrowserRouter([
   },
   {
     path: '/builder',
-    element: <BuilderLayout />,
+    element: <AuthGuard><BuilderLayout /></AuthGuard>,
     children: [
       { index: true, element: <Workspace /> },
       { path: 'editor', element: <Workspace /> },
@@ -63,7 +65,7 @@ const router = createBrowserRouter([
   },
   {
     path: '/auth',
-    element: <AuthLayout />,
+    element: <GuestGuard><AuthLayout /></GuestGuard>,
     children: [
       { path: 'login', element: <LoginSignup /> },
       { path: 'signup', element: <LoginSignup /> },
@@ -72,7 +74,7 @@ const router = createBrowserRouter([
   },
   {
     path: '/admin',
-    element: <AdminGuard><AdminLayout /></AdminGuard>,
+    element: <AuthGuard><AdminGuard><AdminLayout /></AdminGuard></AuthGuard>,
     children: [
       { index: true, element: <AdminDashboard /> },
       { path: 'users', element: <AdminUsers /> },
@@ -84,7 +86,7 @@ const router = createBrowserRouter([
   },
   {
     path: '/user',
-    element: <UserDashboardLayout />,
+    element: <AuthGuard><UserDashboardLayout /></AuthGuard>,
     children: [
       { path: 'profile', element: <Profile /> },
       { path: 'resumes', element: <MyResumes /> },

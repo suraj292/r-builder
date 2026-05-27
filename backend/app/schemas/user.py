@@ -18,6 +18,10 @@ class RegistrationSource(str, Enum):
 class UserBase(BaseModel):
     email: EmailStr
     full_name: str | None = None
+    job_title: str | None = None
+    phone_number: str | None = None
+    location: str | None = None
+    avatar_url: str | None = None
 
 class UserOut(UserBase):
     id: int
@@ -34,3 +38,7 @@ class UserOut(UserBase):
 
 class UserUpdate(BaseModel):
     full_name: str | None = None
+    job_title: str | None = None
+    phone_number: str | None = None
+    location: str | None = None
+    avatar_url: str | None = None
