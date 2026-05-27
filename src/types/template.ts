@@ -9,6 +9,7 @@ export interface ResumeTemplate {
   name: string;
   category: string;
   thumbnail: string;
+  requiredTier: 'free' | 'pro' | 'career_plus';
 
   layout: {
     type: LayoutType;

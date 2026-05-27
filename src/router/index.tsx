@@ -21,6 +21,7 @@ import AdminUsers from '../pages/admin/AdminUsers';
 import AdminUserDetail from '../pages/admin/AdminUserDetail';
 import AdminResumes from '../pages/admin/AdminResumes';
 import AdminPlans from '../pages/admin/AdminPlans';
+import AdminTemplates from '../pages/admin/AdminTemplates';
 import AdminAI from '../pages/admin/AdminAI';
 import AdminSettings from '../pages/admin/AdminSettings';
 import AdminPlaceholder from '../components/admin/AdminPlaceholder';
@@ -86,11 +87,10 @@ const router = createBrowserRouter([
           { path: 'users', element: <AdminUsers /> },
           { path: 'users/:id', element: <AdminUserDetail /> },
           { path: 'resumes', element: <AdminResumes /> },
-
           { path: 'plans', element: <AdminPlans /> },
-          { path: 'templates', element: <AdminPlaceholder title="Template Management" /> },
-
+          { path: 'templates', element: <AdminTemplates /> },
           { path: 'ai', element: <AdminAI /> },
+
           { path: 'settings', element: <AdminSettings /> },
         ]
       },

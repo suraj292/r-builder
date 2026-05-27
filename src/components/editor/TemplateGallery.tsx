@@ -2,9 +2,11 @@ import React, { useMemo } from 'react';
 import { TEMPLATE_REGISTRY } from '../../templates/registry';
 import { useResumeStore } from '../../store/useResumeStore';
 import { cn } from '../../lib/utils';
-import { Check, Search, Sparkles, Shield, Palette, Briefcase, GraduationCap } from 'lucide-react';
+import { Check, Search, Sparkles, Shield, Palette, Briefcase, GraduationCap, Lock } from 'lucide-react';
 import { getRecommendedTemplates } from '../../lib/recommendations';
 import type { ExperienceLevel } from '../../types/template';
+import { useAuthStore } from '../../store/useAuthStore';
+import { useSubscriptionStore } from '../../store/useSubscriptionStore';
 
 const CATEGORY_ICONS: Record<string, React.ReactNode> = {
   ATS: <Shield className="w-4 h-4" />,
@@ -25,6 +27,9 @@ export const TemplateGallery: React.FC = () => {
   const reorderBlocks = useResumeStore((state) => state.reorderBlocks);
   const blocks = useResumeStore((state) => state.resume.blocks);
 
+  const { user } = useAuthStore();
+  const { openUpgradeModal } = useSubscriptionStore();
+
   const [searchQuery, setSearchQuery] = React.useState('');
 
   const activeTemplate = useMemo(() => TEMPLATE_REGISTRY[currentTemplateId], [currentTemplateId]);
@@ -33,14 +38,12 @@ export const TemplateGallery: React.FC = () => {
     if (!activeTemplate) return;
     
     // Map recommended categories to actual block IDs
-    // This is a simplified heuristic: match block.type or section.data.title
     const recommended = activeTemplate.metadata.recommendedSections;
     const blockEntries = Object.entries(blocks);
     
     const newOrder: string[] = [];
     
     recommended.forEach(rec => {
-      // Find blocks matching the recommendation
       const matches = blockEntries.filter(([_, b]) => {
         if (rec === 'header' && b.type === 'header') return true;
         if (rec === 'summary' && b.type === 'text' && b.id.includes('summary')) return true;
@@ -74,43 +77,79 @@ export const TemplateGallery: React.FC = () => {
     [templates, searchQuery]
   );
 
-  const renderTemplateCard = (template: typeof templates[0]) => (
-    <button
-      key={template.id}
-      onClick={() => setTemplate(template.id)}
-      className={cn(
-        "group text-left relative transition-all duration-200 flex flex-col shrink-0",
-        currentTemplateId === template.id ? "ring-2 ring-blue-500 rounded-lg p-1 bg-blue-50/50" : "hover:-translate-y-0.5"
-      )}
-    >
-      <div className="relative aspect-[1/1.4] w-32 rounded-md overflow-hidden bg-white border border-gray-200 shadow-sm transition-shadow group-hover:shadow-md">
-        <img 
-          src={template.thumbnail} 
-          alt={template.name}
-          className="w-full h-full object-cover"
-        />
-        {currentTemplateId === template.id && (
-          <div className="absolute top-1 right-1 bg-blue-500 text-white p-0.5 rounded-full shadow-sm">
-            <Check className="w-2.5 h-2.5" />
-          </div>
+  const isLocked = (requiredTier: string) => {
+    if (!user) return true;
+    if (requiredTier === 'free') return false;
+    if (requiredTier === 'pro' && (user.tier === 'pro' || user.tier === 'career_plus')) return false;
+    if (requiredTier === 'career_plus' && user.tier === 'career_plus') return false;
+    return true;
+  };
+
+  const renderTemplateCard = (template: typeof templates[0]) => {
+    const locked = isLocked(template.requiredTier);
+
+    return (
+      <button
+        key={template.id}
+        onClick={() => {
+            if (locked) {
+                openUpgradeModal('premium_templates');
+            } else {
+                setTemplate(template.id);
+            }
+        }}
+        className={cn(
+          "group text-left relative transition-all duration-200 flex flex-col shrink-0",
+          currentTemplateId === template.id ? "ring-2 ring-blue-500 rounded-lg p-1 bg-blue-50/50" : "hover:-translate-y-0.5"
         )}
-        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors" />
-        {template.metadata.atsOptimized && (
-          <div className="absolute bottom-1 left-1 bg-green-500 text-[8px] font-bold text-white px-1.5 py-0.5 rounded uppercase tracking-wider">
-            ATS Safe
-          </div>
-        )}
-      </div>
-      <div className="mt-1 px-0.5">
-        <h3 className={cn(
-          "text-[10px] font-semibold leading-tight line-clamp-1",
-          currentTemplateId === template.id ? "text-blue-700" : "text-gray-700"
+      >
+        <div className={cn(
+            "relative aspect-[1/1.4] w-32 rounded-md overflow-hidden bg-white border border-gray-200 shadow-sm transition-shadow group-hover:shadow-md",
+            locked && "opacity-75 grayscale-[0.5]"
         )}>
-          {template.name}
-        </h3>
-      </div>
-    </button>
-  );
+          <img 
+            src={template.thumbnail} 
+            alt={template.name}
+            className="w-full h-full object-cover"
+          />
+          {currentTemplateId === template.id && (
+            <div className="absolute top-1 right-1 bg-blue-500 text-white p-0.5 rounded-full shadow-sm">
+              <Check className="w-2.5 h-2.5" />
+            </div>
+          )}
+          {locked && (
+            <div className="absolute inset-0 bg-slate-900/20 flex items-center justify-center backdrop-blur-[0.5px]">
+                <div className="w-8 h-8 rounded-full bg-white/90 shadow-lg flex items-center justify-center text-slate-900">
+                    <Lock className="w-3.5 h-3.5" />
+                </div>
+            </div>
+          )}
+          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors" />
+          {template.metadata.atsOptimized && (
+            <div className="absolute bottom-1 left-1 bg-green-500 text-[8px] font-bold text-white px-1.5 py-0.5 rounded uppercase tracking-wider">
+              ATS Safe
+            </div>
+          )}
+        </div>
+        <div className="mt-1 px-0.5 flex items-center justify-between gap-1">
+          <h3 className={cn(
+            "text-[10px] font-semibold leading-tight line-clamp-1",
+            currentTemplateId === template.id ? "text-blue-700" : "text-gray-700"
+          )}>
+            {template.name}
+          </h3>
+          {template.requiredTier !== 'free' && (
+            <span className={cn(
+                "text-[7px] font-black uppercase px-1 rounded-sm",
+                template.requiredTier === 'pro' ? "bg-indigo-100 text-indigo-700" : "bg-amber-100 text-amber-700"
+            )}>
+                {template.requiredTier.replace('_', '+')}
+            </span>
+          )}
+        </div>
+      </button>
+    );
+  };
 
   return (
     <div className="w-80 bg-white border-r border-gray-200 h-full flex flex-col overflow-hidden no-print shrink-0">
