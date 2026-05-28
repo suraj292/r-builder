@@ -1,8 +1,9 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { TEMPLATE_REGISTRY } from '../../templates/registry';
 import { cn } from '../../lib/utils';
-import { Shield, Palette, Briefcase, GraduationCap, Sparkles, Lock, CheckCircle2, LayoutTemplate, X, Wand2, Info } from 'lucide-react';
+import { Shield, Palette, Briefcase, GraduationCap, Sparkles, Lock, CheckCircle2, LayoutTemplate, X, Wand2, Info, Activity } from 'lucide-react';
 import type { ResumeTemplate, ExperienceLevel } from '../../types/template';
+import { useTemplateStore } from '../../store/useTemplateStore';
 
 const CATEGORY_ICONS: Record<string, React.ReactNode> = {
   ATS: <Shield className="w-4 h-4" />,
@@ -22,48 +23,94 @@ const TIER_COLORS: Record<string, string> = {
 export default function AdminTemplates() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTier, setSelectedTier] = useState<'all' | 'free' | 'pro' | 'career_plus'>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
   
-  // Use local state for templates to simulate edits
-  const [templates, setTemplates] = useState<ResumeTemplate[]>(Object.values(TEMPLATE_REGISTRY));
-  
+  const { settings, fetchSettings, updateSetting } = useTemplateStore();
+
+  useEffect(() => {
+    fetchSettings();
+  }, [fetchSettings]);
+
+  const [localTemplates, setLocalTemplates] = useState<ResumeTemplate[]>([]);
+
+  // Combine static registry with dynamic DB settings
+  useEffect(() => {
+    const combined = Object.values(TEMPLATE_REGISTRY).map(t => {
+      const dbSettings = settings[t.id];
+      return {
+        ...t,
+        isActive: dbSettings?.isActive ?? t.isActive ?? true,
+        requiredTier: (dbSettings?.requiredTier as any) ?? t.requiredTier,
+      };
+    });
+    setLocalTemplates(combined);
+  }, [settings]);
+
   // Modal State
   const [previewTemplate, setPreviewTemplate] = useState<ResumeTemplate | null>(null);
   const [manageTemplate, setManageTemplate] = useState<ResumeTemplate | null>(null);
   const [rulesTemplate, setRulesTemplate] = useState<ResumeTemplate | null>(null);
 
   const filteredTemplates = useMemo(() => {
-    return templates.filter(t => {
+    return localTemplates.filter(t => {
       const matchesSearch = t.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
                            t.category.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesTier = selectedTier === 'all' || t.requiredTier === selectedTier;
-      return matchesSearch && matchesTier;
+      const matchesStatus = statusFilter === 'all' || 
+                           (statusFilter === 'active' ? t.isActive : !t.isActive);
+      return matchesSearch && matchesTier && matchesStatus;
     });
-  }, [templates, searchQuery, selectedTier]);
+  }, [localTemplates, searchQuery, selectedTier, statusFilter]);
 
   const stats = useMemo(() => ({
-    total: templates.length,
-    free: templates.filter(t => t.requiredTier === 'free').length,
-    pro: templates.filter(t => t.requiredTier === 'pro').length,
-    career_plus: templates.filter(t => t.requiredTier === 'career_plus').length,
-  }), [templates]);
+    total: localTemplates.length,
+    active: localTemplates.filter(t => t.isActive).length,
+    free: localTemplates.filter(t => t.requiredTier === 'free').length,
+    pro: localTemplates.filter(t => t.requiredTier === 'pro').length,
+    career_plus: localTemplates.filter(t => t.requiredTier === 'career_plus').length,
+  }), [localTemplates]);
 
-  const updateTemplate = (id: string, updates: Partial<ResumeTemplate>) => {
-    setTemplates(prev => prev.map(t => t.id === id ? { ...t, ...updates } : t));
+  const handleToggleStatus = async (id: string) => {
+    const template = localTemplates.find(t => t.id === id);
+    if (!template) return;
+    try {
+      // Optimistic update
+      setLocalTemplates(prev => prev.map(t => t.id === id ? { ...t, isActive: !template.isActive } : t));
+      if (manageTemplate?.id === id) {
+          setManageTemplate(prev => prev ? { ...prev, isActive: !template.isActive } : null);
+      }
+      
+      await updateSetting(id, { isActive: !template.isActive });
+    } catch (e) {
+      // Revert on failure
+      setLocalTemplates(prev => prev.map(t => t.id === id ? { ...t, isActive: template.isActive } : t));
+      alert("Failed to update status");
+    }
   };
 
-  const handleSaveTier = (id: string, tier: 'free' | 'pro' | 'career_plus') => {
-    updateTemplate(id, { requiredTier: tier });
-    setManageTemplate(null);
+  const handleSaveTier = async (id: string, tier: 'free' | 'pro' | 'career_plus') => {
+    const template = localTemplates.find(t => t.id === id);
+    if (!template) return;
+    try {
+      // Optimistic update
+      setLocalTemplates(prev => prev.map(t => t.id === id ? { ...t, requiredTier: tier } : t));
+      if (manageTemplate?.id === id) {
+          setManageTemplate(prev => prev ? { ...prev, requiredTier: tier } : null);
+      }
+      await updateSetting(id, { requiredTier: tier });
+    } catch (e) {
+      // Revert on failure
+      setLocalTemplates(prev => prev.map(t => t.id === id ? { ...t, requiredTier: template.requiredTier } : t));
+      alert("Failed to update tier");
+    }
   };
 
   const handleSaveRules = (id: string, metadata: Partial<ResumeTemplate['metadata']>) => {
-    const template = templates.find(t => t.id === id);
-    if (!template) return;
-    updateTemplate(id, { 
-        metadata: { ...template.metadata, ...metadata } 
-    });
+    setLocalTemplates(prev => prev.map(t => t.id === id ? { ...t, metadata: { ...t.metadata, ...metadata } } : t));
+    alert("Rules updated (in-memory preview)");
     setRulesTemplate(null);
   };
+
 
   return (
     <div className="space-y-6">
@@ -74,6 +121,15 @@ export default function AdminTemplates() {
           <p className="text-slate-500 text-sm">Control template availability and monetization tiers.</p>
         </div>
         <div className="flex gap-2">
+            <div className="bg-white px-4 py-2 rounded-xl border border-slate-200 shadow-sm flex items-center gap-3">
+                <div className="text-right">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase leading-none">Active</p>
+                    <p className="text-lg font-bold text-slate-900">{stats.active}</p>
+                </div>
+                <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                    <CheckCircle2 className="w-4 h-4" />
+                </div>
+            </div>
             <div className="bg-white px-4 py-2 rounded-xl border border-slate-200 shadow-sm flex items-center gap-3">
                 <div className="text-right">
                     <p className="text-[10px] font-bold text-slate-400 uppercase leading-none">Total Library</p>
@@ -112,17 +168,42 @@ export default function AdminTemplates() {
                 </button>
             ))}
         </div>
+        <div className="flex bg-slate-100 p-1 rounded-xl w-full md:w-auto">
+            {(['all', 'active', 'inactive'] as const).map(status => (
+                <button
+                    key={status}
+                    onClick={() => setStatusFilter(status)}
+                    className={cn(
+                        "flex-1 md:flex-none px-4 py-1.5 rounded-lg text-xs font-bold transition-all capitalize cursor-pointer",
+                        statusFilter === status ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-700"
+                    )}
+                >
+                    {status}
+                </button>
+            ))}
+        </div>
       </div>
 
       {/* Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {filteredTemplates.map(template => (
-          <div key={template.id} className="group bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col hover:border-indigo-300 transition-all animate-fade-in">
+          <div key={template.id} className={cn(
+              "group bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col hover:border-indigo-300 transition-all animate-fade-in relative",
+              !template.isActive && "opacity-75"
+          )}>
+            {!template.isActive && (
+                <div className="absolute inset-0 z-10 bg-slate-900/5 pointer-events-none flex items-center justify-center">
+                    <span className="bg-slate-900 text-white text-[10px] font-black uppercase px-3 py-1 rounded-full shadow-xl">Disabled</span>
+                </div>
+            )}
             <div className="relative aspect-[1/1.3] bg-slate-100 overflow-hidden">
                 <img 
                     src={template.thumbnail} 
                     alt={template.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    className={cn(
+                        "w-full h-full object-cover group-hover:scale-105 transition-transform duration-500",
+                        !template.isActive && "grayscale contrast-75"
+                    )}
                 />
                 <div className="absolute top-3 left-3">
                     <span className={cn(
@@ -247,6 +328,42 @@ export default function AdminTemplates() {
                               {manageTemplate.requiredTier === tier && <div className="w-2 h-2 rounded-full bg-indigo-600"></div>}
                           </button>
                       ))}
+                  </div>
+
+                  <div className="mt-8 pt-6 border-t border-slate-100">
+                    <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-3">Availability</p>
+                    <button 
+                        onClick={() => {
+                            handleToggleStatus(manageTemplate.id);
+                            setManageTemplate(prev => prev ? { ...prev, isActive: !prev.isActive } : null);
+                        }}
+                        className={cn(
+                            "w-full flex items-center justify-between p-4 rounded-2xl border transition-all cursor-pointer group",
+                            manageTemplate.isActive ? "border-emerald-600 bg-emerald-50/50" : "border-rose-200 bg-rose-50/50"
+                        )}
+                    >
+                        <div className="flex items-center gap-3">
+                            <div className={cn(
+                                "w-8 h-8 rounded-lg flex items-center justify-center",
+                                manageTemplate.isActive ? "bg-emerald-100 text-emerald-600" : "bg-rose-100 text-rose-600"
+                            )}>
+                                <Activity className="w-4 h-4" />
+                            </div>
+                            <div className="text-left">
+                                <p className="text-sm font-bold text-slate-800">{manageTemplate.isActive ? 'Template Active' : 'Template Disabled'}</p>
+                                <p className="text-[10px] text-slate-500">{manageTemplate.isActive ? 'Visible to users' : 'Hidden from gallery'}</p>
+                            </div>
+                        </div>
+                        <div className={cn(
+                            "w-10 h-5 rounded-full relative transition-all duration-300",
+                            manageTemplate.isActive ? "bg-emerald-500" : "bg-slate-300"
+                        )}>
+                            <div className={cn(
+                                "absolute top-1 left-1 w-3 h-3 rounded-full bg-white transition-all",
+                                manageTemplate.isActive ? "translate-x-5" : ""
+                            )}></div>
+                        </div>
+                    </button>
                   </div>
 
                   <button 

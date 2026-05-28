@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import { TEMPLATE_REGISTRY } from '../../templates/registry';
 import { useResumeStore } from '../../store/useResumeStore';
 import { cn } from '../../lib/utils';
@@ -7,6 +7,7 @@ import { getRecommendedTemplates } from '../../lib/recommendations';
 import type { ExperienceLevel } from '../../types/template';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useSubscriptionStore } from '../../store/useSubscriptionStore';
+import { useTemplateStore } from '../../store/useTemplateStore';
 
 const CATEGORY_ICONS: Record<string, React.ReactNode> = {
   ATS: <Shield className="w-4 h-4" />,
@@ -29,6 +30,12 @@ export const TemplateGallery: React.FC = () => {
 
   const { user } = useAuthStore();
   const { openUpgradeModal } = useSubscriptionStore();
+  
+  const { settings, fetchSettings } = useTemplateStore();
+
+  useEffect(() => {
+    fetchSettings();
+  }, [fetchSettings]);
 
   const [searchQuery, setSearchQuery] = React.useState('');
 
@@ -62,7 +69,15 @@ export const TemplateGallery: React.FC = () => {
     reorderBlocks(newOrder);
   };
 
-  const templates = useMemo(() => Object.values(TEMPLATE_REGISTRY), []);
+  const templates = useMemo(() => {
+    return Object.values(TEMPLATE_REGISTRY)
+      .map(t => ({
+          ...t,
+          isActive: settings[t.id]?.isActive ?? t.isActive ?? true,
+          requiredTier: (settings[t.id]?.requiredTier as any) ?? t.requiredTier,
+      }))
+      .filter(t => t.isActive);
+  }, [settings]);
 
   const recommended = useMemo(() => 
     getRecommendedTemplates(templates, {

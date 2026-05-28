@@ -53,7 +53,7 @@ export const A4Page: React.FC<A4PageProps> = ({ blockIds, pageIndex }) => {
     <div 
       className={cn(
         "bg-white shadow-2xl mx-auto mb-10 overflow-hidden relative print:shadow-none print:mb-0",
-        "w-[210mm] min-h-[297mm]",
+        "w-[210mm] h-[297mm]",
         `layout-${layout.type}`,
         theme.mode === 'dark' ? 'dark-theme' : 'light-theme'
       )}

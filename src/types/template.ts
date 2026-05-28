@@ -10,6 +10,7 @@ export interface ResumeTemplate {
   category: string;
   thumbnail: string;
   requiredTier: 'free' | 'pro' | 'career_plus';
+  isActive?: boolean;
 
   layout: {
     type: LayoutType;

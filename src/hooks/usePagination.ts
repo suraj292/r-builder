@@ -3,12 +3,12 @@ import { useResumeStore } from '../store/useResumeStore';
 
 export const usePagination = () => {
   const layout = useResumeStore((state) => state.resume.layout);
+  const templateId = useResumeStore((state) => state.resume.metadata.templateId);
   const setPages = useResumeStore((state) => state.setPages);
 
   const handleMeasure = useCallback((heights: Record<string, number>, usableHeight: number) => {
     const stringLayout = layout.filter((item): item is string => typeof item === 'string');
     
-    // Safety check: if layout is empty or heights haven't resolved yet
     if (stringLayout.length === 0 || Object.keys(heights).length === 0) {
       return;
     }
@@ -17,24 +17,26 @@ export const usePagination = () => {
     let currentHeight = 0;
     let currentPageIndex = 0;
 
+    // Use a conservative buffer for section gaps (approx 1.5rem = 24px)
+    const SECTION_GAP = 24; 
+
     for (const blockId of stringLayout) {
-      // In a flex/grid layout with gap, we should ideally account for the gap here.
-      // We will add a hardcoded gap buffer for safety based on average section-gap (e.g. 24px)
-      // A more robust engine would measure elements INCLUDING their bottom margin.
-      const GAP_BUFFER = 24; 
-      const height = (heights[blockId] || 0) + GAP_BUFFER;
+      const height = (heights[blockId] || 0);
       
+      // If block itself is taller than the whole page, we must include it anyway 
+      // otherwise it will be lost or cause infinite loop.
+      // Ideally we should split the block, but for now we just force it on its own page.
       if (currentHeight + height > usableHeight && currentHeight > 0) {
-        // Overflow! Move to next page
         currentPageIndex++;
         pages[currentPageIndex] = [blockId];
-        currentHeight = height;
+        currentHeight = height + SECTION_GAP;
       } else {
         pages[currentPageIndex].push(blockId);
-        currentHeight += height;
+        currentHeight += height + SECTION_GAP;
       }
     }
 
+    // Only update state if pagination actually changed to prevent render loops
     setPages(pages);
   }, [layout, setPages]);
 

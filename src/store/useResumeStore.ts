@@ -21,6 +21,8 @@ interface ResumeState {
   updateMetadata: (metadata: Partial<ResumeSchema['metadata']>) => void;
   updateDesignOverrides: (overrides: Partial<ThemeTokens>) => void;
   reorderBlocks: (sectionIds: string[]) => void;
+  setFullResume: (resume: ResumeSchema) => void;
+  addOrUpdateBlock: (block: Block) => void;
 }
 
 const initialData: ResumeSchema = {
@@ -217,6 +219,27 @@ export const useResumeStore = create<ResumeState>()(
             }
           });
           state.resume.layout = newLayout as any;
+          state.resume.metadata.updatedAt = Date.now();
+        }),
+
+        setFullResume: (resume) => set((state) => {
+          state.resume = {
+            ...resume,
+            blocks: resume.blocks || {},
+            layout: resume.layout || []
+          };
+          // Reset pages to a single page containing all block IDs to force re-pagination
+          const allBlockIds = (resume.layout || [])
+            .filter(id => typeof id === 'string') as string[];
+          state.pages = [allBlockIds];
+          state.resume.metadata.updatedAt = Date.now();
+        }),
+
+        addOrUpdateBlock: (block) => set((state) => {
+          state.resume.blocks[block.id] = block;
+          if (!state.resume.layout.includes(block.id)) {
+            state.resume.layout.push(block.id);
+          }
           state.resume.metadata.updatedAt = Date.now();
         }),
       })),

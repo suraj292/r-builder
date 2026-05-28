@@ -3,3 +3,4 @@ from app.models.user import User
 from app.models.resume import Resume
 from app.models.subscription import Plan, Subscription
 from app.models.ai import AIPrompt
+from app.models.template import TemplateSettings

@@ -94,7 +94,7 @@ export const MeasuringCanvas: React.FC<MeasuringCanvasProps> = ({ onMeasure }) =
           )}
           style={{ gap: template.spacing.sectionGap }}
         >
-           {layout.map((id) => {
+           {(layout || []).map((id) => {
              if (typeof id !== 'string') return null;
              return (
                <div key={id} data-measure-id={id}>

@@ -17,6 +17,9 @@ from app.models.ai import AIPrompt
 from app.services.ai_health import AIHealthService
 from app.services.ai_service import AIService
 
+from app.schemas.template import TemplateSettingsUpdate, TemplateSettingsOut
+from app.models.template import TemplateSettings
+
 router = APIRouter()
 
 # --- AI PROMPT MANAGEMENT ---
@@ -396,3 +399,48 @@ async def update_user_role(
     await db.commit()
     await db.refresh(user)
     return user
+
+# --- TEMPLATE MANAGEMENT ---
+
+@router.get("/templates/settings")
+async def get_template_settings(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_role([UserRole.SUPER_ADMIN, UserRole.ADMIN]))
+):
+    """
+    Get all template settings overrides.
+    """
+    stmt = select(TemplateSettings)
+    result = await db.execute(stmt)
+    settings_list = result.scalars().all()
+    
+    # Return as a dictionary mapping template_id to its settings for easy frontend consumption
+    return {s.template_id: {"isActive": s.is_active, "requiredTier": s.required_tier} for s in settings_list}
+
+@router.patch("/templates/{template_id}/settings")
+async def update_template_settings(
+    template_id: str,
+    settings_in: TemplateSettingsUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_role([UserRole.SUPER_ADMIN, UserRole.ADMIN]))
+):
+    """
+    Update or create settings for a specific template.
+    """
+    stmt = select(TemplateSettings).where(TemplateSettings.template_id == template_id)
+    result = await db.execute(stmt)
+    db_setting = result.scalars().first()
+    
+    if not db_setting:
+        db_setting = TemplateSettings(template_id=template_id)
+        db.add(db_setting)
+        
+    if settings_in.is_active is not None:
+        db_setting.is_active = settings_in.is_active
+    if settings_in.required_tier is not None:
+        db_setting.required_tier = settings_in.required_tier
+        
+    await db.commit()
+    await db.refresh(db_setting)
+    
+    return {"isActive": db_setting.is_active, "requiredTier": db_setting.required_tier}
