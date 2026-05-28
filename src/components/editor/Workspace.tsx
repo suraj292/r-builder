@@ -23,6 +23,8 @@ import { LayoutTemplate, PlusSquare, Palette, Briefcase, Activity, CheckCircle2,
 
 import { useEditorStore } from '../../store/useEditorStore';
 import { useAIOptimizer } from '../../hooks/useAIOptimizer';
+import { TEMPLATE_REGISTRY } from '../../templates/registry';
+import { useTemplateStore } from '../../store/useTemplateStore';
 
 const PROFESSIONS = [
   'Software Developer',
@@ -218,10 +220,40 @@ export const Workspace: React.FC = () => {
   const pages = useResumeStore((state) => state.pages);
   const moveBlock = useResumeStore((state) => state.moveBlock);
   const layout = useResumeStore((state) => state.resume.layout);
+  const currentTemplateId = useResumeStore((state) => state.resume.metadata.templateId);
+  const setTemplate = useResumeStore((state) => state.setTemplate);
   const zoom = useEditorStore((state) => state.zoom);
   const setZoom = useEditorStore((state) => state.setZoom);
   const setSelectedBlock = useEditorStore((state) => state.setSelectedBlock);
   
+  const { settings, fetchSettings } = useTemplateStore();
+
+  React.useEffect(() => {
+    fetchSettings();
+  }, [fetchSettings]);
+
+  // Fallback logic if the current template is inactive
+  React.useEffect(() => {
+    if (Object.keys(settings).length === 0) return; // Wait for settings to load
+
+    const baseTemplate = TEMPLATE_REGISTRY[currentTemplateId];
+    const dbSettings = settings[currentTemplateId];
+    const isActive = dbSettings?.isActive ?? baseTemplate?.isActive ?? true;
+
+    if (!isActive) {
+      // Find the first active template, defaulting to 'modern-professional' if all else fails
+      const fallbackTemplate = Object.values(TEMPLATE_REGISTRY).find(t => {
+          const s = settings[t.id];
+          return s?.isActive ?? t.isActive ?? true;
+      });
+      if (fallbackTemplate) {
+          setTemplate(fallbackTemplate.id);
+      } else {
+          setTemplate('modern-professional');
+      }
+    }
+  }, [currentTemplateId, settings, setTemplate]);
+
   const [activeSidebar, setActiveSidebar] = useState<'templates' | 'elements' | 'themes' | 'theme-editor' | 'optimizer'>('elements');
   
   const { handleMeasure } = usePagination();
