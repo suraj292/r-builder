@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useResumeStore } from '../../store/useResumeStore';
 import { A4Page } from './A4Page';
-import { ZoomIn, ZoomOut, Download, Undo, Redo, Share2 } from 'lucide-react';
+import { ZoomIn, ZoomOut, Download, Undo, Redo, Share2, Sparkles, Wand2, Upload, FileText } from 'lucide-react';
 import { usePagination } from '../../hooks/usePagination';
 import { TemplateGallery } from './TemplateGallery';
 import { ElementSidebar } from './ElementSidebar';
@@ -23,6 +23,60 @@ import { LayoutTemplate, PlusSquare, Palette } from 'lucide-react';
 
 import { useEditorStore } from '../../store/useEditorStore';
 
+const AIOptimizerSidebar: React.FC = () => {
+  return (
+    <div className="w-80 bg-white border-r border-gray-200 h-full flex flex-col z-20 shadow-[4px_0_15px_-3px_rgba(0,0,0,0.05)]">
+      <div className="p-4 border-b border-gray-200 bg-white shrink-0">
+        <h2 className="font-bold text-gray-900 flex items-center gap-2 text-lg">
+          <Sparkles className="w-5 h-5 text-amber-500" />
+          <span>AI Optimizer</span>
+        </h2>
+        <p className="text-xs text-gray-500 mt-1">Tailor your resume with AI assistance.</p>
+      </div>
+      
+      <div className="p-4 space-y-8 overflow-y-auto">
+        {/* Upload Resume Section */}
+        <div className="space-y-3">
+          <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+            <Upload className="w-4 h-4 text-blue-500" />
+            Upload Existing Resume
+          </label>
+          <div className="border-2 border-dashed border-gray-200 rounded-xl p-6 flex flex-col items-center justify-center gap-2 hover:border-blue-400 hover:bg-blue-50 transition-all cursor-pointer group">
+            <div className="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
+              <Upload className="w-5 h-5" />
+            </div>
+            <div className="text-center">
+              <p className="text-sm font-medium text-gray-900">Click to upload</p>
+              <p className="text-xs text-gray-500">PDF or DOCX (Max 5MB)</p>
+            </div>
+          </div>
+          <p className="text-[10px] text-gray-400 text-center italic">
+            * Our AI will extract your details to populate the builder.
+          </p>
+        </div>
+
+        <div className="h-px bg-gray-100" />
+
+        {/* Job Description Section */}
+        <div className="space-y-3">
+          <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+            <FileText className="w-4 h-4 text-purple-500" />
+            Job Description
+          </label>
+          <textarea 
+            className="w-full h-48 p-3 text-sm border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none bg-gray-50 text-gray-700"
+            placeholder="Paste the target job description here..."
+          />
+          <button className="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:from-blue-700 hover:to-indigo-700 transition-all shadow-md group">
+            <Wand2 className="w-4 h-4 group-hover:rotate-12 transition-transform" />
+            Analyze & Match
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export const Workspace: React.FC = () => {
   const pages = useResumeStore((state) => state.pages);
   const moveBlock = useResumeStore((state) => state.moveBlock);
@@ -31,7 +85,7 @@ export const Workspace: React.FC = () => {
   const setZoom = useEditorStore((state) => state.setZoom);
   const setSelectedBlock = useEditorStore((state) => state.setSelectedBlock);
   
-  const [activeSidebar, setActiveSidebar] = useState<'templates' | 'elements' | 'themes' | 'theme-editor'>('elements');
+  const [activeSidebar, setActiveSidebar] = useState<'templates' | 'elements' | 'themes' | 'theme-editor' | 'optimizer'>('elements');
   
   const { handleMeasure } = usePagination();
 
@@ -128,6 +182,13 @@ export const Workspace: React.FC = () => {
           >
             <Palette className="w-5 h-5" />
           </button>
+          <button 
+            onClick={() => setActiveSidebar('optimizer')}
+            className={cn("p-2.5 rounded-xl transition-all", activeSidebar === 'optimizer' ? 'bg-amber-100 text-amber-600' : 'text-gray-400 hover:bg-gray-50')}
+            title="AI Optimizer"
+          >
+            <Sparkles className="w-5 h-5" />
+          </button>
         </div>
 
         {/* Active Sidebar */}
@@ -136,6 +197,7 @@ export const Workspace: React.FC = () => {
           {activeSidebar === 'elements' && <ElementSidebar />}
           {activeSidebar === 'themes' && <ThemeGallery onEdit={() => setActiveSidebar('theme-editor')} />}
           {activeSidebar === 'theme-editor' && <ThemeEditor onBack={() => setActiveSidebar('themes')} />}
+          {activeSidebar === 'optimizer' && <AIOptimizerSidebar />}
         </div>
 
         {/* Main Content Area */}
