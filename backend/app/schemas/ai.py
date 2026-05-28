@@ -42,3 +42,26 @@ class ATSCheckResponse(BaseModel):
     score: int
     feedback: str
     missing_keywords: list[str] = []
+
+
+class AIConfigUpdate(BaseModel):
+    ai_provider: Optional[str] = None
+    openai_model: Optional[str] = None
+    gemini_model: Optional[str] = None
+
+
+class AIHealthStatus(BaseModel):
+    openai: dict
+    gemini: dict
+
+
+class AITestRequest(BaseModel):
+    provider: str
+    model: str
+    prompt: str
+    system_prompt: Optional[str] = "You are a helpful assistant."
+
+
+class AITestResponse(BaseModel):
+    response: str
+    latency: float

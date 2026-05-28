@@ -12,8 +12,10 @@ from app.config import settings
 from app.schemas.subscription import PlanCreate, PlanUpdate, PlanOut, CreditAdjustment
 from app.models.subscription import Plan
 
-from app.schemas.ai import AIPromptCreate, AIPromptUpdate, AIPromptOut
+from app.schemas.ai import AIPromptCreate, AIPromptUpdate, AIPromptOut, AIConfigUpdate, AIHealthStatus, AITestRequest, AITestResponse
 from app.models.ai import AIPrompt
+from app.services.ai_health import AIHealthService
+from app.services.ai_service import AIService
 
 router = APIRouter()
 
@@ -204,6 +206,63 @@ async def toggle_user_status(
     await db.commit()
     await db.refresh(user)
     return user
+
+@router.post("/test-ai", response_model=AITestResponse)
+async def test_ai_endpoint(
+    test_in: AITestRequest,
+    current_user: User = Depends(require_role([UserRole.SUPER_ADMIN, UserRole.ADMIN]))
+):
+    """
+    Execute a live AI prompt for testing purposes.
+    """
+    try:
+        return await AIService.generate_response(
+            provider=test_in.provider,
+            model=test_in.model,
+            prompt=test_in.prompt,
+            system_prompt=test_in.system_prompt
+        )
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@router.get("/ai-health", response_model=AIHealthStatus)
+async def get_ai_health(
+    current_user: User = Depends(require_role([UserRole.SUPER_ADMIN, UserRole.ADMIN]))
+):
+    """
+    Check the health of configured AI providers.
+    """
+    openai_health = await AIHealthService.check_openai_health()
+    gemini_health = await AIHealthService.check_gemini_health()
+    
+    return {
+        "openai": openai_health,
+        "gemini": gemini_health
+    }
+
+@router.post("/ai-config")
+async def update_ai_config(
+    config_in: AIConfigUpdate,
+    current_user: User = Depends(require_role([UserRole.SUPER_ADMIN]))
+):
+    """
+    Update current AI configuration. Changes are in-memory until server restart.
+    """
+    if config_in.ai_provider:
+        settings.AI_PROVIDER = config_in.ai_provider
+    if config_in.openai_model:
+        settings.OPENAI_MODEL = config_in.openai_model
+    if config_in.gemini_model:
+        settings.GEMINI_MODEL = config_in.gemini_model
+        
+    return {
+        "message": "AI Configuration updated successfully for this session.",
+        "config": {
+            "ai_provider": settings.AI_PROVIDER,
+            "openai_model": settings.OPENAI_MODEL,
+            "gemini_model": settings.GEMINI_MODEL
+        }
+    }
 
 @router.get("/ai-config")
 async def get_ai_config(
