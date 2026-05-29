@@ -15,3 +15,13 @@ class UserCreate(BaseModel):
     email: EmailStr
     password: str
     full_name: str | None = None
+
+
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+
+
+class ResetPasswordRequest(BaseModel):
+    token: str
+    new_password: str
+

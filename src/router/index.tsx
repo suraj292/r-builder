@@ -12,6 +12,7 @@ import MyResumes from '../pages/user/MyResumes';
 import Profile from '../pages/user/Profile';
 import LoginSignup from '../pages/auth/LoginSignup';
 import AuthCallback from '../pages/auth/AuthCallback';
+import ResetPassword from '../pages/auth/ResetPassword';
 import AdminLayout from '../layouts/AdminLayout';
 import AdminGuard from '../components/auth/AdminGuard';
 import AuthGuard from '../components/auth/AuthGuard';
@@ -77,6 +78,7 @@ const router = createBrowserRouter([
           { path: 'login', element: <LoginSignup /> },
           { path: 'signup', element: <LoginSignup /> },
           { path: 'callback', element: <AuthCallback /> },
+          { path: 'reset-password', element: <ResetPassword /> },
         ]
       },
       {

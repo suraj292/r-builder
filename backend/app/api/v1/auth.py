@@ -5,10 +5,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from fastapi.security import OAuth2PasswordRequestForm
 from app.api.deps import get_db
-from app.schemas.auth import UserCreate, Token, UserLogin
+from app.schemas.auth import UserCreate, Token, UserLogin, ForgotPasswordRequest, ResetPasswordRequest
 from app.schemas.user import UserOut
 from app.models.user import User, RegistrationSource
-from app.core.security import get_password_hash, verify_password, create_access_token
+from app.core.security import get_password_hash, verify_password, create_access_token, create_password_reset_token, verify_password_reset_token
 from app.services.email_service import EmailService
 from app.config import settings
 from authlib.integrations.starlette_client import OAuth
@@ -174,3 +174,63 @@ async def social_callback(provider: str, request: Request, db: AsyncSession = De
     access_token = create_access_token(user.email)
     
     return RedirectResponse(url=f"http://localhost:5173/auth/callback?token={access_token}")
+
+
+@router.post("/forgot-password")
+async def forgot_password(
+    request_data: ForgotPasswordRequest, db: AsyncSession = Depends(get_db)
+):
+    # Find user
+    stmt = select(User).where(User.email == request_data.email)
+    result = await db.execute(stmt)
+    user = result.scalars().first()
+    
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No account found with this email address."
+        )
+    
+    # Generate password reset token
+    reset_token = create_password_reset_token(user.email)
+    
+    # Construct reset link pointing to the React frontend route
+    reset_link = f"http://localhost:5173/auth/reset-password?token={reset_token}"
+    
+    # Send email
+    EmailService.send_password_reset_email(user.email, reset_link)
+    
+    return {"message": "Password reset link has been sent to your email."}
+
+
+@router.post("/reset-password")
+async def reset_password(
+    request_data: ResetPasswordRequest, db: AsyncSession = Depends(get_db)
+):
+    # Verify the reset token
+    email = verify_password_reset_token(request_data.token)
+    if not email:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or expired reset token."
+        )
+    
+    # Fetch user
+    stmt = select(User).where(User.email == email)
+    result = await db.execute(stmt)
+    user = result.scalars().first()
+    
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found."
+        )
+    
+    # Hash and update password
+    user.hashed_password = get_password_hash(request_data.new_password)
+    user.last_password_reset = datetime.now(timezone.utc)
+    
+    await db.commit()
+    
+    return {"message": "Your password has been reset successfully."}
+
