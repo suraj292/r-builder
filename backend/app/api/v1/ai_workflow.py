@@ -19,7 +19,7 @@ class OptimizeRequest(BaseModel):
     resume_data: dict
     job_description: Optional[str] = ""
     target_profession: Optional[str] = ""
-    ats_analysis: dict
+    ats_analysis: Optional[dict] = {}
 
 @router.post("/parse-resume")
 async def parse_resume_upload(

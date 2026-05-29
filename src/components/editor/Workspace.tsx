@@ -173,13 +173,13 @@ const AIOptimizerSidebar: React.FC = () => {
         {/* 4. Job Description & Optimization */}
         <div className="space-y-3">
           <label className="text-xs font-bold uppercase tracking-widest text-gray-500 flex items-center gap-2">
-            <FileText className="w-3 h-3" /> Job Target Matching
+            <FileText className="w-3 h-3" /> Job Target Matching (Optional)
           </label>
           <textarea 
             value={jobDescription}
             onChange={e => setJobDescription(e.target.value)}
             className="w-full h-32 p-3 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none resize-none bg-slate-50 text-slate-700"
-            placeholder="Paste job description here to optimize against..."
+            placeholder="Paste job description here to optimize against (optional)..."
           />
           
           <div className="flex flex-col gap-2 pt-2">
@@ -194,7 +194,7 @@ const AIOptimizerSidebar: React.FC = () => {
               
               <button 
                 onClick={handleOptimizeResume}
-                disabled={isOptimizing || !jobDescription.trim()}
+                disabled={isOptimizing}
                 className="w-full py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 hover:from-indigo-700 hover:to-purple-700 transition-all shadow-md group disabled:opacity-50 disabled:grayscale"
               >
                 {isOptimizing ? (

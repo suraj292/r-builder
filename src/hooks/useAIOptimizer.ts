@@ -81,7 +81,7 @@ export const useAIOptimizer = () => {
         resume_data: resume,
         job_description: jobDescription,
         target_profession: targetProfession,
-        ats_analysis: atsAnalysis
+        ats_analysis: atsAnalysis || {}
       });
       
       setFullResume(optimized_resume);
