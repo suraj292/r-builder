@@ -2,7 +2,13 @@ from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from pydantic import BaseModel
 from typing import Optional, Any
 import io
-import pypdf
+
+try:
+    import pypdf
+    PYPDF_AVAILABLE = True
+except ImportError:
+    PYPDF_AVAILABLE = False
+
 
 from app.api.deps import get_current_user
 from app.models.user import User
@@ -37,6 +43,11 @@ async def parse_resume_upload(
         content = await file.read()
         
         if file.filename.endswith('.pdf'):
+            if not PYPDF_AVAILABLE:
+                raise HTTPException(
+                    status_code=500, 
+                    detail="PDF parsing is currently unavailable due to missing dependency (pypdf). Please upload a TXT file instead."
+                )
             pdf_reader = pypdf.PdfReader(io.BytesIO(content))
             for page in pdf_reader.pages:
                 text += page.extract_text() + "\n"
