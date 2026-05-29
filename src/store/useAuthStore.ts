@@ -12,6 +12,8 @@ interface User {
   quota_reset_date: string | null;
   is_active: boolean;
   is_premium: boolean;
+  phone_number?: string | null;
+  location?: string | null;
 }
 
 interface AuthState {

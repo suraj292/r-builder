@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { api } from '../../lib/api';
 import { useCurrencyStore } from '../../store/useCurrencyStore';
+import { showAlert } from '../../lib/alerts';
 
 interface Plan {
   id: number;
@@ -102,7 +103,7 @@ export default function AdminPlans() {
       fetchPlans();
     } catch (err: any) {
       const errorMsg = err?.message || "Check JSON formats.";
-      alert(`Failed to save plan: ${errorMsg}`);
+      showAlert.error("Failed to Save Plan", errorMsg);
       console.error(err);
     }
   };

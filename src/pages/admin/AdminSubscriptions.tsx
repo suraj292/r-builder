@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { api } from '../../lib/api';
 import { cn } from '../../lib/utils';
 import { useNavigate } from 'react-router-dom';
-import { CreditCard, History, Clock, CheckCircle2, XCircle, AlertCircle, Globe, Monitor, Mail, FileText, Settings, X, Send, Calendar, ExternalLink } from 'lucide-react';
+import { showAlert } from '../../lib/alerts';
+import { History, Clock, CheckCircle2, XCircle, Globe, Monitor, Mail, FileText, Settings, X, Send, Calendar, ExternalLink } from 'lucide-react';
 
 interface Transaction {
   id: number;
@@ -68,11 +69,11 @@ export default function AdminSubscriptions() {
     try {
         setIsProcessing(true);
         await api.patch(`/v1/admin/subscriptions/${manageSub.id}/validity`, { end_date: manageSub.end_date });
-        alert("Subscription validity updated successfully.");
+        showAlert.success("Success", "Subscription validity updated successfully.");
         setManageSub(null);
         fetchData();
     } catch (err) {
-        alert("Failed to update validity.");
+        showAlert.error("Failed", "Failed to update subscription validity.");
     } finally {
         setIsProcessing(false);
     }
@@ -84,10 +85,10 @@ export default function AdminSubscriptions() {
     try {
         setIsProcessing(true);
         await api.post('/v1/admin/users/send-email', mailUser);
-        alert("Email sent to user successfully.");
+        showAlert.success("Email Sent", "Email sent to user successfully.");
         setMailUser(null);
     } catch (err) {
-        alert("Failed to send email.");
+        showAlert.error("Failed", "Failed to send email.");
     } finally {
         setIsProcessing(false);
     }

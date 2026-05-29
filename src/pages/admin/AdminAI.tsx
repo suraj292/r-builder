@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { api } from '../../lib/api';
 import { cn } from '../../lib/utils';
-import { Wand2, Shield, Zap, Key, Save, X, Terminal, RotateCcw, AlertCircle, Info, Sparkles, Activity, CheckCircle2, XCircle, AlertTriangle, ChevronRight } from 'lucide-react';
+import { showAlert } from '../../lib/alerts';
+import { Shield, Zap, Key, Save, X, Terminal, RotateCcw, AlertCircle, Info, Sparkles, Activity, CheckCircle2, XCircle, AlertTriangle, ChevronRight } from 'lucide-react';
 
 interface AIConfig {
   ai_provider: string;
@@ -83,7 +84,8 @@ export default function AdminAI() {
       setTestResult(data.response);
       setTestLatency(data.latency);
     } catch (err) {
-      alert("AI Test failed: " + (err instanceof Error ? err.message : 'Unknown error'));
+      const errorMsg = err instanceof Error ? err.message : 'Unknown error';
+      showAlert.error("Diagnostic Test Failed", errorMsg);
     } finally {
       setIsTesting(false);
     }
@@ -127,7 +129,7 @@ export default function AdminAI() {
       // Refresh health after provider/model change
       await checkAIHealth();
     } catch (err) {
-      alert("Failed to update AI configuration.");
+      showAlert.error("Update Failed", "Failed to update AI configuration settings.");
     } finally {
       setIsUpdatingConfig(false);
     }
@@ -143,7 +145,7 @@ export default function AdminAI() {
       setPrompts(prev => prev.map(p => p.id === editingPrompt.id ? editingPrompt : p));
       setEditingPrompt(null);
     } catch (err) {
-      alert("Failed to save prompt. Please try again.");
+      showAlert.error("Save Failed", "Failed to save prompt template. Please try again.");
     } finally {
       setIsSaving(false);
     }

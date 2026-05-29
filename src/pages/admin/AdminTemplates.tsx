@@ -4,6 +4,7 @@ import { cn } from '../../lib/utils';
 import { Shield, Palette, Briefcase, GraduationCap, Sparkles, Lock, CheckCircle2, LayoutTemplate, X, Wand2, Info, Activity } from 'lucide-react';
 import type { ResumeTemplate, ExperienceLevel } from '../../types/template';
 import { useTemplateStore } from '../../store/useTemplateStore';
+import { showAlert } from '../../lib/alerts';
 
 const CATEGORY_ICONS: Record<string, React.ReactNode> = {
   ATS: <Shield className="w-4 h-4" />,
@@ -84,7 +85,7 @@ export default function AdminTemplates() {
     } catch (e) {
       // Revert on failure
       setLocalTemplates(prev => prev.map(t => t.id === id ? { ...t, isActive: template.isActive } : t));
-      alert("Failed to update status");
+      showAlert.error("Update Failed", "Failed to update template status.");
     }
   };
 
@@ -101,13 +102,13 @@ export default function AdminTemplates() {
     } catch (e) {
       // Revert on failure
       setLocalTemplates(prev => prev.map(t => t.id === id ? { ...t, requiredTier: template.requiredTier } : t));
-      alert("Failed to update tier");
+      showAlert.error("Update Failed", "Failed to update template tier.");
     }
   };
 
   const handleSaveRules = (id: string, metadata: Partial<ResumeTemplate['metadata']>) => {
     setLocalTemplates(prev => prev.map(t => t.id === id ? { ...t, metadata: { ...t.metadata, ...metadata } } : t));
-    alert("Rules updated (in-memory preview)");
+    showAlert.success("Rules Updated", "Rules updated successfully (in-memory preview).");
     setRulesTemplate(null);
   };
 

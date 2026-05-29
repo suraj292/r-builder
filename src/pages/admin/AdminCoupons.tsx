@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { api } from '../../lib/api';
 import { cn } from '../../lib/utils';
 import { Ticket, Plus, Trash2, CheckCircle2, XCircle, Clock, Calendar, Percent, X } from 'lucide-react';
+import { showAlert } from '../../lib/alerts';
 
 interface Coupon {
   id: number;
@@ -60,22 +61,24 @@ export default function AdminCoupons() {
         restricted_to_plan: newRestrictedPlan === '' ? null : newRestrictedPlan,
         valid_until: newExpiry === '' ? null : new Date(newExpiry).toISOString()
       });
-      alert("Coupon created successfully!");
+      showAlert.success("Coupon Created", "Coupon created successfully!");
       setShowCreateModal(false);
       resetForm();
       fetchCoupons();
     } catch (err) {
-      alert("Failed to create coupon. Code might already exist.");
+      showAlert.error("Failed to Create", "Failed to create coupon. Code might already exist.");
     }
   };
 
   const handleDeleteCoupon = async (id: number) => {
-    if (!window.confirm("Are you sure you want to delete this coupon?")) return;
+    const confirmed = await showAlert.confirm("Delete Coupon", "Are you sure you want to delete this coupon?");
+    if (!confirmed) return;
     try {
       await api.delete(`/v1/admin/coupons/${id}`);
       setCoupons(prev => prev.filter(c => c.id !== id));
+      showAlert.success("Deleted", "Coupon has been deleted successfully.");
     } catch (err) {
-      alert("Failed to delete coupon.");
+      showAlert.error("Error", "Failed to delete coupon.");
     }
   };
 

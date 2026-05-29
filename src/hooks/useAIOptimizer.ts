@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { api } from '../lib/api';
 import { useResumeStore } from '../store/useResumeStore';
 import type { ResumeSchema } from '../types/resume';
+import { showAlert } from '../lib/alerts';
 
 export interface ATSIssue {
   type: 'missing_keyword' | 'weak_action_verb' | 'formatting' | 'length';
@@ -46,7 +47,7 @@ export const useAIOptimizer = () => {
       
     } catch (err) {
       console.error("Failed to parse resume", err);
-      alert("Failed to parse resume file.");
+      showAlert.error("Parse Failure", "Failed to parse resume file.");
     } finally {
       setIsUploading(false);
     }
@@ -91,7 +92,7 @@ export const useAIOptimizer = () => {
       
     } catch (err) {
       console.error("Failed to optimize resume", err);
-      alert("Failed to optimize resume.");
+      showAlert.error("Optimization Failed", "Failed to optimize resume.");
     } finally {
       setIsOptimizing(false);
     }

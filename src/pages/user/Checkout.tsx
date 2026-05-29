@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { api } from '../../lib/api';
 import { useAuthStore } from '../../store/useAuthStore';
+import { showAlert } from '../../lib/alerts';
 
 interface Plan {
   id: number;
@@ -108,20 +109,20 @@ export default function Checkout() {
       if (data.valid) {
         setDiscountApplied(true);
         setDiscountPercent(data.discount_percent);
-        alert(data.message);
+        showAlert.success("Coupon Applied", data.message);
       } else {
         setDiscountApplied(false);
         setDiscountPercent(0);
-        alert(data.message);
+        showAlert.error("Invalid Coupon", data.message);
       }
     } catch (err) {
-      alert("Failed to validate coupon.");
+      showAlert.error("Error", "Failed to validate coupon.");
     }
   };
 
   const handlePayment = async () => {
     if (!phone || !location) {
-        alert("Please provide your phone number and location to continue.");
+        showAlert.warning("Incomplete Information", "Please provide your phone number and city/location to continue.");
         return;
     }
 
@@ -161,7 +162,7 @@ export default function Checkout() {
             }, 3000);
           } catch (err) {
             console.error('Verification failed', err);
-            alert("Payment verification failed. Please contact support.");
+            showAlert.error("Verification Failed", "Payment verification failed. Please contact support.");
           }
         },
         prefill: {
@@ -178,7 +179,7 @@ export default function Checkout() {
       };
 
       if (!(window as any).Razorpay) {
-        alert("Razorpay SDK failed to load. Please check your internet connection.");
+        showAlert.error("SDK Load Failure", "Razorpay SDK failed to load. Please check your internet connection.");
         setProcessing(false);
         return;
       }
@@ -188,7 +189,7 @@ export default function Checkout() {
       
     } catch (err) {
       console.error('Failed to initiate payment', err);
-      alert('Failed to start payment process. Please try again.');
+      showAlert.error("Error", "Failed to start payment process. Please try again.");
       setProcessing(false);
     }
   };

@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../../lib/api';
 import { cn } from '../../lib/utils';
 import { 
-  ArrowLeft, CreditCard, User, Calendar, CheckCircle2, 
-  XCircle, Clock, Mail, Send, FileText, Download, 
-  ExternalLink, ShieldCheck, Activity, Landmark
+  ArrowLeft, User, XCircle, Clock, Mail, Send, FileText, Download, 
+  ShieldCheck, Landmark
 } from 'lucide-react';
+import { showAlert } from '../../lib/alerts';
 
 interface SubDetail {
   subscription: {
@@ -90,10 +90,10 @@ export default function AdminSubscriptionDetail() {
         subject: emailSubject,
         message: finalMessage
       });
-      alert("Support email sent successfully!");
+      showAlert.success("Email Sent", "Support email sent successfully!");
       setEmailMessage('');
     } catch (err) {
-      alert("Failed to send email.");
+      showAlert.error("Failed", "Failed to send email.");
     } finally {
       setIsProcessing(false);
     }

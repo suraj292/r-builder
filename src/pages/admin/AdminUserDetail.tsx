@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../../lib/api';
 import { useAuthStore } from '../../store/useAuthStore';
+import { showAlert } from '../../lib/alerts';
+import Swal from 'sweetalert2';
 
 interface User {
   id: number;
@@ -44,63 +46,102 @@ export default function AdminUserDetail() {
   const handleToggleStatus = async () => {
     if (!user) return;
     const action = user.is_active ? 'deactivate/ban' : 'activate';
-    if (!window.confirm(`Are you sure you want to ${action} user ${user.email}?`)) return;
+    const confirmed = await showAlert.confirm("Update Status", `Are you sure you want to ${action} user ${user.email}?`);
+    if (!confirmed) return;
 
     try {
       await api.post(`/v1/admin/users/${user.id}/toggle-status`);
       fetchUser();
+      showAlert.success("Success", `User has been ${user.is_active ? 'banned' : 'activated'} successfully.`);
     } catch (err) {
-      alert("Failed to update user status");
+      showAlert.error("Error", "Failed to update user status.");
     }
   };
 
   const handleResetQuotas = async () => {
     if (!user) return;
-    if (!window.confirm(`Reset AI and ATS quotas for ${user.email}?`)) return;
+    const confirmed = await showAlert.confirm("Reset Quotas", `Are you sure you want to reset AI and ATS quotas for ${user.email}?`);
+    if (!confirmed) return;
 
     try {
       await api.post(`/v1/admin/users/${user.id}/reset-quotas`);
       fetchUser();
-      alert("Quotas reset successfully");
+      showAlert.success("Success", "Quotas reset successfully.");
     } catch (err) {
-      alert("Failed to reset quotas");
+      showAlert.error("Error", "Failed to reset quotas.");
     }
   };
 
   const handleAdjustCredits = async () => {
     if (!user) return;
-    const amountStr = window.prompt(`Enter amount of AI credits to ADD to ${user.email} (use negative to remove):`, "100");
-    if (amountStr === null) return;
+    
+    const { value: amountStr } = await Swal.fire({
+      title: 'Adjust AI Credits',
+      input: 'text',
+      inputLabel: `Enter credits to add to ${user.email} (use negative to deduct):`,
+      inputValue: '100',
+      showCancelButton: true,
+      confirmButtonColor: '#4f46e5',
+      cancelButtonColor: '#94a3b8',
+      customClass: {
+        popup: 'rounded-3xl shadow-xl font-sans',
+        confirmButton: 'rounded-xl px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-indigo-600/20 mr-2',
+        cancelButton: 'rounded-xl px-5 py-2.5 text-sm font-bold text-white'
+      }
+    });
+
+    if (amountStr === undefined) return;
     
     const amount = parseInt(amountStr);
-    if (isNaN(amount)) return alert("Invalid number");
+    if (isNaN(amount)) {
+      return showAlert.error("Invalid Number", "Please provide a valid integer amount.");
+    }
 
     try {
       await api.post(`/v1/admin/users/${user.id}/adjust-credits`, { amount, reason: "Admin manual adjustment" });
       fetchUser();
-      alert("Credits adjusted successfully");
+      showAlert.success("Success", "Credits adjusted successfully.");
     } catch (err) {
-      alert("Failed to adjust credits");
+      showAlert.error("Error", "Failed to adjust credits.");
     }
   };
 
   const handleUpdateRole = async () => {
     if (!user) return;
     if (currentUser?.role !== 'super_admin') {
-        return alert("Only Super Admins can modify roles.");
+      return showAlert.error("Denied", "Only Super Admins can modify roles.");
     }
 
-    const newRole = window.prompt(`Update role for ${user.email}. Current: ${user.role}\nAvailable: user, admin, support, content_manager`, user.role);
-    if (!newRole || newRole === user.role) return;
+    const { value: newRole } = await Swal.fire({
+      title: 'Update User Role',
+      input: 'select',
+      inputLabel: `Update access level for ${user.email}`,
+      inputOptions: {
+        user: 'User',
+        admin: 'Admin',
+        support: 'Support',
+        content_manager: 'Content Manager',
+        super_admin: 'Super Admin'
+      },
+      inputValue: user.role,
+      showCancelButton: true,
+      confirmButtonColor: '#4f46e5',
+      cancelButtonColor: '#94a3b8',
+      customClass: {
+        popup: 'rounded-3xl shadow-xl font-sans',
+        confirmButton: 'rounded-xl px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-indigo-600/20 mr-2',
+        cancelButton: 'rounded-xl px-5 py-2.5 text-sm font-bold text-white'
+      }
+    });
 
-    const validRoles = ['user', 'admin', 'support', 'content_manager', 'super_admin'];
-    if (!validRoles.includes(newRole)) return alert("Invalid role name");
+    if (!newRole || newRole === user.role) return;
 
     try {
       await api.patch(`/v1/admin/users/${user.id}/role?new_role=${newRole}`);
       fetchUser();
+      showAlert.success("Success", "User role updated successfully.");
     } catch (err) {
-      alert("Failed to update role");
+      showAlert.error("Error", "Failed to update role.");
     }
   };
 
