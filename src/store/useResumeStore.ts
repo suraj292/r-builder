@@ -6,9 +6,11 @@ import type { ThemeTokens } from '../types/theme';
 
 interface ResumeState {
   resume: ResumeSchema;
+  resumeId: number | null; // Database ID of the resume
   pages: string[][]; // Array of pages, each containing block IDs
   
   // Actions
+  setResumeId: (id: number | null) => void;
   updateBlock: (id: string, data: Partial<Block['data']>) => void;
   addBlock: (type: BlockType, targetIndex?: number) => void;
   insertBlock: (block: Block, targetIndex?: number) => void;
@@ -126,8 +128,13 @@ export const useResumeStore = create<ResumeState>()(
     persist(
       immer((set) => ({
         resume: initialData,
+        resumeId: null,
         pages: [['header-1', 'summary-1', 'sec-exp', 'exp-1']], // Initial single page
         
+        setResumeId: (id) => set((state) => {
+          state.resumeId = id;
+        }),
+
         updateBlock: (id, data) => set((state) => {
           if (state.resume.blocks[id]) {
             state.resume.blocks[id].data = { ...state.resume.blocks[id].data, ...data } as any;

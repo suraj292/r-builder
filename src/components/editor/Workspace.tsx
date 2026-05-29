@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useResumeStore } from '../../store/useResumeStore';
 import { A4Page } from './A4Page';
-import { ZoomIn, ZoomOut, Download, Undo, Redo, Share2, Sparkles, Wand2, Upload, FileText } from 'lucide-react';
+import { api } from '../../lib/api';
+import { ZoomIn, ZoomOut, Download, Undo, Redo, Share2, Sparkles, Wand2, Upload, FileText, Cloud } from 'lucide-react';
 import { usePagination } from '../../hooks/usePagination';
 import { TemplateGallery } from './TemplateGallery';
 import { ElementSidebar } from './ElementSidebar';
@@ -26,6 +27,7 @@ import { useEditorStore } from '../../store/useEditorStore';
 import { useAIOptimizer } from '../../hooks/useAIOptimizer';
 import { TEMPLATE_REGISTRY } from '../../templates/registry';
 import { useTemplateStore } from '../../store/useTemplateStore';
+import { showAlert } from '../../lib/alerts';
 
 const PROFESSIONS = [
   'Software Developer',
@@ -221,6 +223,9 @@ export const Workspace: React.FC = () => {
   const pages = useResumeStore((state) => state.pages);
   const moveBlock = useResumeStore((state) => state.moveBlock);
   const layout = useResumeStore((state) => state.resume.layout);
+  const resume = useResumeStore((state) => state.resume);
+  const resumeId = useResumeStore((state) => state.resumeId);
+  const setResumeId = useResumeStore((state) => state.setResumeId);
   const currentTemplateId = useResumeStore((state) => state.resume.metadata.templateId);
   const setTemplate = useResumeStore((state) => state.setTemplate);
   const zoom = useEditorStore((state) => state.zoom);
@@ -229,12 +234,17 @@ export const Workspace: React.FC = () => {
   
   const { settings, fetchSettings } = useTemplateStore();
 
-  React.useEffect(() => {
+  const {
+    isUploading,
+    isOptimizing,
+  } = useAIOptimizer();
+
+  useEffect(() => {
     fetchSettings();
   }, [fetchSettings]);
 
   // Fallback logic if the current template is inactive
-  React.useEffect(() => {
+  useEffect(() => {
     if (Object.keys(settings).length === 0) return; // Wait for settings to load
 
     const baseTemplate = TEMPLATE_REGISTRY[currentTemplateId];
@@ -256,7 +266,82 @@ export const Workspace: React.FC = () => {
   }, [currentTemplateId, settings, setTemplate]);
 
   const [activeSidebar, setActiveSidebar] = useState<'templates' | 'elements' | 'themes' | 'theme-editor' | 'optimizer'>('elements');
-  
+  const [isSaving, setIsSaving] = useState(false);
+
+  const handleSave = async (showNotification = true) => {
+    try {
+      setIsSaving(true);
+      
+      if (!resume || !resume.blocks) {
+        console.warn('handleSave: Resume data is empty or invalid, skipping save.');
+        return;
+      }
+
+      const payload = {
+        title: resume.metadata?.title || 'Untitled Resume',
+        template_id: resume.metadata?.templateId || 'modern',
+        data: resume
+      };
+
+      if (resumeId) {
+        console.log(`[Persistence] Updating resume ${resumeId}...`);
+        const result = await api.patch<any>(`/v1/resumes/${resumeId}`, payload);
+        console.log(`[Persistence] Update success:`, result);
+      } else {
+        console.log(`[Persistence] Creating new resume...`);
+        const result = await api.post<any>('/v1/resumes', payload);
+        console.log(`[Persistence] Create success:`, result);
+        if (result && result.id) {
+          setResumeId(result.id);
+        }
+      }
+      
+      if (showNotification) {
+        showAlert.success('Saved', 'Resume saved to cloud successfully.');
+      }
+    } catch (err: any) {
+      console.error("[Persistence] Error saving resume:", err);
+      if (showNotification) {
+        showAlert.error('Save Failed', `Could not save resume: ${err.message || 'Unknown error'}`);
+      }
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // Auto-save effect
+  useEffect(() => {
+    if (!resumeId) return; // Only auto-save existing resumes
+
+    const timer = setTimeout(() => {
+      handleSave(false);
+    }, 10000); // Auto-save every 10 seconds if changed
+
+    return () => clearTimeout(timer);
+  }, [resume, resumeId]);
+
+  // Immediate save after AI operations finish
+  const prevAIWorking = React.useRef(false);
+  useEffect(() => {
+    const isWorking = isOptimizing || isUploading;
+    if (prevAIWorking.current && !isWorking) {
+        // AI work just finished
+        handleSave(false);
+    }
+    prevAIWorking.current = isWorking;
+  }, [isOptimizing, isUploading]);
+
+  // Initial save for new resumes (e.g. from ATS checker import)
+  useEffect(() => {
+    if (!resumeId && resume && Object.keys(resume.blocks || {}).length > 5) {
+      // If we have a significant resume but no ID, save it
+      const timer = setTimeout(() => {
+        handleSave(false);
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [resumeId]);
+
   const { handleMeasure } = usePagination();
 
   const sensors = useSensors(
@@ -322,10 +407,26 @@ export const Workspace: React.FC = () => {
           
           <button 
             onClick={() => window.print()}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-semibold bg-blue-600 text-white hover:bg-blue-700 rounded-lg shadow-sm transition-all"
+            className="flex items-center gap-2 px-4 py-2 text-sm font-semibold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 rounded-lg transition-all"
           >
             <Download className="w-4 h-4" />
-            Export PDF
+            PDF
+          </button>
+
+          <button 
+            onClick={() => handleSave()}
+            disabled={isSaving}
+            className={cn(
+              "flex items-center gap-2 px-4 py-2 text-sm font-bold rounded-lg transition-all shadow-md active:scale-95 disabled:opacity-50",
+              resumeId ? "bg-emerald-600 text-white hover:bg-emerald-700" : "bg-indigo-600 text-white hover:bg-indigo-700"
+            )}
+          >
+            {isSaving ? (
+              <i className="fa-solid fa-circle-notch fa-spin"></i>
+            ) : (
+              <Cloud className="w-4 h-4" />
+            )}
+            {isSaving ? 'Saving...' : resumeId ? 'Saved to Cloud' : 'Save Resume'}
           </button>
         </div>
       </header>

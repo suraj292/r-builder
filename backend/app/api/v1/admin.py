@@ -10,6 +10,7 @@ from app.api.deps import get_db, require_role
 from app.models.user import User, UserRole
 from app.schemas.user import UserOut
 from app.models.resume import Resume
+from app.models.guest_log import GuestScanLog
 from app.config import settings
 
 from app.schemas.subscription import PlanCreate, PlanUpdate, PlanOut, CreditAdjustment
@@ -417,6 +418,31 @@ async def get_user_by_id(
         raise HTTPException(404, "User not found")
     return user
 
+@router.get("/ats-scans")
+async def get_all_ats_scans(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_role([UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.SUPPORT]))
+):
+    """
+    Get all ATS scans (both guest and authenticated).
+    """
+    stmt = select(GuestScanLog).options(selectinload(GuestScanLog.user)).order_by(GuestScanLog.created_at.desc())
+    result = await db.execute(stmt)
+    scans = result.scalars().all()
+    
+    return [
+        {
+            "id": s.id,
+            "user_id": s.user_id,
+            "user_email": s.user.email if s.user else "Guest",
+            "ip_address": s.ip_address,
+            "device_info": s.device_info,
+            "score": s.analysis_result.get("score", 0) if s.analysis_result else 0,
+            "created_at": s.created_at
+        }
+        for s in scans
+    ]
+
 @router.get("/resumes")
 async def get_all_resumes(
     db: AsyncSession = Depends(get_db),
@@ -425,18 +451,18 @@ async def get_all_resumes(
     """
     Get all resumes with user information.
     """
-    stmt = select(Resume).join(User)
+    stmt = select(Resume).options(selectinload(Resume.user)).order_by(Resume.created_at.desc())
     result = await db.execute(stmt)
     resumes = result.scalars().all()
     
     return [
         {
             "id": r.id,
-            "title": r.title,
-            "user_email": r.user.email,
-            "template_id": r.template_id,
+            "title": r.title or "Untitled Resume",
+            "user_email": r.user.email if r.user else "Unknown User",
+            "template_id": r.template_id or "modern",
             "created_at": r.created_at,
-            "updated_at": r.updated_at
+            "updated_at": r.updated_at or r.created_at
         }
         for r in resumes
     ]

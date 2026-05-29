@@ -15,6 +15,7 @@ except ImportError:
 from app.api.deps import get_current_user, get_db, get_current_user_optional
 from app.models.user import User
 from app.models.guest_log import GuestScanLog
+from app.models.resume import Resume
 from app.schemas.guest_log import GuestAnalyzeRequest
 from app.services.ai_workflow import ResumeAIWorkflowService
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -27,6 +28,7 @@ class AnalyzeRequest(BaseModel):
     resume_data: dict
     job_description: Optional[str] = ""
     target_profession: Optional[str] = ""
+    device_info: Optional[str] = None
 
 class OptimizeRequest(BaseModel):
     resume_data: dict
@@ -74,7 +76,9 @@ async def parse_resume_upload(
 @router.post("/analyze-ats")
 async def analyze_resume_ats(
     req: AnalyzeRequest,
-    current_user: Optional[User] = Depends(get_current_user_optional)
+    request: Request,
+    current_user: Optional[User] = Depends(get_current_user_optional),
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Analyzes the resume schema against an optional job description.
@@ -85,6 +89,19 @@ async def analyze_resume_ats(
             job_description=req.job_description,
             target_profession=req.target_profession
         )
+        
+        # Log the scan
+        new_log = GuestScanLog(
+            user_id=current_user.id if current_user else None,
+            ip_address=request.client.host if request and request.client else None,
+            user_agent=request.headers.get("user-agent") if request else None,
+            device_info=req.device_info,
+            resume_text=json.dumps(req.resume_data),
+            analysis_result=analysis
+        )
+        db.add(new_log)
+        await db.commit()
+        
         return analysis
     except Exception as e:
         raise HTTPException(500, f"Error analyzing ATS: {str(e)}")
@@ -93,7 +110,8 @@ async def analyze_resume_ats(
 @router.post("/optimize-resume")
 async def optimize_resume_content(
     req: OptimizeRequest,
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Rewrites the resume schema to improve ATS score and job alignment.
@@ -105,6 +123,18 @@ async def optimize_resume_content(
             job_description=req.job_description,
             target_profession=req.target_profession
         )
+        
+        # If resume_id is provided, auto-save the optimization
+        resume_id = req.ats_analysis.get("resume_id") # We can pass this from frontend
+        if resume_id:
+            stmt = select(Resume).where(Resume.id == resume_id, Resume.user_id == current_user.id)
+            result = await db.execute(stmt)
+            db_resume = result.scalars().first()
+            if db_resume:
+                db_resume.data = optimized
+                db_resume.title = optimized.get("metadata", {}).get("title", db_resume.title)
+                await db.commit()
+
         return {"optimized_resume": optimized}
     except Exception as e:
         raise HTTPException(500, f"Error optimizing resume: {str(e)}")

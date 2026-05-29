@@ -8,3 +8,4 @@ from app.models.activity import UserActivityLog
 from app.models.guest_log import GuestScanLog
 from app.models.payment import Transaction
 from app.models.coupon import Coupon, UserCouponUsage
+from app.models.system import SystemSettings

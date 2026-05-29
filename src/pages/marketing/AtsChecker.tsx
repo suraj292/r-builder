@@ -46,11 +46,6 @@ export default function AtsChecker() {
   };
 
   const startAnalysis = async () => {
-    if (!user) {
-      setError("Please login to use the free ATS scanner.");
-      return;
-    }
-
     if (activeTab === 'upload' && !file) {
         setError("Please select a file to upload.");
         return;
@@ -115,7 +110,8 @@ export default function AtsChecker() {
             setLoadingText('Running deep-scan for ATS compatibility...');
             results = await api.post<ATSAnalysis>('/v1/ai/analyze-ats', {
                 resume_data: resumeData,
-                target_profession: "Professional"
+                target_profession: "Professional",
+                device_info: deviceInfo
             });
         }
 
