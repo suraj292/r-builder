@@ -66,6 +66,36 @@ async def create_coupon(
         await db.rollback()
         raise HTTPException(status_code=400, detail="Coupon code already exists.")
 
+@router.patch("/coupons/{coupon_id}", response_model=CouponOut)
+async def update_coupon(
+    coupon_id: int,
+    coupon_in: CouponUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_role([UserRole.SUPER_ADMIN, UserRole.ADMIN]))
+):
+    """
+    Update a coupon (toggle active or edit metadata).
+    """
+    stmt = select(Coupon).where(Coupon.id == coupon_id)
+    result = await db.execute(stmt)
+    coupon = result.scalars().first()
+    if not coupon:
+        raise HTTPException(404, "Coupon not found")
+    
+    update_data = coupon_in.model_dump(exclude_unset=True)
+    for field, value in update_data.items():
+        if field == "code":
+            value = value.upper()
+        setattr(coupon, field, value)
+        
+    try:
+        await db.commit()
+        await db.refresh(coupon)
+        return coupon
+    except IntegrityError:
+        await db.rollback()
+        raise HTTPException(status_code=400, detail="Coupon code already exists.")
+
 @router.delete("/coupons/{coupon_id}")
 async def delete_coupon(
     coupon_id: int,

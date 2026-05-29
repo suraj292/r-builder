@@ -396,7 +396,7 @@ export default function Checkout() {
                 </div>
                 {discountApplied && (
                   <div className="flex justify-between text-sm text-green-600 font-bold">
-                    <span>Coupon Discount (20%)</span>
+                    <span>Coupon Discount ({discountPercent}%)</span>
                     <span>-{formatCheckoutPrice(discountAmount)}</span>
                   </div>
                 )}

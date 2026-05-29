@@ -16,10 +16,14 @@ class CouponCreate(CouponBase):
     pass
 
 class CouponUpdate(BaseModel):
+    code: Optional[str] = None
+    discount_percent: Optional[float] = None
     is_active: Optional[bool] = None
     valid_until: Optional[datetime] = None
     max_uses_total: Optional[int] = None
     per_user_limit: Optional[int] = None
+    min_purchase_amount: Optional[int] = None
+    restricted_to_plan: Optional[str] = None
 
 class CouponOut(CouponBase):
     id: int

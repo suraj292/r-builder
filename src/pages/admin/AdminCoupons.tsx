@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { api } from '../../lib/api';
 import { cn } from '../../lib/utils';
-import { Ticket, Plus, Trash2, CheckCircle2, XCircle, Clock, Calendar, Percent, X } from 'lucide-react';
+import { Ticket, Plus, Trash2, CheckCircle2, XCircle, Clock, Calendar, Percent, X, Pencil } from 'lucide-react';
 import { showAlert } from '../../lib/alerts';
 
 interface Coupon {
@@ -22,6 +22,7 @@ export default function AdminCoupons() {
   const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [editingCoupon, setEditingCoupon] = useState<Coupon | null>(null);
   
   // New Coupon Form
   const [newCode, setNewCode] = useState('');
@@ -49,10 +50,37 @@ export default function AdminCoupons() {
     }
   };
 
-  const handleCreateCoupon = async (e: React.FormEvent) => {
+  const handleCloseModal = () => {
+    setShowCreateModal(false);
+    setEditingCoupon(null);
+    resetForm();
+  };
+
+  const handleStartEdit = (coupon: Coupon) => {
+    setEditingCoupon(coupon);
+    setNewCode(coupon.code);
+    setNewDiscount(coupon.discount_percent);
+    setNewMaxUses(coupon.max_uses_total === null ? '' : coupon.max_uses_total);
+    setNewPerUserLimit(coupon.per_user_limit);
+    setNewMinAmount(coupon.min_purchase_amount === null ? '' : coupon.min_purchase_amount / 100);
+    setNewRestrictedPlan(coupon.restricted_to_plan || '');
+    setNewExpiry(coupon.valid_until ? coupon.valid_until.split('T')[0] : '');
+  };
+
+  const handleToggleActive = async (coupon: Coupon) => {
+    try {
+      await api.patch(`/v1/admin/coupons/${coupon.id}`, { is_active: !coupon.is_active });
+      setCoupons(prev => prev.map(c => c.id === coupon.id ? { ...c, is_active: !coupon.is_active } : c));
+      showAlert.success("Status Updated", `Coupon ${coupon.code} is now ${!coupon.is_active ? 'active' : 'inactive'}.`);
+    } catch (err) {
+      showAlert.error("Error", "Failed to update coupon status.");
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await api.post('/v1/admin/coupons', {
+      const payload = {
         code: newCode.toUpperCase(),
         discount_percent: newDiscount,
         max_uses_total: newMaxUses === '' ? null : newMaxUses,
@@ -60,13 +88,20 @@ export default function AdminCoupons() {
         min_purchase_amount: newMinAmount === '' ? null : Math.round(Number(newMinAmount) * 100),
         restricted_to_plan: newRestrictedPlan === '' ? null : newRestrictedPlan,
         valid_until: newExpiry === '' ? null : new Date(newExpiry).toISOString()
-      });
-      showAlert.success("Coupon Created", "Coupon created successfully!");
-      setShowCreateModal(false);
-      resetForm();
+      };
+
+      if (editingCoupon) {
+        await api.patch(`/v1/admin/coupons/${editingCoupon.id}`, payload);
+        showAlert.success("Coupon Updated", "Coupon updated successfully!");
+      } else {
+        await api.post('/v1/admin/coupons', { ...payload, is_active: true });
+        showAlert.success("Coupon Created", "Coupon created successfully!");
+      }
+
+      handleCloseModal();
       fetchCoupons();
     } catch (err) {
-      showAlert.error("Failed to Create", "Failed to create coupon. Code might already exist.");
+      showAlert.error("Failed to Save", "Failed to save coupon. Code might already exist.");
     }
   };
 
@@ -179,12 +214,32 @@ export default function AdminCoupons() {
                       </div>
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <button 
-                        onClick={() => handleDeleteCoupon(coupon.id)}
-                        className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all cursor-pointer"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                      <div className="flex justify-end gap-2">
+                        <button 
+                          onClick={() => handleToggleActive(coupon)}
+                          className={cn(
+                            "p-2 rounded-lg transition-all cursor-pointer",
+                            coupon.is_active ? "text-emerald-500 hover:bg-emerald-50" : "text-slate-300 hover:bg-slate-50"
+                          )}
+                          title={coupon.is_active ? "Deactivate Coupon" : "Activate Coupon"}
+                        >
+                          <i className={`fa-solid ${coupon.is_active ? 'fa-toggle-on' : 'fa-toggle-off'}`}></i>
+                        </button>
+                        <button 
+                          onClick={() => handleStartEdit(coupon)}
+                          className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all cursor-pointer"
+                          title="Edit Coupon"
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </button>
+                        <button 
+                          onClick={() => handleDeleteCoupon(coupon.id)}
+                          className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all cursor-pointer"
+                          title="Delete Coupon"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -194,20 +249,25 @@ export default function AdminCoupons() {
         </div>
       </div>
 
-      {/* CREATE MODAL */}
-      {showCreateModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in" onClick={() => setShowCreateModal(false)}>
+      {/* CREATE/EDIT MODAL */}
+      {(showCreateModal || editingCoupon) && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in" onClick={handleCloseModal}>
           <div className="bg-white rounded-[2rem] shadow-2xl max-w-md w-full p-8" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-8">
               <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-                <Plus className="w-5 h-5 text-indigo-600" /> New Coupon
+                {editingCoupon ? (
+                  <Pencil className="w-5 h-5 text-indigo-600" />
+                ) : (
+                  <Plus className="w-5 h-5 text-indigo-600" />
+                )}
+                {editingCoupon ? `Edit Coupon: ${editingCoupon.code}` : 'New Coupon'}
               </h3>
-              <button onClick={() => setShowCreateModal(false)} className="text-slate-400 hover:text-slate-600 cursor-pointer">
+              <button onClick={handleCloseModal} className="text-slate-400 hover:text-slate-600 cursor-pointer">
                 <X className="w-6 h-6" />
               </button>
             </div>
 
-            <form onSubmit={handleCreateCoupon} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
                 <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest px-1">Coupon Code</label>
                 <input 
@@ -302,7 +362,7 @@ export default function AdminCoupons() {
                 type="submit" 
                 className="w-full py-4 bg-slate-900 text-white rounded-2xl text-sm font-black uppercase tracking-widest shadow-xl hover:bg-slate-800 transition-all flex items-center justify-center gap-2 mt-4 cursor-pointer"
               >
-                Create Coupon
+                {editingCoupon ? 'Save Changes' : 'Create Coupon'}
               </button>
             </form>
           </div>
