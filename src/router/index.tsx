@@ -25,6 +25,7 @@ import AdminPlans from '../pages/admin/AdminPlans';
 import AdminTemplates from '../pages/admin/AdminTemplates';
 import AdminSubscriptions from '../pages/admin/AdminSubscriptions';
 import AdminSubscriptionDetail from '../pages/admin/AdminSubscriptionDetail';
+import AdminCoupons from '../pages/admin/AdminCoupons';
 import AdminAI from '../pages/admin/AdminAI';
 import AdminSettings from '../pages/admin/AdminSettings';
 import AdminPlaceholder from '../components/admin/AdminPlaceholder';
@@ -93,6 +94,7 @@ const router = createBrowserRouter([
           { path: 'resumes', element: <AdminResumes /> },
           { path: 'subscriptions', element: <AdminSubscriptions /> },
           { path: 'subscriptions/:userId', element: <AdminSubscriptionDetail /> },
+          { path: 'coupons', element: <AdminCoupons /> },
           { path: 'plans', element: <AdminPlans /> },
           { path: 'templates', element: <AdminTemplates /> },
           { path: 'ai', element: <AdminAI /> },

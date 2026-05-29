@@ -24,6 +24,7 @@ class Transaction(Base):
     amount = Column(Integer, nullable=False) # In cents/paise
     currency = Column(String(10), default="INR")
     status = Column(Enum(PaymentStatus), default=PaymentStatus.PENDING)
+    coupon_code = Column(String(50), nullable=True)
     
     # Metadata requested by user
     country = Column(String(100), nullable=True)

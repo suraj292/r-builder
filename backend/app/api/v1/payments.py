@@ -8,6 +8,7 @@ from app.api.deps import get_current_user, get_db
 from app.models.user import User, SubscriptionTier
 from app.models.subscription import Plan, Subscription, SubscriptionStatus
 from app.models.payment import Transaction, PaymentStatus
+from app.models.coupon import Coupon
 from app.services.payment_service import RazorpayService
 
 router = APIRouter()
@@ -18,6 +19,7 @@ async def create_payment_order(
     plan_tier: str,
     period: str, # 'monthly' or 'yearly'
     currency: str = "INR",
+    coupon_code: Optional[str] = None,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
@@ -30,21 +32,40 @@ async def create_payment_order(
         raise HTTPException(status_code=404, detail="Plan not found")
     
     # Calculate amount
-    amount = 0
+    base_amount = 0
     if currency == "INR":
         # Check regional prices
         if plan.regional_prices and "INR" in plan.regional_prices:
-            amount = plan.regional_prices["INR"]["yearly" if period == "yearly" else "monthly"]
+            base_amount = plan.regional_prices["INR"]["yearly" if period == "yearly" else "monthly"]
         else:
-            # Fallback (though ideally we should have regional prices set)
-            amount = plan.price_yearly if period == "yearly" else plan.price_monthly
+            # Fallback
+            base_amount = plan.price_yearly if period == "yearly" else plan.price_monthly
     else:
-        # Default to base price (assuming base is USD)
-        amount = plan.price_yearly if period == "yearly" else plan.price_monthly
+        base_amount = plan.price_yearly if period == "yearly" else plan.price_monthly
+
+    # Apply Coupon if valid
+    discount_percent = 0
+    if coupon_code:
+        c_stmt = select(Coupon).where(Coupon.code == coupon_code, Coupon.is_active == True)
+        c_res = await db.execute(c_stmt)
+        coupon = c_res.scalars().first()
+        if coupon:
+            # Check expiry and max uses
+            is_valid = True
+            if coupon.valid_until and coupon.valid_until < datetime.now(coupon.valid_until.tzinfo): is_valid = False
+            if coupon.max_uses and coupon.used_count >= coupon.max_uses: is_valid = False
+            
+            if is_valid:
+                discount_percent = coupon.discount_percent
+    
+    amount_after_discount = int(base_amount * (1 - (discount_percent / 100)))
+    
+    # Add GST 18% (as mentioned in frontend logic)
+    total_amount = int(amount_after_discount * 1.18)
 
     # Create Razorpay Order
     try:
-        order = razorpay_service.create_order(amount=amount, currency=currency)
+        order = razorpay_service.create_order(amount=total_amount, currency=currency)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Razorpay error: {str(e)}")
     
@@ -53,16 +74,17 @@ async def create_payment_order(
         user_id=current_user.id,
         plan_id=plan.id,
         razorpay_order_id=order["id"],
-        amount=amount,
+        amount=total_amount,
         currency=currency,
-        status=PaymentStatus.PENDING
+        status=PaymentStatus.PENDING,
+        coupon_code=coupon_code if discount_percent > 0 else None
     )
     db.add(transaction)
     await db.commit()
     
     return {
         "order_id": order["id"],
-        "amount": amount,
+        "amount": total_amount,
         "currency": currency,
         "key_id": razorpay_service.client.auth[0]
     }
@@ -105,6 +127,29 @@ async def verify_payment(
     transaction.country = payload.get("country")
     transaction.device = payload.get("device")
     transaction.ip_address = request.client.host
+    
+    # Increment Coupon count if used
+    if transaction.coupon_code:
+        c_stmt = select(Coupon).where(Coupon.code == transaction.coupon_code)
+        c_res = await db.execute(c_stmt)
+        coupon = c_res.scalars().first()
+        if coupon:
+            coupon.used_count_total += 1
+            
+            # Update user-specific usage
+            from app.models.coupon import UserCouponUsage
+            usage_stmt = select(UserCouponUsage).where(
+                UserCouponUsage.user_id == current_user.id,
+                UserCouponUsage.coupon_id == coupon.id
+            )
+            usage_res = await db.execute(usage_stmt)
+            user_usage = usage_res.scalars().first()
+            
+            if not user_usage:
+                user_usage = UserCouponUsage(user_id=current_user.id, coupon_id=coupon.id, usage_count=1)
+                db.add(user_usage)
+            else:
+                user_usage.usage_count += 1
     
     # Update User Info if provided and missing
     if payload.get("phone") and not current_user.phone_number:

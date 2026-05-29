@@ -1,3 +1,4 @@
+from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
@@ -8,7 +9,64 @@ from app.config import settings
 import hmac
 import hashlib
 
+from app.schemas.coupon import CouponValidate
+from app.models.coupon import Coupon
+from datetime import datetime, timezone
+
 router = APIRouter()
+
+@router.get("/validate-coupon", response_model=CouponValidate)
+async def validate_coupon(
+    code: str,
+    plan_tier: Optional[str] = None,
+    amount: Optional[int] = None,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Validate a coupon code with advanced restrictions.
+    """
+    stmt = select(Coupon).where(Coupon.code == code, Coupon.is_active == True)
+    result = await db.execute(stmt)
+    coupon = result.scalars().first()
+    
+    if not coupon:
+        return CouponValidate(code=code, discount_percent=0, valid=False, message="Invalid or inactive coupon code.")
+        
+    # 1. Global Expiry Check
+    if coupon.valid_until and coupon.valid_until < datetime.now(timezone.utc):
+        return CouponValidate(code=code, discount_percent=0, valid=False, message="This coupon has expired.")
+        
+    # 2. Global Usage Limit Check
+    if coupon.max_uses_total and coupon.used_count_total >= coupon.max_uses_total:
+        return CouponValidate(code=code, discount_percent=0, valid=False, message="This coupon has reached its total usage limit.")
+        
+    # 3. Per-User Limit Check
+    from app.models.coupon import UserCouponUsage
+    usage_stmt = select(UserCouponUsage).where(
+        UserCouponUsage.user_id == current_user.id,
+        UserCouponUsage.coupon_id == coupon.id
+    )
+    usage_res = await db.execute(usage_stmt)
+    user_usage = usage_res.scalars().first()
+    
+    if user_usage and user_usage.usage_count >= coupon.per_user_limit:
+        return CouponValidate(code=code, discount_percent=0, valid=False, message=f"You have already used this coupon {coupon.per_user_limit} time(s).")
+        
+    # 4. Plan Restriction Check
+    if coupon.restricted_to_plan and plan_tier and coupon.restricted_to_plan != plan_tier:
+        return CouponValidate(code=code, discount_percent=0, valid=False, message=f"This coupon is only valid for the {coupon.restricted_to_plan} plan.")
+        
+    # 5. Minimum Purchase Check
+    if coupon.min_purchase_amount and amount and amount < coupon.min_purchase_amount:
+        return CouponValidate(code=code, discount_percent=0, valid=False, message=f"Minimum purchase of {(coupon.min_purchase_amount/100):.2f} required.")
+        
+    return CouponValidate(
+        code=coupon.code,
+        discount_percent=coupon.discount_percent,
+        valid=True,
+        message=f"Coupon applied! {coupon.discount_percent}% discount."
+    )
 
 # Note: In production, use the official razorpay SDK.
 # import razorpay

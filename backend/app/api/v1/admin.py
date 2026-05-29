@@ -1,6 +1,7 @@
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import func
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.orm import selectinload
@@ -24,9 +25,65 @@ from app.models.template import TemplateSettings
 
 from app.schemas.activity import ActivityLogOut
 from app.models.activity import UserActivityLog
+from app.schemas.payment import TransactionOut # Assuming this exists or using dict
 from app.models.payment import Transaction, PaymentStatus
 
+from app.schemas.coupon import CouponCreate, CouponUpdate, CouponOut
+from app.models.coupon import Coupon
+
 router = APIRouter()
+...
+# --- COUPON MANAGEMENT ---
+
+@router.get("/coupons", response_model=List[CouponOut])
+async def list_coupons(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_role([UserRole.SUPER_ADMIN, UserRole.ADMIN]))
+):
+    """
+    List all coupons.
+    """
+    stmt = select(Coupon).order_by(Coupon.created_at.desc())
+    result = await db.execute(stmt)
+    return result.scalars().all()
+
+@router.post("/coupons", response_model=CouponOut)
+async def create_coupon(
+    coupon_in: CouponCreate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_role([UserRole.SUPER_ADMIN, UserRole.ADMIN]))
+):
+    """
+    Create a new coupon.
+    """
+    db_coupon = Coupon(**coupon_in.model_dump())
+    db.add(db_coupon)
+    try:
+        await db.commit()
+        await db.refresh(db_coupon)
+        return db_coupon
+    except IntegrityError:
+        await db.rollback()
+        raise HTTPException(status_code=400, detail="Coupon code already exists.")
+
+@router.delete("/coupons/{coupon_id}")
+async def delete_coupon(
+    coupon_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_role([UserRole.SUPER_ADMIN, UserRole.ADMIN]))
+):
+    """
+    Delete a coupon.
+    """
+    stmt = select(Coupon).where(Coupon.id == coupon_id)
+    result = await db.execute(stmt)
+    coupon = result.scalars().first()
+    if not coupon:
+        raise HTTPException(404, "Coupon not found")
+    
+    await db.delete(coupon)
+    await db.commit()
+    return {"message": "Coupon deleted"}
 
 # --- AI PROMPT MANAGEMENT ---
 

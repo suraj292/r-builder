@@ -30,6 +30,7 @@ export default function Checkout() {
   const [gstNumber, setGstNumber] = useState('');
   const [couponCode, setCouponCode] = useState('');
   const [discountApplied, setDiscountApplied] = useState(false);
+  const [discountPercent, setDiscountPercent] = useState(0);
   const [phone, setPhone] = useState(user?.phone_number || '');
   const [location, setLocation] = useState(user?.location || '');
 
@@ -83,7 +84,7 @@ export default function Checkout() {
   const basePrice = getPriceForCurrency();
   const basePriceInCurrency = basePrice / 100;
   const gstRate = 0.18; // 18% GST
-  const discountRate = discountApplied ? 0.20 : 0.0; // 20% discount coupon
+  const discountRate = discountApplied ? (discountPercent / 100) : 0.0;
 
   const discountAmount = basePriceInCurrency * discountRate;
   const subtotalAfterDiscount = basePriceInCurrency - discountAmount;
@@ -95,12 +96,26 @@ export default function Checkout() {
     return `${symbol}${amount.toFixed(2)}`;
   };
 
-  const handleApplyCoupon = (e: React.FormEvent) => {
+  const handleApplyCoupon = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (couponCode.toUpperCase() === 'SAVE20' || couponCode.toUpperCase() === 'RESUME20') {
-      setDiscountApplied(true);
-    } else {
-      alert('Invalid coupon code. Try SAVE20!');
+    if (!couponCode) return;
+
+    try {
+      const data = await api.get<{valid: boolean; discount_percent: number; message: string}>(
+        `/v1/subscriptions/validate-coupon?code=${encodeURIComponent(couponCode)}&plan_tier=${planTier}&amount=${basePrice}`
+      );
+      
+      if (data.valid) {
+        setDiscountApplied(true);
+        setDiscountPercent(data.discount_percent);
+        alert(data.message);
+      } else {
+        setDiscountApplied(false);
+        setDiscountPercent(0);
+        alert(data.message);
+      }
+    } catch (err) {
+      alert("Failed to validate coupon.");
     }
   };
 
@@ -115,7 +130,7 @@ export default function Checkout() {
       
       // 1. Create Order in Backend
       const order = await api.post<{order_id: string; amount: number; currency: string; key_id: string}>(
-        `/v1/payments/create-order?plan_tier=${planTier}&period=${billingPeriod}&currency=${currencyParam}`
+        `/v1/payments/create-order?plan_tier=${planTier}&period=${billingPeriod}&currency=${currencyParam}${discountApplied ? `&coupon_code=${encodeURIComponent(couponCode)}` : ''}`
       );
 
       // 2. Open Razorpay Checkout
