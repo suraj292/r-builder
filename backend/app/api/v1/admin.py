@@ -173,7 +173,7 @@ async def list_plans(
 async def create_plan(
     plan_in: PlanCreate,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(require_role([UserRole.SUPER_ADMIN]))
+    current_user: User = Depends(require_role([UserRole.SUPER_ADMIN, UserRole.ADMIN]))
 ):
     """
     Create a new subscription plan.
@@ -189,7 +189,7 @@ async def update_plan(
     plan_id: int,
     plan_in: PlanUpdate,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(require_role([UserRole.SUPER_ADMIN]))
+    current_user: User = Depends(require_role([UserRole.SUPER_ADMIN, UserRole.ADMIN]))
 ):
     """
     Update an existing subscription plan.

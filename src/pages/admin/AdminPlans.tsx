@@ -18,6 +18,7 @@ export default function AdminPlans() {
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [editingPlan, setEditingPlan] = useState<Plan | null>(null);
   const { config, detectCurrency, formatPrice } = useCurrencyStore();
 
   // Form State
@@ -54,30 +55,58 @@ export default function AdminPlans() {
     }
   };
 
-  const handleCreatePlan = async (e: React.FormEvent) => {
+  const handleCloseModal = () => {
+    setShowCreateModal(false);
+    setEditingPlan(null);
+    // Reset form
+    setTierCode('pro');
+    setName('');
+    setPriceMonthly(0);
+    setPriceYearly(0);
+    setRegionalPricesJson('{\n  "INR": { "monthly": 49900, "yearly": 499000 },\n  "EUR": { "monthly": 900, "yearly": 9000 }\n}');
+    setFeaturesJson('{\n  "ai_credits": 500,\n  "ats_scans": -1,\n  "premium_templates": true\n}');
+  };
+
+  const handleStartEdit = (plan: Plan) => {
+    setEditingPlan(plan);
+    setTierCode(plan.tier_code);
+    setName(plan.name);
+    setPriceMonthly(plan.price_monthly / 100);
+    setPriceYearly(plan.price_yearly / 100);
+    setRegionalPricesJson(plan.regional_prices ? JSON.stringify(plan.regional_prices, null, 2) : '{}');
+    setFeaturesJson(plan.features ? JSON.stringify(plan.features, null, 2) : '{}');
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      const parsedRegionalPrices = regionalPricesJson.trim() ? JSON.parse(regionalPricesJson) : null;
+      const parsedFeatures = featuresJson.trim() ? JSON.parse(featuresJson) : {};
+
       const payload = {
         tier_code: tierCode,
         name: name,
         price_monthly: Math.round(priceMonthly * 100),
         price_yearly: Math.round(priceYearly * 100),
-        regional_prices: JSON.parse(regionalPricesJson),
-        features: JSON.parse(featuresJson),
-        is_active: true
+        regional_prices: parsedRegionalPrices,
+        features: parsedFeatures
       };
-      await api.post('/v1/admin/plans', payload);
-      setShowCreateModal(false);
+
+      if (editingPlan) {
+        await api.patch(`/v1/admin/plans/${editingPlan.id}`, payload);
+      } else {
+        await api.post('/v1/admin/plans', { ...payload, is_active: true });
+      }
+
+      handleCloseModal();
       fetchPlans();
-      // Reset form
-      setName('');
-      setPriceMonthly(0);
-      setPriceYearly(0);
-    } catch (err) {
-      alert("Failed to create plan. Check JSON formats.");
+    } catch (err: any) {
+      const errorMsg = err?.message || "Check JSON formats.";
+      alert(`Failed to save plan: ${errorMsg}`);
       console.error(err);
     }
   };
+
 
   const getPriceForCurrency = (plan: Plan) => {
     if (plan.tier_code === 'free') return 0;
@@ -158,7 +187,11 @@ export default function AdminPlans() {
 
               <div className="p-4 bg-white border-t border-slate-100 flex items-center justify-between">
                 <div className="flex gap-2">
-                    <button className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all" title="Edit Plan">
+                    <button 
+                      onClick={() => handleStartEdit(plan)}
+                      className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all cursor-pointer" 
+                      title="Edit Plan"
+                    >
                         <i className="fa-solid fa-pen-to-square"></i>
                     </button>
                     <button 
@@ -178,25 +211,28 @@ export default function AdminPlans() {
         )}
       </div>
 
-      {/* CREATE PLAN MODAL */}
-      {showCreateModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+      {/* CREATE/EDIT PLAN MODAL */}
+      {(showCreateModal || editingPlan) && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-fade-in">
           <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden animate-slide-up">
             <div className="p-6 border-b border-slate-100 flex items-center justify-between">
-              <h3 className="text-xl font-bold text-slate-900">Create New Plan</h3>
-              <button onClick={() => setShowCreateModal(false)} className="text-slate-400 hover:text-slate-600 cursor-pointer">
+              <h3 className="text-xl font-bold text-slate-900">
+                {editingPlan ? `Edit Plan: ${editingPlan.name}` : 'Create New Plan'}
+              </h3>
+              <button onClick={handleCloseModal} className="text-slate-400 hover:text-slate-600 cursor-pointer">
                 <i className="fa-solid fa-xmark"></i>
               </button>
             </div>
 
-            <form onSubmit={handleCreatePlan} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
+            <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <label className="text-xs font-bold text-slate-500 uppercase">Tier Code</label>
                   <select
                     value={tierCode}
                     onChange={(e) => setTierCode(e.target.value)}
-                    className="w-full px-4 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                    disabled={!!editingPlan}
+                    className="w-full px-4 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-500 outline-none disabled:bg-slate-50 disabled:text-slate-400"
                   >
                     <option value="free">free</option>
                     <option value="pro">pro</option>
@@ -267,7 +303,7 @@ export default function AdminPlans() {
               <div className="pt-4 flex gap-3">
                 <button
                   type="button"
-                  onClick={() => setShowCreateModal(false)}
+                  onClick={handleCloseModal}
                   className="flex-1 py-2.5 rounded-xl border border-slate-200 text-sm font-bold text-slate-600 hover:bg-slate-50 transition-all cursor-pointer"
                 >
                   Cancel
@@ -276,7 +312,7 @@ export default function AdminPlans() {
                   type="submit"
                   className="flex-1 py-2.5 rounded-xl bg-indigo-600 text-white text-sm font-bold shadow-lg shadow-indigo-600/20 hover:bg-indigo-700 transition-all cursor-pointer"
                 >
-                  Create Plan
+                  {editingPlan ? 'Save Changes' : 'Create Plan'}
                 </button>
               </div>
             </form>
