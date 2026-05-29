@@ -30,10 +30,20 @@ export default function Checkout() {
   const [gstNumber, setGstNumber] = useState('');
   const [couponCode, setCouponCode] = useState('');
   const [discountApplied, setDiscountApplied] = useState(false);
+  const [phone, setPhone] = useState(user?.phone_number || '');
+  const [location, setLocation] = useState(user?.location || '');
 
   useEffect(() => {
     fetchPlans();
+    loadRazorpay();
   }, []);
+
+  const loadRazorpay = () => {
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.async = true;
+    document.body.appendChild(script);
+  };
 
   const fetchPlans = async () => {
     try {
@@ -95,18 +105,75 @@ export default function Checkout() {
   };
 
   const handlePayment = async () => {
+    if (!phone || !location) {
+        alert("Please provide your phone number and location to continue.");
+        return;
+    }
+
     try {
       setProcessing(true);
-      await api.post(`/v1/subscriptions/mock-upgrade?tier=${planTier}`);
-      await fetchUser();
-      setSuccess(true);
-      setTimeout(() => {
-        navigate('/user/resumes');
-      }, 3000);
+      
+      // 1. Create Order in Backend
+      const order = await api.post<{order_id: string; amount: number; currency: string; key_id: string}>(
+        `/v1/payments/create-order?plan_tier=${planTier}&period=${billingPeriod}&currency=${currencyParam}`
+      );
+
+      // 2. Open Razorpay Checkout
+      const options = {
+        key: order.key_id,
+        amount: order.amount,
+        currency: order.currency,
+        name: "ResumeAI Premium",
+        description: `${selectedPlan.name} Plan - ${billingPeriod}`,
+        order_id: order.order_id,
+        handler: async (response: any) => {
+          // 3. Verify Payment on Backend
+          try {
+            await api.post('/v1/payments/verify', {
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              phone,
+              location,
+              country: currencyParam === 'INR' ? 'India' : 'International',
+              device: `${navigator.platform} - ${navigator.vendor}`
+            });
+            
+            await fetchUser();
+            setSuccess(true);
+            setTimeout(() => {
+              navigate('/user/resumes');
+            }, 3000);
+          } catch (err) {
+            console.error('Verification failed', err);
+            alert("Payment verification failed. Please contact support.");
+          }
+        },
+        prefill: {
+          name: user?.full_name || '',
+          email: user?.email || '',
+          contact: phone
+        },
+        theme: {
+          color: "#4f46e5"
+        },
+        modal: {
+          ondismiss: () => setProcessing(false)
+        }
+      };
+
+      if (!(window as any).Razorpay) {
+        alert("Razorpay SDK failed to load. Please check your internet connection.");
+        setProcessing(false);
+        return;
+      }
+
+      const rzp = (window as any).Razorpay(options);
+      rzp.open();
+      
     } catch (err) {
-      console.error('Failed to complete payment', err);
-      alert('Payment processing failed. Please try again.');
-    } finally {
+      console.error('Failed to initiate payment', err);
+      alert('Failed to start payment process. Please try again.');
       setProcessing(false);
     }
   };
@@ -218,6 +285,31 @@ export default function Checkout() {
                       value={user?.email || ''}
                       className="form-input w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-900 text-sm focus:outline-none bg-slate-50"
                       readOnly 
+                    />
+                  </div>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Phone Number</label>
+                    <input 
+                      type="tel" 
+                      placeholder="e.g. +91 98765 43210"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      className="form-input w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-900 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 uppercase mb-2">City / Location</label>
+                    <input 
+                      type="text" 
+                      placeholder="e.g. Mumbai, India"
+                      value={location}
+                      onChange={(e) => setLocation(e.target.value)}
+                      className="form-input w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-900 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                      required
                     />
                   </div>
                 </div>

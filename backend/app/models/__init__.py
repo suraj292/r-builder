@@ -6,3 +6,4 @@ from app.models.ai import AIPrompt
 from app.models.template import TemplateSettings
 from app.models.activity import UserActivityLog
 from app.models.guest_log import GuestScanLog
+from app.models.payment import Transaction

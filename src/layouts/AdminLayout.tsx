@@ -5,6 +5,7 @@ const navItems = [
   { path: '/admin', label: 'Dashboard', icon: 'fa-chart-line' },
   { path: '/admin/users', label: 'Users', icon: 'fa-users' },
   { path: '/admin/resumes', label: 'Resumes', icon: 'fa-file-lines' },
+  { path: '/admin/subscriptions', label: 'Subscriptions', icon: 'fa-receipt' },
   { path: '/admin/plans', label: 'Plans', icon: 'fa-credit-card' },
   { path: '/admin/templates', label: 'Templates', icon: 'fa-table-columns' },
   { path: '/admin/ai', label: 'AI Management', icon: 'fa-robot' },

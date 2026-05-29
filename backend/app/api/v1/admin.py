@@ -1,7 +1,9 @@
+from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy.orm import selectinload
 from typing import List
 from app.api.deps import get_db, require_role
 from app.models.user import User, UserRole
@@ -10,7 +12,7 @@ from app.models.resume import Resume
 from app.config import settings
 
 from app.schemas.subscription import PlanCreate, PlanUpdate, PlanOut, CreditAdjustment
-from app.models.subscription import Plan
+from app.models.subscription import Plan, Subscription
 
 from app.schemas.ai import AIPromptCreate, AIPromptUpdate, AIPromptOut, AIConfigUpdate, AIHealthStatus, AITestRequest, AITestResponse
 from app.models.ai import AIPrompt
@@ -19,6 +21,10 @@ from app.services.ai_service import AIService
 
 from app.schemas.template import TemplateSettingsUpdate, TemplateSettingsOut
 from app.models.template import TemplateSettings
+
+from app.schemas.activity import ActivityLogOut
+from app.models.activity import UserActivityLog
+from app.models.payment import Transaction, PaymentStatus
 
 router = APIRouter()
 
@@ -348,6 +354,172 @@ async def get_all_resumes(
         for r in resumes
     ]
 
+@router.get("/transactions")
+async def get_all_transactions(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_role([UserRole.SUPER_ADMIN, UserRole.ADMIN]))
+):
+    """
+    Fetch all payment transactions.
+    """
+    stmt = select(Transaction).options(
+        selectinload(Transaction.user),
+        selectinload(Transaction.plan)
+    ).order_by(Transaction.created_at.desc())
+    result = await db.execute(stmt)
+    transactions = result.scalars().all()
+    
+    return [
+        {
+            "id": t.id,
+            "user_email": t.user.email if t.user else "Deleted User",
+            "plan_name": t.plan.name if t.plan else "Unknown Plan",
+            "amount": t.amount,
+            "currency": t.currency,
+            "status": t.status,
+            "order_id": t.razorpay_order_id,
+            "payment_id": t.razorpay_payment_id,
+            "country": t.country,
+            "device": t.device,
+            "created_at": t.created_at
+        }
+        for t in transactions
+    ]
+
+@router.get("/subscriptions")
+async def get_all_active_subscriptions(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_role([UserRole.SUPER_ADMIN, UserRole.ADMIN]))
+):
+    """
+    Fetch all user subscriptions.
+    """
+    stmt = select(Subscription).options(
+        selectinload(Subscription.user),
+        selectinload(Subscription.plan)
+    ).order_by(Subscription.current_period_end.desc())
+    result = await db.execute(stmt)
+    subs = result.scalars().all()
+    
+    return [
+        {
+            "id": s.id,
+            "user_id": s.user_id,
+            "user_email": s.user.email if s.user else "Deleted User",
+            "plan_name": s.plan.name if s.plan else "Unknown Plan",
+            "status": s.status,
+            "start_date": s.current_period_start,
+            "end_date": s.current_period_end,
+            "is_expired": s.current_period_end < datetime.now(s.current_period_end.tzinfo) if s.current_period_end else False
+        }
+        for s in subs
+    ]
+
+@router.get("/users/{user_id}/subscription-detail")
+async def get_user_subscription_detail(
+    user_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_role([UserRole.SUPER_ADMIN, UserRole.ADMIN]))
+):
+    """
+    Get detailed subscription info for a specific USER.
+    """
+    stmt = select(Subscription).options(
+        selectinload(Subscription.user),
+        selectinload(Subscription.plan)
+    ).where(Subscription.user_id == user_id)
+    result = await db.execute(stmt)
+    sub = result.scalars().first()
+    
+    if not sub:
+        # If no subscription found, still return user info so admin can create one or see they are free
+        u_stmt = select(User).where(User.id == user_id)
+        u_res = await db.execute(u_stmt)
+        user = u_res.scalars().first()
+        if not user: raise HTTPException(404, "User not found")
+        return { "user": user, "subscription": None, "plan": None, "transactions": [] }
+        
+    # Fetch recent transactions for this user
+    t_stmt = select(Transaction).options(selectinload(Transaction.plan)).where(Transaction.user_id == user_id).order_by(Transaction.created_at.desc()).limit(10)
+    t_result = await db.execute(t_stmt)
+    transactions = t_result.scalars().all()
+    
+    return {
+        "subscription": {
+            "id": sub.id,
+            "status": sub.status,
+            "start_date": sub.current_period_start,
+            "end_date": sub.current_period_end,
+            "is_expired": sub.current_period_end < datetime.now(sub.current_period_end.tzinfo) if sub.current_period_end else False,
+            "cancel_at_period_end": sub.cancel_at_period_end,
+            "razorpay_id": sub.razorpay_subscription_id
+        },
+        "user": sub.user,
+        "plan": sub.plan,
+        "transactions": [
+            {
+                "id": t.id,
+                "amount": t.amount,
+                "currency": t.currency,
+                "status": t.status,
+                "order_id": t.razorpay_order_id,
+                "created_at": t.created_at,
+                "plan_name": t.plan.name if t.plan else "Unknown"
+            }
+            for t in transactions
+        ]
+    }
+
+@router.get("/subscriptions/{subscription_id}")
+async def get_subscription_detail(
+    subscription_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_role([UserRole.SUPER_ADMIN, UserRole.ADMIN]))
+):
+    """
+    Get detailed subscription info including user and payment history.
+    """
+    stmt = select(Subscription).options(
+        selectinload(Subscription.user),
+        selectinload(Subscription.plan)
+    ).where(Subscription.id == subscription_id)
+    result = await db.execute(stmt)
+    sub = result.scalars().first()
+    
+    if not sub:
+        raise HTTPException(404, "Subscription not found")
+        
+    # Fetch recent transactions for this user
+    t_stmt = select(Transaction).options(selectinload(Transaction.plan)).where(Transaction.user_id == sub.user_id).order_by(Transaction.created_at.desc()).limit(10)
+    t_result = await db.execute(t_stmt)
+    transactions = t_result.scalars().all()
+    
+    return {
+        "subscription": {
+            "id": sub.id,
+            "status": sub.status,
+            "start_date": sub.current_period_start,
+            "end_date": sub.current_period_end,
+            "is_expired": sub.current_period_end < datetime.now(sub.current_period_end.tzinfo) if sub.current_period_end else False,
+            "cancel_at_period_end": sub.cancel_at_period_end,
+            "razorpay_id": sub.razorpay_subscription_id
+        },
+        "user": sub.user, # UserOut should handle this
+        "plan": sub.plan,
+        "transactions": [
+            {
+                "id": t.id,
+                "amount": t.amount,
+                "currency": t.currency,
+                "status": t.status,
+                "order_id": t.razorpay_order_id,
+                "created_at": t.created_at,
+                "plan_name": t.plan.name if t.plan else "Unknown"
+            }
+            for t in transactions
+        ]
+    }
+
 @router.get("/stats")
 async def get_system_stats(
     db: AsyncSession = Depends(get_db),
@@ -370,12 +542,18 @@ async def get_system_stats(
     premium_count_stmt = select(func.count(User.id)).where(User.is_premium == True)
     premium_result = await db.execute(premium_count_stmt)
     total_premium = premium_result.scalar() or 0
+
+    # Calculate total revenue from completed transactions
+    revenue_stmt = select(func.sum(Transaction.amount)).where(Transaction.status == PaymentStatus.COMPLETED)
+    revenue_result = await db.execute(revenue_stmt)
+    total_revenue = (revenue_result.scalar() or 0) / 100 # Convert to currency units
     
     return {
         "total_users": total_users,
         "active_subscriptions": total_premium,
         "resumes_created": total_resumes,
-        "ai_usage_today": 0
+        "ai_usage_today": 0,
+        "total_revenue": total_revenue
     }
 
 @router.patch("/users/{user_id}/role", response_model=UserOut)
@@ -444,3 +622,121 @@ async def update_template_settings(
     await db.refresh(db_setting)
     
     return {"isActive": db_setting.is_active, "requiredTier": db_setting.required_tier}
+
+# --- ADVANCED SUBSCRIPTION & USER MANAGEMENT ---
+
+@router.patch("/subscriptions/{subscription_id}/validity")
+async def update_subscription_validity(
+    subscription_id: int,
+    payload: dict, # Expects {"end_date": "YYYY-MM-DD"}
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_role([UserRole.SUPER_ADMIN, UserRole.ADMIN]))
+):
+    """
+    Manually update a user's subscription end date.
+    """
+    stmt = select(Subscription).where(Subscription.id == subscription_id)
+    result = await db.execute(stmt)
+    sub = result.scalars().first()
+    
+    if not sub:
+        raise HTTPException(404, "Subscription not found")
+        
+    try:
+        new_date = datetime.strptime(payload["end_date"], "%Y-%m-%d")
+        sub.current_period_end = new_date
+    except Exception:
+        raise HTTPException(400, "Invalid date format. Use YYYY-MM-DD")
+        
+    await log_activity(db, sub.user_id, "admin_subscription_override", f"Admin {current_user.email} updated validity to {payload['end_date']}")
+    await db.commit()
+    return {"message": "Subscription updated"}
+
+@router.post("/users/send-email")
+async def send_admin_user_email(
+    payload: dict, # Expects {"email": str, "subject": str, "message": str}
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_role([UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.SUPPORT]))
+):
+    """
+    Send a direct email from Admin to a user.
+    """
+    email = payload.get("email")
+    subject = payload.get("subject")
+    message = payload.get("message")
+    
+    if not all([email, subject, message]):
+        raise HTTPException(400, "Missing email, subject, or message")
+        
+    EmailService.send_admin_email(email, subject, message)
+    
+    # Log the action
+    # Find user ID for logging
+    stmt = select(User.id).where(User.email == email)
+    res = await db.execute(stmt)
+    uid = res.scalar()
+    if uid:
+        await log_activity(db, uid, "admin_email_sent", f"Subject: {subject}")
+        await db.commit()
+        
+    return {"message": "Email sent successfully"}
+
+@router.get("/transactions/{transaction_id}/invoice")
+async def get_transaction_invoice_html(
+    transaction_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_role([UserRole.SUPER_ADMIN, UserRole.ADMIN]))
+):
+    """
+    Generate a simple HTML invoice for a transaction.
+    """
+    stmt = select(Transaction).options(selectinload(Transaction.user), selectinload(Transaction.plan)).where(Transaction.id == transaction_id)
+    result = await db.execute(stmt)
+    t = result.scalars().first()
+    
+    if not t:
+        raise HTTPException(404, "Transaction not found")
+        
+    # Return basic HTML that can be printed as PDF by the browser
+    invoice_html = f"""
+    <html>
+    <head>
+        <style>
+            body {{ font-family: sans-serif; padding: 40px; color: #1e293b; }}
+            .header {{ display: flex; justify-content: space-between; border-bottom: 2px solid #e2e8f0; padding-bottom: 20px; }}
+            .details {{ margin-top: 40px; }}
+            .table {{ width: 100%; margin-top: 40px; border-collapse: collapse; }}
+            .table th, .table td {{ padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: left; }}
+            .footer {{ margin-top: 60px; font-size: 12px; color: #64748b; text-align: center; }}
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <div><h1>INVOICE</h1><p>#INV-{t.razorpay_order_id[-8:]}</p></div>
+            <div style="text-align: right;"><strong>ResumeAI</strong><br/>contact@resumeai.com</div>
+        </div>
+        <div class="details">
+            <p><strong>Billed To:</strong><br/>{t.user.email}<br/>{t.country or ""}</p>
+            <p><strong>Date:</strong> {t.created_at.strftime("%B %d, %Y")}</p>
+        </div>
+        <table class="table">
+            <thead><tr><th>Description</th><th>Period</th><th>Amount</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>{t.plan.name} Subscription</td>
+                    <td>{t.created_at.strftime("%m/%Y")}</td>
+                    <td>{t.currency} {(t.amount / 100):.2f}</td>
+                </tr>
+            </tbody>
+        </table>
+        <div style="text-align: right; margin-top: 20px;">
+            <h3>Total: {t.currency} {(t.amount / 100):.2f}</h3>
+        </div>
+        <div class="footer">
+            <p>Thank you for choosing ResumeAI.</p>
+        </div>
+    </body>
+    </html>
+    """
+    from fastapi.responses import HTMLResponse
+    return HTMLResponse(content=invoice_html)

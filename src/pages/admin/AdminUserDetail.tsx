@@ -202,6 +202,19 @@ export default function AdminUserDetail() {
                 <div className="p-6 space-y-4">
                     <div className="flex items-center justify-between p-4 rounded-xl bg-slate-50 border border-slate-100 hover:border-indigo-200 transition-colors">
                         <div>
+                            <p className="text-sm font-bold text-slate-800">Subscription Management</p>
+                            <p className="text-xs text-slate-500">View validity, invoices and email user.</p>
+                        </div>
+                        <button 
+                            onClick={() => navigate(`/admin/subscriptions/${user.id}`)}
+                            className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 cursor-pointer shadow-sm"
+                        >
+                            Manage Sub
+                        </button>
+                    </div>
+
+                    <div className="flex items-center justify-between p-4 rounded-xl bg-slate-50 border border-slate-100 hover:border-indigo-200 transition-colors">
+                        <div>
                             <p className="text-sm font-bold text-slate-800">Role Management</p>
                             <p className="text-xs text-slate-500">Modify user access level and permissions.</p>
                         </div>

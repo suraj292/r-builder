@@ -6,6 +6,7 @@ interface Stats {
   active_subscriptions: number;
   resumes_created: number;
   ai_usage_today: number;
+  total_revenue: number;
 }
 
 export default function AdminDashboard() {
@@ -28,9 +29,9 @@ export default function AdminDashboard() {
 
   const statCards = [
     { label: 'Total Users', value: stats?.total_users || 0, icon: 'fa-users', color: 'bg-blue-500', trend: '+12%' },
+    { label: 'Total Revenue', value: `₹${stats?.total_revenue?.toLocaleString() || 0}`, icon: 'fa-sack-dollar', color: 'bg-indigo-600', trend: '+18%' },
     { label: 'Active Subs', value: stats?.active_subscriptions || 0, icon: 'fa-credit-card', color: 'bg-emerald-500', trend: '+5%' },
-    { label: 'Resumes Created', value: stats?.resumes_created || 0, icon: 'fa-file-lines', color: 'bg-indigo-500', trend: '+28%' },
-    { label: 'AI Operations', value: stats?.ai_usage_today || 0, icon: 'fa-robot', color: 'bg-amber-500', trend: '+15%' },
+    { label: 'Resumes Created', value: stats?.resumes_created || 0, icon: 'fa-file-lines', color: 'bg-amber-500', trend: '+28%' },
   ];
 
   if (loading) return (

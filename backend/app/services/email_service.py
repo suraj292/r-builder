@@ -54,3 +54,17 @@ class EmailService:
         """
         cls.send_email(to_email, subject, body, is_html=True)
 
+    @classmethod
+    def send_admin_email(cls, to_email: str, subject: str, message: str):
+        body = f"""
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px;">
+            <h2 style="color: #4f46e5; margin-bottom: 20px;">Support Message from ResumeAI</h2>
+            <div style="color: #334155; font-size: 16px; line-height: 1.6; white-space: pre-wrap;">
+                {message}
+            </div>
+            <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 30px 0;" />
+            <p style="color: #94a3b8; font-size: 12px;">This is a message from the ResumeAI Administration Team.</p>
+        </div>
+        """
+        cls.send_email(to_email, subject, body, is_html=True)
+
