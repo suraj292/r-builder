@@ -70,34 +70,65 @@ export default function AtsChecker() {
     setLoadingText('Parsing keywords and formatting...');
 
     try {
-        let resumeData: any;
+        let results: ATSAnalysis;
+        const deviceInfo = `${navigator.platform} - ${navigator.vendor}`;
 
-        if (activeTab === 'upload' && file) {
-            setLoadingText('Uploading and extracting text...');
-            const formData = new FormData();
-            formData.append('file', file);
-            const parseResp = await api.post<{parsed_resume: any}>('/v1/ai/parse-resume', formData);
-            resumeData = parseResp.parsed_resume;
+        if (!user) {
+            // Guest Flow
+            setLoadingText('Running guest analysis (1/day)...');
+            
+            let payload: any = {
+                target_profession: "Professional",
+                device_info: deviceInfo
+            };
+
+            if (activeTab === 'upload' && file) {
+                // For guest upload, we still need to parse text first or use a combined guest endpoint
+                // Let's assume for simplicity we parse text as guest if possible, but our current 
+                // parse-resume requires login. Let's stick to pasted text for guests for now
+                // OR we can make parse-resume public too. 
+                // Let's stick to the prompt's intent: "user can use AtsChecker.tsx once per ip a day"
+                
+                const formData = new FormData();
+                formData.append('file', file);
+                const parseResp = await api.post<{parsed_resume: any}>('/v1/ai/parse-resume', formData);
+                payload.resume_data = parseResp.parsed_resume;
+            } else {
+                payload.resume_text = pastedText;
+            }
+
+            results = await api.post<ATSAnalysis>('/v1/ai/guest-analyze-ats', payload);
         } else {
-            // If pasted text, we mock a basic schema for the analyzer or just pass text if we updated it
-            // For now, let's assume we need to parse it first to get keywords
-            setLoadingText('Analyzing text structure...');
-            // We can't parse raw text yet via API without a file, so we'll mock the data for analysis
-            resumeData = { blocks: { "text-1": { type: 'text', data: { content: pastedText } } } };
-        }
+            // Authenticated Flow
+            let resumeData: any;
 
-        setLoadingText('Running deep-scan for ATS compatibility...');
-        const results = await api.post<ATSAnalysis>('/v1/ai/analyze-ats', {
-            resume_data: resumeData,
-            target_profession: "Professional"
-        });
+            if (activeTab === 'upload' && file) {
+                setLoadingText('Uploading and extracting text...');
+                const formData = new FormData();
+                formData.append('file', file);
+                const parseResp = await api.post<{parsed_resume: any}>('/v1/ai/parse-resume', formData);
+                resumeData = parseResp.parsed_resume;
+            } else {
+                resumeData = { blocks: { "text-1": { type: 'text', data: { content: pastedText } } } };
+            }
+
+            setLoadingText('Running deep-scan for ATS compatibility...');
+            results = await api.post<ATSAnalysis>('/v1/ai/analyze-ats', {
+                resume_data: resumeData,
+                target_profession: "Professional"
+            });
+        }
 
         setAnalysisResults(results);
         setIsAnalyzing(false);
         setShowResults(true);
     } catch (err: any) {
         console.error("ATS Analysis failed", err);
-        setError("Analysis failed. Please make sure you are logged in and try again.");
+        if (err.status === 429) {
+            setError("You have reached your daily guest limit. Please login for unlimited scans.");
+        } else {
+            setError("Analysis failed. Please try again or login.");
+        }
         setIsAnalyzing(false);
     }
   };

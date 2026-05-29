@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useResumeStore } from '../../store/useResumeStore';
 import { A4Page } from './A4Page';
 import { ZoomIn, ZoomOut, Download, Undo, Redo, Share2, Sparkles, Wand2, Upload, FileText } from 'lucide-react';
@@ -281,7 +282,9 @@ export const Workspace: React.FC = () => {
       {/* Top Toolbar */}
       <header className="h-14 bg-white border-b border-gray-200 flex items-center justify-between px-6 z-20 shrink-0">
         <div className="flex items-center gap-4">
-          <h1 className="font-bold text-xl text-blue-600">ResuMaker</h1>
+          <Link to="/">
+            <h1 className="font-bold text-xl text-blue-600 hover:opacity-85 transition-opacity">ResuMaker</h1>
+          </Link>
           <div className="h-6 w-px bg-gray-200" />
           <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
             <button 

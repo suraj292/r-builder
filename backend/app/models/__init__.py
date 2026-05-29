@@ -4,3 +4,5 @@ from app.models.resume import Resume
 from app.models.subscription import Plan, Subscription
 from app.models.ai import AIPrompt
 from app.models.template import TemplateSettings
+from app.models.activity import UserActivityLog
+from app.models.guest_log import GuestScanLog

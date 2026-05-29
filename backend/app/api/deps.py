@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -9,13 +9,19 @@ from app.config import settings
 from app.models.user import User, UserRole
 from app.schemas.auth import TokenData
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"/api/v1/auth/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"/api/v1/auth/login", auto_error=False)
 
 async def get_db() -> AsyncSession:
     async with SessionLocal() as session:
         yield session
 
 async def get_current_user(db: AsyncSession = Depends(get_db), token: str = Depends(oauth2_scheme)):
+    if not token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -37,6 +43,21 @@ async def get_current_user(db: AsyncSession = Depends(get_db), token: str = Depe
     if user is None:
         raise credentials_exception
     return user
+
+async def get_current_user_optional(db: AsyncSession = Depends(get_db), token: str = Depends(oauth2_scheme)) -> Optional[User]:
+    if not token:
+        return None
+    try:
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        email: str = payload.get("sub")
+        if email is None:
+            return None
+        token_data = TokenData(email=email)
+        stmt = select(User).where(User.email == token_data.email)
+        result = await db.execute(stmt)
+        return result.scalars().first()
+    except JWTError:
+        return None
 
 def require_role(allowed_roles: List[UserRole]):
     async def role_checker(current_user: User = Depends(get_current_user)):

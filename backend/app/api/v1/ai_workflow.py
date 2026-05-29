@@ -1,7 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Request
 from pydantic import BaseModel
 from typing import Optional, Any
 import io
+import json
+from datetime import datetime, time as dtime, timedelta
 
 try:
     import pypdf
@@ -10,9 +12,14 @@ except ImportError:
     PYPDF_AVAILABLE = False
 
 
-from app.api.deps import get_current_user
+from app.api.deps import get_current_user, get_db, get_current_user_optional
 from app.models.user import User
+from app.models.guest_log import GuestScanLog
+from app.schemas.guest_log import GuestAnalyzeRequest
 from app.services.ai_workflow import ResumeAIWorkflowService
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
+from sqlalchemy import func
 
 router = APIRouter()
 
@@ -30,7 +37,7 @@ class OptimizeRequest(BaseModel):
 @router.post("/parse-resume")
 async def parse_resume_upload(
     file: UploadFile = File(...),
-    current_user: User = Depends(get_current_user)
+    current_user: Optional[User] = Depends(get_current_user_optional)
 ):
     """
     Extracts text from an uploaded PDF/DOCX and uses AI to map it to the ResumeSchema.
@@ -67,7 +74,7 @@ async def parse_resume_upload(
 @router.post("/analyze-ats")
 async def analyze_resume_ats(
     req: AnalyzeRequest,
-    current_user: User = Depends(get_current_user)
+    current_user: Optional[User] = Depends(get_current_user_optional)
 ):
     """
     Analyzes the resume schema against an optional job description.
@@ -101,3 +108,54 @@ async def optimize_resume_content(
         return {"optimized_resume": optimized}
     except Exception as e:
         raise HTTPException(500, f"Error optimizing resume: {str(e)}")
+
+@router.post("/guest-analyze-ats")
+async def guest_analyze_ats(
+    req: GuestAnalyzeRequest,
+    request: Request,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Public ATS analysis for guests. Limited to 1 per IP per day.
+    """
+    client_ip = request.client.host
+    
+    # Check for existing scans today from this IP
+    today_start = datetime.combine(datetime.now(), dtime.min)
+    stmt = select(func.count(GuestScanLog.id)).where(
+        GuestScanLog.ip_address == client_ip,
+        GuestScanLog.created_at >= today_start
+    )
+    result = await db.execute(stmt)
+    count = result.scalar()
+    
+    if count >= 1:
+        raise HTTPException(
+            status_code=429, 
+            detail="Guest limit reached. Please log in to perform unlimited scans."
+        )
+    
+    # Run analysis
+    try:
+        # Prepare data for analysis
+        resume_data = req.resume_data or {"blocks": {"text-1": {"type": "text", "data": {"content": req.resume_text or ""}}}}
+        
+        analysis = await ResumeAIWorkflowService.analyze_ats(
+            resume_data=resume_data,
+            target_profession=req.target_profession
+        )
+        
+        # Log the scan
+        new_log = GuestScanLog(
+            ip_address=client_ip,
+            user_agent=request.headers.get("user-agent"),
+            device_info=req.device_info,
+            resume_text=json.dumps(resume_data),
+            analysis_result=analysis
+        )
+        db.add(new_log)
+        await db.commit()
+        
+        return analysis
+    except Exception as e:
+        raise HTTPException(500, f"Analysis failed: {str(e)}")
