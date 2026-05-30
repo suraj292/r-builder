@@ -1,7 +1,105 @@
-import { useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
+import { api } from '../../lib/api';
+
+import { useCurrencyStore } from '../../store/useCurrencyStore';
+import { cn } from '../../lib/utils';
+
+interface Plan {
+  id: number;
+  tier_code: string;
+  name: string;
+  price_monthly: number;
+  price_yearly: number;
+  regional_prices: any;
+  features: any;
+  is_active: boolean;
+}
+
+const getTierDefaultOrder = (tier: string) => {
+  if (tier === 'free') return 1;
+  if (tier === 'pro') return 2;
+  if (tier === 'career_plus') return 3;
+  return 99;
+};
 
 export default function Home() {
+  const [plans, setPlans] = useState<Plan[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isYearly, setIsYearly] = useState(false);
+
+  const { config, detectCurrency, formatPrice } = useCurrencyStore();
+
+  useEffect(() => {
+    detectCurrency();
+    fetchPlans();
+  }, [detectCurrency]);
+
+  const fetchPlans = async () => {
+    try {
+        setLoading(true);
+        const data = await api.get<Plan[]>('/v1/subscriptions/plans');
+        setPlans(data);
+    } catch (err) {
+        console.error('Failed to fetch plans', err);
+        setPlans([]);
+    } finally {
+        setLoading(false);
+    }
+  };
+
+  const getPriceForCurrency = (plan: Plan, isYearly: boolean) => {
+    if (plan.tier_code === 'free') return 0;
+    if (plan.regional_prices && plan.regional_prices[config.currency]) {
+        return isYearly 
+            ? plan.regional_prices[config.currency].yearly 
+            : plan.regional_prices[config.currency].monthly;
+    }
+    return isYearly ? plan.price_yearly : plan.price_monthly;
+  };
+
+  const getPlanFeatures = (tierCode: string) => {
+    switch (tierCode) {
+        case 'free':
+            return [
+                { name: '1 Active Resume', active: true },
+                { name: 'Basic AI Rewrites (10 credits)', active: true },
+                { name: 'Limited Templates', active: true },
+                { name: 'Basic ATS Score', active: true },
+                { name: 'Resume Upload', active: true },
+                { name: 'Premium Templates', active: false },
+                { name: 'PDF Downloads', active: false },
+            ];
+        case 'pro':
+            return [
+                { name: 'Unlimited Resumes', active: true },
+                { name: '500 AI Rewrite Credits', active: true },
+                { name: 'All Premium Templates', active: true },
+                { name: 'ATS Keyword Matching', active: true },
+                { name: 'PDF & DOCX Downloads', active: true },
+                { name: 'Priority Support', active: true },
+            ];
+        case 'career_plus':
+        default:
+            return [
+                { name: 'Everything in Pro', active: true, bold: true },
+                { name: 'Unlimited AI Credits', active: true },
+                { name: 'Advanced ATS Analysis', active: true },
+                { name: 'Job Description Matcher', active: true },
+                { name: 'Cover Letter Generator', active: true },
+                { name: 'Early Access Features', active: true },
+            ];
+    }
+  };
+
+  const sortedPlans = useMemo(() => {
+    return [...plans].sort((a, b) => {
+        const orderA = a.features?.order !== undefined ? Number(a.features.order) : getTierDefaultOrder(a.tier_code);
+        const orderB = b.features?.order !== undefined ? Number(b.features.order) : getTierDefaultOrder(b.tier_code);
+        return orderA - orderB;
+    });
+  }, [plans]);
+
   useEffect(() => {
     const observerOptions = {
       threshold: 0.1,
@@ -40,7 +138,7 @@ export default function Home() {
         observer.unobserve(el);
       });
     };
-  }, []);
+  }, [loading, plans]);
 
   return (
     <>
@@ -464,41 +562,99 @@ export default function Home() {
 
     {/*  9. PRICING PREVIEW  */}
     <section className="py-24 bg-white">
-        <div className="container mx-auto px-6 max-w-4xl text-center">
-            <h2 className="text-3xl font-display font-bold text-slate-900 mb-12 reveal">Plans for every career stage</h2>
-            
-            <div className="grid md:grid-cols-3 gap-6 items-center">
-                <div className="p-6 border border-slate-200 rounded-xl text-slate-500 reveal hover:border-indigo-200 transition-colors">
-                    <h3 className="font-bold text-lg mb-2">Free</h3>
-                    <p className="text-3xl font-bold text-slate-900 mb-4">₹0</p>
-                    <ul className="text-sm space-y-2 mb-6">
-                        <li>1 Resume</li>
-                        <li>Basic Templates</li>
-                    </ul>
-                </div>
+        <div className="container mx-auto px-6 max-w-5xl text-center">
+            <h2 className="text-3xl md:text-4xl font-display font-bold text-slate-900 mb-6 reveal">Plans for every career stage</h2>
+            <p className="text-slate-500 mb-10 max-w-xl mx-auto reveal delay-100">Simple, transparent pricing tailored to your region.</p>
 
-                <div className="p-8 bg-slate-900 text-white rounded-2xl shadow-xl transform scale-105 relative reveal delay-100 hover:scale-110 transition-transform duration-300">
-                    <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-indigo-500 text-xs font-bold px-3 py-1 rounded-full animate-bounce">POPULAR</div>
-                    <h3 className="font-bold text-xl mb-2">Pro</h3>
-                    <p className="text-4xl font-bold mb-4">₹499</p>
-                    <p className="text-indigo-200 text-sm mb-6">/month</p>
-                    <ul className="text-sm space-y-3 mb-8 text-slate-300">
-                        <li>Unlimited Resumes</li>
-                        <li>AI Optimization</li>
-                        <li>PDF Downloads</li>
-                    </ul>
-                    <Link to="/pricing" className="block w-full py-3 bg-indigo-600 rounded-xl font-bold hover:bg-indigo-500 transition-colors shadow-lg hover:shadow-indigo-500/50">View Plans</Link>
-                </div>
-
-                <div className="p-6 border border-slate-200 rounded-xl text-slate-500 reveal delay-200 hover:border-indigo-200 transition-colors">
-                    <h3 className="font-bold text-lg mb-2">Premium</h3>
-                    <p className="text-3xl font-bold text-slate-900 mb-4">₹999</p>
-                    <ul className="text-sm space-y-2 mb-6">
-                        <li>Cover Letters</li>
-                        <li>Personal Branding</li>
-                    </ul>
-                </div>
+            {/* Toggle Switch */}
+            <div className="flex items-center justify-center gap-4 mb-12 reveal delay-200">
+                <span className={`text-sm font-bold transition-colors ${!isYearly ? 'text-slate-900' : 'text-slate-400'}`}>Monthly</span>
+                <button 
+                    onClick={() => setIsYearly(!isYearly)}
+                    className="relative inline-block w-14 h-8 align-middle select-none transition duration-200 ease-in bg-slate-200 rounded-full focus:outline-none p-1"
+                >
+                    <div 
+                        className="w-6 h-6 rounded-full bg-white transition-transform duration-300 shadow-sm"
+                        style={{ transform: isYearly ? 'translateX(24px)' : 'translateX(0)' }}
+                    />
+                </button>
+                <span className={`text-sm font-bold transition-colors ${isYearly ? 'text-slate-900' : 'text-slate-400'}`}>Yearly</span>
+                <span className="bg-emerald-100 text-emerald-700 text-[10px] font-black px-2 py-0.5 rounded-full border border-emerald-200">SAVE 20%</span>
             </div>
+            
+            {loading ? (
+                <div className="py-20 flex justify-center">
+                    <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+                </div>
+            ) : (
+                <div className="grid md:grid-cols-3 gap-6 items-stretch">
+                    {sortedPlans.map((plan, idx) => {
+                        const isPro = plan.tier_code === 'pro';
+                        const isFree = plan.tier_code === 'free';
+                        const features = getPlanFeatures(plan.tier_code);
+                        const priceAmount = getPriceForCurrency(plan, isYearly);
+
+                        return (
+                            <div 
+                                key={plan.id}
+                                className={cn(
+                                    "p-8 rounded-3xl border transition-all duration-300 flex flex-col reveal",
+                                    idx === 0 ? "delay-100" : idx === 1 ? "delay-200" : "delay-300",
+                                    isPro 
+                                        ? "bg-slate-900 text-white border-indigo-500 shadow-2xl scale-105 z-10 relative" 
+                                        : "bg-white text-slate-700 border-slate-200 hover:shadow-xl hover:border-indigo-100"
+                                )}
+                            >
+                                {isPro && (
+                                    <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-indigo-500 text-[10px] font-black text-white px-3 py-1 rounded-full animate-bounce uppercase tracking-tighter">
+                                        Popular
+                                    </div>
+                                )}
+
+                                <div className="mb-6 text-center">
+                                    <h3 className="font-bold text-lg mb-1">{plan.name}</h3>
+                                    <div className="flex items-baseline justify-center gap-1">
+                                        <span className={cn("text-4xl font-black", isPro ? "text-white" : "text-slate-900")}>
+                                            {isFree ? formatPrice(0) : formatPrice(priceAmount)}
+                                        </span>
+                                        <span className="text-xs font-bold text-slate-400">
+                                            {isFree ? '/forever' : isYearly ? '/yr' : '/mo'}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <ul className="text-sm space-y-4 mb-8 flex-grow text-left">
+                                    {features.slice(0, 5).map((f, i) => (
+                                        <li key={i} className={cn(
+                                            "flex items-center gap-3",
+                                            !f.active ? "opacity-30 line-through" : ""
+                                        )}>
+                                            {f.active ? (
+                                                <i className={cn("fa-solid fa-circle-check", isPro ? "text-indigo-400" : "text-emerald-500")}></i>
+                                            ) : (
+                                                <i className="fa-solid fa-circle-xmark text-slate-400"></i>
+                                            )}
+                                            <span className={cn(f.bold ? "font-bold" : "font-medium")}>{f.name}</span>
+                                        </li>
+                                    ))}
+                                </ul>
+
+                                <Link 
+                                    to="/pricing" 
+                                    className={cn(
+                                        "block w-full py-3 rounded-xl font-bold text-sm transition-all",
+                                        isPro 
+                                            ? "bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-500/30" 
+                                            : "bg-slate-100 hover:bg-slate-200 text-slate-700"
+                                    )}
+                                >
+                                    {isFree ? 'Get Started' : 'View Plan'}
+                                </Link>
+                            </div>
+                        );
+                    })}
+                </div>
+            )}
         </div>
     </section>
 
