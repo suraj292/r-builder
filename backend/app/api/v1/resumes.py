@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from typing import List
-from app.api.deps import get_db, get_current_user
+from app.api.deps import get_db, get_current_user, check_feature_access
 from app.models.user import User
 from app.models.resume import Resume
 from app.schemas.resume import ResumeCreate, ResumeOut, ResumeUpdate
@@ -19,7 +19,11 @@ async def list_resumes(db: AsyncSession = Depends(get_db), current_user: User = 
     return result.scalars().all()
 
 @router.post("", response_model=ResumeOut)
-async def create_resume(resume_in: ResumeCreate, db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)):
+async def create_resume(
+    resume_in: ResumeCreate, 
+    db: AsyncSession = Depends(get_db), 
+    current_user: User = Depends(check_feature_access("resume_creation"))
+):
     """
     Create a new resume for the current user.
     """

@@ -12,7 +12,7 @@ except ImportError:
     PYPDF_AVAILABLE = False
 
 
-from app.api.deps import get_current_user, get_db, get_current_user_optional
+from app.api.deps import get_current_user, get_db, get_current_user_optional, check_feature_access
 from app.models.user import User
 from app.models.guest_log import GuestScanLog
 from app.models.resume import Resume
@@ -77,8 +77,8 @@ async def parse_resume_upload(
 async def analyze_resume_ats(
     req: AnalyzeRequest,
     request: Request,
-    current_user: Optional[User] = Depends(get_current_user_optional),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(check_feature_access("ats_scan"))
 ):
     """
     Analyzes the resume schema against an optional job description.
@@ -90,9 +90,13 @@ async def analyze_resume_ats(
             target_profession=req.target_profession
         )
         
+        # Increment usage
+        current_user.ats_scans_used += 1
+        db.add(current_user)
+
         # Log the scan
         new_log = GuestScanLog(
-            user_id=current_user.id if current_user else None,
+            user_id=current_user.id,
             ip_address=request.client.host if request and request.client else None,
             user_agent=request.headers.get("user-agent") if request else None,
             device_info=req.device_info,
@@ -104,14 +108,16 @@ async def analyze_resume_ats(
         
         return analysis
     except Exception as e:
+        if isinstance(e, HTTPException):
+            raise e
         raise HTTPException(500, f"Error analyzing ATS: {str(e)}")
 
 
 @router.post("/optimize-resume")
 async def optimize_resume_content(
     req: OptimizeRequest,
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(check_feature_access("ai_generation"))
 ):
     """
     Rewrites the resume schema to improve ATS score and job alignment.
@@ -124,6 +130,10 @@ async def optimize_resume_content(
             target_profession=req.target_profession
         )
         
+        # Increment usage
+        current_user.ai_credits_used += 1
+        db.add(current_user)
+
         # If resume_id is provided, auto-save the optimization
         resume_id = req.ats_analysis.get("resume_id") # We can pass this from frontend
         if resume_id:
@@ -137,6 +147,8 @@ async def optimize_resume_content(
 
         return {"optimized_resume": optimized}
     except Exception as e:
+        if isinstance(e, HTTPException):
+            raise e
         raise HTTPException(500, f"Error optimizing resume: {str(e)}")
 
 @router.post("/guest-analyze-ats")

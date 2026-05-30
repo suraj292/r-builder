@@ -27,6 +27,8 @@ export default function AdminPlans() {
   const [name, setName] = useState('');
   const [priceMonthly, setPriceMonthly] = useState(0);
   const [priceYearly, setPriceYearly] = useState(0);
+  const [resumeLimit, setResumeLimit] = useState(3);
+  const [atsScans, setAtsScans] = useState(5);
   const [regionalPricesJson, setRegionalPricesJson] = useState('{\n  "INR": { "monthly": 49900, "yearly": 499000 },\n  "EUR": { "monthly": 900, "yearly": 9000 }\n}');
   const [featuresJson, setFeaturesJson] = useState('{\n  "ai_credits": 500,\n  "ats_scans": -1,\n  "premium_templates": true\n}');
 
@@ -64,6 +66,8 @@ export default function AdminPlans() {
     setName('');
     setPriceMonthly(0);
     setPriceYearly(0);
+    setResumeLimit(3);
+    setAtsScans(5);
     setRegionalPricesJson('{\n  "INR": { "monthly": 49900, "yearly": 499000 },\n  "EUR": { "monthly": 900, "yearly": 9000 }\n}');
     setFeaturesJson('{\n  "ai_credits": 500,\n  "ats_scans": -1,\n  "premium_templates": true\n}');
   };
@@ -74,6 +78,8 @@ export default function AdminPlans() {
     setName(plan.name);
     setPriceMonthly(plan.price_monthly / 100);
     setPriceYearly(plan.price_yearly / 100);
+    setResumeLimit(plan.features?.resume_limit ?? 3);
+    setAtsScans(plan.features?.ats_scans ?? 5);
     setRegionalPricesJson(plan.regional_prices ? JSON.stringify(plan.regional_prices, null, 2) : '{}');
     setFeaturesJson(plan.features ? JSON.stringify(plan.features, null, 2) : '{}');
   };
@@ -82,7 +88,14 @@ export default function AdminPlans() {
     e.preventDefault();
     try {
       const parsedRegionalPrices = regionalPricesJson.trim() ? JSON.parse(regionalPricesJson) : null;
-      const parsedFeatures = featuresJson.trim() ? JSON.parse(featuresJson) : {};
+      let parsedFeatures = featuresJson.trim() ? JSON.parse(featuresJson) : {};
+
+      // Sync explicit fields into features object
+      parsedFeatures = {
+        ...parsedFeatures,
+        resume_limit: resumeLimit,
+        ats_scans: atsScans
+      };
 
       const payload = {
         tier_code: tierCode,
@@ -275,6 +288,35 @@ export default function AdminPlans() {
                     className="w-full px-4 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
                     required
                   />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 p-4 bg-indigo-50/50 rounded-2xl border border-indigo-100">
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-indigo-600 uppercase flex items-center gap-2">
+                    <i className="fa-solid fa-file-invoice"></i> Resume Limit
+                  </label>
+                  <input
+                    type="number"
+                    value={resumeLimit}
+                    onChange={(e) => setResumeLimit(parseInt(e.target.value))}
+                    className="w-full px-4 py-2 rounded-xl border border-white bg-white text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                    required
+                  />
+                  <p className="text-[10px] text-slate-400">(-1 for unlimited)</p>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-indigo-600 uppercase flex items-center gap-2">
+                    <i className="fa-solid fa-magnifying-glass-chart"></i> ATS Scans
+                  </label>
+                  <input
+                    type="number"
+                    value={atsScans}
+                    onChange={(e) => setAtsScans(parseInt(e.target.value))}
+                    className="w-full px-4 py-2 rounded-xl border border-white bg-white text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                    required
+                  />
+                  <p className="text-[10px] text-slate-400">(-1 for unlimited)</p>
                 </div>
               </div>
 
