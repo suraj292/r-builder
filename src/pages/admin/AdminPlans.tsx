@@ -15,6 +15,23 @@ interface Plan {
   created_at: string;
 }
 
+// Feature definitions for structured editing
+const BOOLEAN_FEATURES = [
+  { key: 'premium_templates', label: 'Premium Templates', icon: 'fa-palette', description: 'Access to all premium resume templates' },
+  { key: 'pdf_download', label: 'PDF Download', icon: 'fa-file-pdf', description: 'Export resumes as PDF' },
+  { key: 'docx_download', label: 'DOCX Download', icon: 'fa-file-word', description: 'Export resumes as DOCX' },
+  { key: 'job_description_matcher', label: 'Job Description Matcher', icon: 'fa-crosshairs', description: 'Match resume against job descriptions' },
+  { key: 'cover_letter_generator', label: 'Cover Letter Generator', icon: 'fa-envelope-open-text', description: 'AI-powered cover letter generation' },
+  { key: 'advanced_ats_analysis', label: 'Advanced ATS Analysis', icon: 'fa-chart-line', description: 'Deep ATS keyword strategy analysis' },
+  { key: 'priority_support', label: 'Priority Support', icon: 'fa-headset', description: 'Priority customer support access' },
+];
+
+const COUNTED_FEATURES = [
+  { key: 'ai_credits', label: 'AI Credits', icon: 'fa-wand-magic-sparkles', description: '-1 for unlimited' },
+  { key: 'ats_scans', label: 'ATS Scans', icon: 'fa-magnifying-glass-chart', description: '-1 for unlimited' },
+  { key: 'resume_limit', label: 'Resume Limit', icon: 'fa-file-invoice', description: '-1 for unlimited' },
+];
+
 export default function AdminPlans() {
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
@@ -27,10 +44,23 @@ export default function AdminPlans() {
   const [name, setName] = useState('');
   const [priceMonthly, setPriceMonthly] = useState(0);
   const [priceYearly, setPriceYearly] = useState(0);
-  const [resumeLimit, setResumeLimit] = useState(3);
-  const [atsScans, setAtsScans] = useState(5);
   const [regionalPricesJson, setRegionalPricesJson] = useState('{\n  "INR": { "monthly": 49900, "yearly": 499000 },\n  "EUR": { "monthly": 900, "yearly": 9000 }\n}');
-  const [featuresJson, setFeaturesJson] = useState('{\n  "ai_credits": 500,\n  "ats_scans": -1,\n  "premium_templates": true\n}');
+
+  // Structured feature state
+  const [aiCredits, setAiCredits] = useState(500);
+  const [atsScans, setAtsScans] = useState(-1);
+  const [resumeLimit, setResumeLimit] = useState(-1);
+  const [premiumTemplates, setPremiumTemplates] = useState(true);
+  const [pdfDownload, setPdfDownload] = useState(true);
+  const [docxDownload, setDocxDownload] = useState(true);
+  const [jobDescriptionMatcher, setJobDescriptionMatcher] = useState(false);
+  const [coverLetterGenerator, setCoverLetterGenerator] = useState(false);
+  const [advancedAtsAnalysis, setAdvancedAtsAnalysis] = useState(false);
+  const [prioritySupport, setPrioritySupport] = useState(true);
+
+  // Advanced JSON for extra fields
+  const [showAdvancedJson, setShowAdvancedJson] = useState(false);
+  const [extraFeaturesJson, setExtraFeaturesJson] = useState('{}');
 
   useEffect(() => {
     detectCurrency();
@@ -58,18 +88,71 @@ export default function AdminPlans() {
     }
   };
 
-  const handleCloseModal = () => {
-    setShowCreateModal(false);
-    setEditingPlan(null);
-    // Reset form
+  const getFeatureSetters = () => ({
+    ai_credits: aiCredits,
+    ats_scans: atsScans,
+    resume_limit: resumeLimit,
+    premium_templates: premiumTemplates,
+    pdf_download: pdfDownload,
+    docx_download: docxDownload,
+    job_description_matcher: jobDescriptionMatcher,
+    cover_letter_generator: coverLetterGenerator,
+    advanced_ats_analysis: advancedAtsAnalysis,
+    priority_support: prioritySupport,
+  });
+
+  const setFeatureFromPlan = (features: any) => {
+    setAiCredits(features?.ai_credits ?? 500);
+    setAtsScans(features?.ats_scans ?? -1);
+    setResumeLimit(features?.resume_limit ?? -1);
+    setPremiumTemplates(features?.premium_templates ?? true);
+    setPdfDownload(features?.pdf_download ?? true);
+    setDocxDownload(features?.docx_download ?? true);
+    setJobDescriptionMatcher(features?.job_description_matcher ?? false);
+    setCoverLetterGenerator(features?.cover_letter_generator ?? false);
+    setAdvancedAtsAnalysis(features?.advanced_ats_analysis ?? false);
+    setPrioritySupport(features?.priority_support ?? true);
+
+    // Extract extra keys not in our structured list
+    const knownKeys = new Set([
+      'ai_credits', 'ats_scans', 'resume_limit', 'premium_templates',
+      'pdf_download', 'docx_download', 'job_description_matcher',
+      'cover_letter_generator', 'advanced_ats_analysis', 'priority_support',
+      'order'
+    ]);
+    const extra: any = {};
+    if (features) {
+      for (const [k, v] of Object.entries(features)) {
+        if (!knownKeys.has(k)) extra[k] = v;
+      }
+    }
+    setExtraFeaturesJson(Object.keys(extra).length > 0 ? JSON.stringify(extra, null, 2) : '{}');
+  };
+
+  const resetForm = () => {
     setTierCode('pro');
     setName('');
     setPriceMonthly(0);
     setPriceYearly(0);
-    setResumeLimit(3);
-    setAtsScans(5);
     setRegionalPricesJson('{\n  "INR": { "monthly": 49900, "yearly": 499000 },\n  "EUR": { "monthly": 900, "yearly": 9000 }\n}');
-    setFeaturesJson('{\n  "ai_credits": 500,\n  "ats_scans": -1,\n  "premium_templates": true\n}');
+    setAiCredits(500);
+    setAtsScans(-1);
+    setResumeLimit(-1);
+    setPremiumTemplates(true);
+    setPdfDownload(true);
+    setDocxDownload(true);
+    setJobDescriptionMatcher(false);
+    setCoverLetterGenerator(false);
+    setAdvancedAtsAnalysis(false);
+    setPrioritySupport(true);
+    setExtraFeaturesJson('{}');
+    setShowAdvancedJson(false);
+  };
+
+  const handleCloseModal = () => {
+    setShowCreateModal(false);
+    setEditingPlan(null);
+    resetForm();
   };
 
   const handleStartEdit = (plan: Plan) => {
@@ -78,23 +161,24 @@ export default function AdminPlans() {
     setName(plan.name);
     setPriceMonthly(plan.price_monthly / 100);
     setPriceYearly(plan.price_yearly / 100);
-    setResumeLimit(plan.features?.resume_limit ?? 3);
-    setAtsScans(plan.features?.ats_scans ?? 5);
     setRegionalPricesJson(plan.regional_prices ? JSON.stringify(plan.regional_prices, null, 2) : '{}');
-    setFeaturesJson(plan.features ? JSON.stringify(plan.features, null, 2) : '{}');
+    setFeatureFromPlan(plan.features);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       const parsedRegionalPrices = regionalPricesJson.trim() ? JSON.parse(regionalPricesJson) : null;
-      let parsedFeatures = featuresJson.trim() ? JSON.parse(featuresJson) : {};
+      let extraFeatures = {};
+      try {
+        extraFeatures = extraFeaturesJson.trim() ? JSON.parse(extraFeaturesJson) : {};
+      } catch {
+        extraFeatures = {};
+      }
 
-      // Sync explicit fields into features object
-      parsedFeatures = {
-        ...parsedFeatures,
-        resume_limit: resumeLimit,
-        ats_scans: atsScans
+      const features = {
+        ...extraFeatures,
+        ...getFeatureSetters(),
       };
 
       const payload = {
@@ -103,7 +187,7 @@ export default function AdminPlans() {
         price_monthly: Math.round(priceMonthly * 100),
         price_yearly: Math.round(priceYearly * 100),
         regional_prices: parsedRegionalPrices,
-        features: parsedFeatures
+        features: features
       };
 
       if (editingPlan) {
@@ -128,6 +212,18 @@ export default function AdminPlans() {
       return plan.regional_prices[config.currency].monthly;
     }
     return plan.price_monthly;
+  };
+
+  const getFeatureIcon = (_key: string, value: any) => {
+    if (typeof value === 'boolean') {
+      return value 
+        ? <i className="fa-solid fa-circle-check text-emerald-500"></i>
+        : <i className="fa-solid fa-circle-xmark text-slate-300"></i>;
+    }
+    if (value === -1) {
+      return <span className="text-[10px] font-black text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded">∞</span>;
+    }
+    return <span className="text-[10px] font-black text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded">{value}</span>;
   };
 
   return (
@@ -191,11 +287,29 @@ export default function AdminPlans() {
                   </div>
                 </div>
 
-                <div className="space-y-3">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase">Feature JSON</p>
-                    <pre className="text-[10px] bg-slate-900 text-slate-300 p-3 rounded-xl overflow-x-auto max-h-32">
-                        {JSON.stringify(plan.features, null, 2)}
-                    </pre>
+                {/* Structured Feature Display */}
+                <div className="space-y-2">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase">Features</p>
+                    <div className="bg-white rounded-xl border border-slate-100 divide-y divide-slate-50">
+                      {COUNTED_FEATURES.map(f => (
+                        <div key={f.key} className="flex items-center justify-between px-3 py-2">
+                          <div className="flex items-center gap-2">
+                            <i className={`fa-solid ${f.icon} text-[10px] text-slate-400 w-4 text-center`}></i>
+                            <span className="text-[11px] font-semibold text-slate-600">{f.label}</span>
+                          </div>
+                          {getFeatureIcon(f.key, plan.features?.[f.key])}
+                        </div>
+                      ))}
+                      {BOOLEAN_FEATURES.map(f => (
+                        <div key={f.key} className="flex items-center justify-between px-3 py-2">
+                          <div className="flex items-center gap-2">
+                            <i className={`fa-solid ${f.icon} text-[10px] text-slate-400 w-4 text-center`}></i>
+                            <span className="text-[11px] font-semibold text-slate-600">{f.label}</span>
+                          </div>
+                          {getFeatureIcon(f.key, plan.features?.[f.key])}
+                        </div>
+                      ))}
+                    </div>
                 </div>
               </div>
 
@@ -238,7 +352,8 @@ export default function AdminPlans() {
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
+            <form onSubmit={handleSubmit} className="p-6 space-y-5 max-h-[80vh] overflow-y-auto">
+              {/* Basic Info */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <label className="text-xs font-bold text-slate-500 uppercase">Tier Code</label>
@@ -266,6 +381,7 @@ export default function AdminPlans() {
                 </div>
               </div>
 
+              {/* Pricing */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <label className="text-xs font-bold text-slate-500 uppercase">Monthly Price ($)</label>
@@ -291,56 +407,113 @@ export default function AdminPlans() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4 p-4 bg-indigo-50/50 rounded-2xl border border-indigo-100">
-                <div className="space-y-1">
-                  <label className="text-xs font-bold text-indigo-600 uppercase flex items-center gap-2">
-                    <i className="fa-solid fa-file-invoice"></i> Resume Limit
-                  </label>
-                  <input
-                    type="number"
-                    value={resumeLimit}
-                    onChange={(e) => setResumeLimit(parseInt(e.target.value))}
-                    className="w-full px-4 py-2 rounded-xl border border-white bg-white text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
-                    required
-                  />
-                  <p className="text-[10px] text-slate-400">(-1 for unlimited)</p>
-                </div>
-                <div className="space-y-1">
-                  <label className="text-xs font-bold text-indigo-600 uppercase flex items-center gap-2">
-                    <i className="fa-solid fa-magnifying-glass-chart"></i> ATS Scans
-                  </label>
-                  <input
-                    type="number"
-                    value={atsScans}
-                    onChange={(e) => setAtsScans(parseInt(e.target.value))}
-                    className="w-full px-4 py-2 rounded-xl border border-white bg-white text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
-                    required
-                  />
-                  <p className="text-[10px] text-slate-400">(-1 for unlimited)</p>
+              {/* Counted Features */}
+              <div className="p-4 bg-indigo-50/50 rounded-2xl border border-indigo-100 space-y-3">
+                <p className="text-xs font-bold text-indigo-600 uppercase flex items-center gap-2">
+                  <i className="fa-solid fa-sliders"></i> Usage Limits
+                </p>
+                <div className="grid grid-cols-3 gap-3">
+                  {COUNTED_FEATURES.map(f => {
+                    const value = f.key === 'ai_credits' ? aiCredits : f.key === 'ats_scans' ? atsScans : resumeLimit;
+                    const setter = f.key === 'ai_credits' ? setAiCredits : f.key === 'ats_scans' ? setAtsScans : setResumeLimit;
+                    return (
+                      <div key={f.key} className="space-y-1">
+                        <label className="text-[10px] font-bold text-indigo-700 uppercase flex items-center gap-1.5">
+                          <i className={`fa-solid ${f.icon}`}></i> {f.label}
+                        </label>
+                        <input
+                          type="number"
+                          value={value}
+                          onChange={(e) => setter(parseInt(e.target.value))}
+                          className="w-full px-3 py-2 rounded-xl border border-white bg-white text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                        />
+                        <p className="text-[9px] text-slate-400">{f.description}</p>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-1">
-                  <label className="text-xs font-bold text-slate-500 uppercase">Regional Prices (JSON)</label>
-                  <textarea
-                    rows={6}
-                    value={regionalPricesJson}
-                    onChange={(e) => setRegionalPricesJson(e.target.value)}
-                    className="w-full px-4 py-2 rounded-xl border border-slate-200 text-xs font-mono focus:ring-2 focus:ring-indigo-500 outline-none bg-slate-50"
-                    required
-                  ></textarea>
+              {/* Boolean Feature Toggles */}
+              <div className="p-4 bg-emerald-50/50 rounded-2xl border border-emerald-100 space-y-3">
+                <p className="text-xs font-bold text-emerald-700 uppercase flex items-center gap-2">
+                  <i className="fa-solid fa-toggle-on"></i> Feature Access
+                </p>
+                <div className="space-y-2">
+                  {BOOLEAN_FEATURES.map(f => {
+                    const value = 
+                      f.key === 'premium_templates' ? premiumTemplates :
+                      f.key === 'pdf_download' ? pdfDownload :
+                      f.key === 'docx_download' ? docxDownload :
+                      f.key === 'job_description_matcher' ? jobDescriptionMatcher :
+                      f.key === 'cover_letter_generator' ? coverLetterGenerator :
+                      f.key === 'advanced_ats_analysis' ? advancedAtsAnalysis :
+                      prioritySupport;
+                    const setter = 
+                      f.key === 'premium_templates' ? setPremiumTemplates :
+                      f.key === 'pdf_download' ? setPdfDownload :
+                      f.key === 'docx_download' ? setDocxDownload :
+                      f.key === 'job_description_matcher' ? setJobDescriptionMatcher :
+                      f.key === 'cover_letter_generator' ? setCoverLetterGenerator :
+                      f.key === 'advanced_ats_analysis' ? setAdvancedAtsAnalysis :
+                      setPrioritySupport;
+
+                    return (
+                      <label key={f.key} className="flex items-center justify-between p-2.5 rounded-xl bg-white border border-emerald-100 cursor-pointer hover:border-emerald-300 transition-colors group">
+                        <div className="flex items-center gap-3">
+                          <i className={`fa-solid ${f.icon} text-sm ${value ? 'text-emerald-600' : 'text-slate-300'} w-5 text-center transition-colors`}></i>
+                          <div>
+                            <span className="text-sm font-semibold text-slate-700 block">{f.label}</span>
+                            <span className="text-[10px] text-slate-400">{f.description}</span>
+                          </div>
+                        </div>
+                        <div className="relative">
+                          <input
+                            type="checkbox"
+                            checked={value}
+                            onChange={(e) => setter(e.target.checked)}
+                            className="sr-only"
+                          />
+                          <div className={`w-10 h-6 rounded-full transition-colors ${value ? 'bg-emerald-500' : 'bg-slate-200'}`}>
+                            <div className={`w-4 h-4 rounded-full bg-white shadow-sm transition-transform mt-1 ${value ? 'translate-x-5 ml-0' : 'translate-x-1'}`}></div>
+                          </div>
+                        </div>
+                      </label>
+                    );
+                  })}
                 </div>
-                <div className="space-y-1">
-                  <label className="text-xs font-bold text-slate-500 uppercase">Feature Config (JSON)</label>
+              </div>
+
+              {/* Regional Prices */}
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-slate-500 uppercase">Regional Prices (JSON)</label>
+                <textarea
+                  rows={4}
+                  value={regionalPricesJson}
+                  onChange={(e) => setRegionalPricesJson(e.target.value)}
+                  className="w-full px-4 py-2 rounded-xl border border-slate-200 text-xs font-mono focus:ring-2 focus:ring-indigo-500 outline-none bg-slate-50"
+                  required
+                ></textarea>
+              </div>
+
+              {/* Advanced JSON (collapsible) */}
+              <div>
+                <button
+                  type="button"
+                  onClick={() => setShowAdvancedJson(!showAdvancedJson)}
+                  className="text-xs font-bold text-slate-400 hover:text-slate-600 flex items-center gap-2 cursor-pointer"
+                >
+                  <i className={`fa-solid fa-chevron-${showAdvancedJson ? 'down' : 'right'} text-[8px]`}></i>
+                  Advanced: Extra Feature Config (JSON)
+                </button>
+                {showAdvancedJson && (
                   <textarea
-                    rows={6}
-                    value={featuresJson}
-                    onChange={(e) => setFeaturesJson(e.target.value)}
-                    className="w-full px-4 py-2 rounded-xl border border-slate-200 text-xs font-mono focus:ring-2 focus:ring-indigo-500 outline-none bg-slate-50"
-                    required
+                    rows={4}
+                    value={extraFeaturesJson}
+                    onChange={(e) => setExtraFeaturesJson(e.target.value)}
+                    className="w-full mt-2 px-4 py-2 rounded-xl border border-slate-200 text-xs font-mono focus:ring-2 focus:ring-indigo-500 outline-none bg-slate-50"
                   ></textarea>
-                </div>
+                )}
               </div>
 
               <div className="pt-4 flex gap-3">

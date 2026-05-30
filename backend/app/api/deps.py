@@ -91,7 +91,18 @@ def check_feature_access(feature: str, cost: int = 1):
             
         if not plan:
             # Last resort hardcoded fallback if DB is empty
-            features = {"ai_credits": 10, "ats_scans": 3, "resume_limit": 3, "premium_templates": False}
+            features = {
+                "ai_credits": 10,
+                "ats_scans": 3,
+                "resume_limit": 1,
+                "premium_templates": False,
+                "pdf_download": False,
+                "docx_download": False,
+                "job_description_matcher": False,
+                "cover_letter_generator": False,
+                "advanced_ats_analysis": False,
+                "priority_support": False,
+            }
         else:
             features = plan.features
 
@@ -130,6 +141,41 @@ def check_feature_access(feature: str, cost: int = 1):
                         status_code=status.HTTP_402_PAYMENT_REQUIRED,
                         detail=f"You have reached your limit of {limit} resumes. Please upgrade or delete old resumes."
                     )
+
+        elif feature == "pdf_download":
+            if not features.get("pdf_download"):
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Upgrade to Pro or Career+ to download resumes as PDF."
+                )
+
+        elif feature == "docx_download":
+            if not features.get("docx_download"):
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Upgrade to Pro or Career+ to export resumes as DOCX."
+                )
+
+        elif feature == "job_description_matcher":
+            if not features.get("job_description_matcher"):
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Upgrade to Career+ to use the Job Description Matcher."
+                )
+
+        elif feature == "cover_letter_generator":
+            if not features.get("cover_letter_generator"):
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Upgrade to Career+ to use the Cover Letter Generator."
+                )
+
+        elif feature == "advanced_ats_analysis":
+            if not features.get("advanced_ats_analysis"):
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Upgrade to Career+ for Advanced ATS Analysis."
+                )
                 
         return user
     return _checker

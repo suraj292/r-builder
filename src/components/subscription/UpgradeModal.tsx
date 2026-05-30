@@ -36,7 +36,14 @@ export default function UpgradeModal() {
   const featureMessages: Record<string, string> = {
     premium_templates: "Unlock premium, ATS-optimized templates designed by recruiters.",
     ai_generation: "You've reached your AI credit limit. Upgrade for powerful AI resume generation.",
-    ats_scan: "Get unlimited deep ATS analysis to guarantee your resume passes the filters."
+    ats_scan: "Get unlimited deep ATS analysis to guarantee your resume passes the filters.",
+    pdf_download: "Upgrade to Pro to download your resume as a polished, ATS-friendly PDF.",
+    docx_download: "Upgrade to Pro to export your resume as DOCX for easy editing.",
+    job_description_matcher: "Upgrade to Career+ to match your resume against specific job descriptions for maximum relevance.",
+    cover_letter_generator: "Upgrade to Career+ to auto-generate tailored cover letters that complement your resume.",
+    advanced_ats_analysis: "Upgrade to Career+ for in-depth ATS analysis with keyword strategies and advanced insights.",
+    resume_creation: "You've reached your resume limit. Upgrade for unlimited resumes.",
+    priority_support: "Upgrade to Pro to get priority support from our team."
   };
 
   const contextMessage = featureMessages[upgradeFeatureContext || ''] || "Upgrade your plan to unlock powerful features.";

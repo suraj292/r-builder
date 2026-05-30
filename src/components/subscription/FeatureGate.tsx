@@ -1,8 +1,9 @@
-import { ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { useSubscriptionStore } from '../../store/useSubscriptionStore';
+import type { FeatureKey } from '../../store/useSubscriptionStore';
 
 interface FeatureGateProps {
-  feature: 'ai_generation' | 'ats_scan' | 'premium_templates';
+  feature: FeatureKey;
   cost?: number;
   children: ReactNode;
   fallback?: ReactNode;

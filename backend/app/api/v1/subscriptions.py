@@ -84,9 +84,36 @@ async def get_plans(db: AsyncSession = Depends(get_db)):
     if not plans:
         # Fallback hardcoded plans if DB is empty for initial run
         return [
-            {"tier_code": "free", "name": "Free", "price_monthly": 0, "features": {"ai_credits": 10, "ats_scans": 3, "premium_templates": False}},
-            {"tier_code": "pro", "name": "Pro", "price_monthly": 900, "features": {"ai_credits": 500, "ats_scans": -1, "premium_templates": True}},
-            {"tier_code": "career_plus", "name": "Career+", "price_monthly": 1900, "features": {"ai_credits": -1, "ats_scans": -1, "premium_templates": True}},
+            {
+                "tier_code": "free", "name": "Free", "price_monthly": 0, "price_yearly": 0,
+                "regional_prices": None,
+                "features": {
+                    "ai_credits": 10, "ats_scans": 3, "resume_limit": 1,
+                    "premium_templates": False, "pdf_download": False, "docx_download": False,
+                    "job_description_matcher": False, "cover_letter_generator": False,
+                    "advanced_ats_analysis": False, "priority_support": False
+                }
+            },
+            {
+                "tier_code": "pro", "name": "Pro", "price_monthly": 900, "price_yearly": 9000,
+                "regional_prices": {"INR": {"monthly": 49900, "yearly": 499000}},
+                "features": {
+                    "ai_credits": 500, "ats_scans": -1, "resume_limit": -1,
+                    "premium_templates": True, "pdf_download": True, "docx_download": True,
+                    "job_description_matcher": False, "cover_letter_generator": False,
+                    "advanced_ats_analysis": False, "priority_support": True
+                }
+            },
+            {
+                "tier_code": "career_plus", "name": "Career+", "price_monthly": 1900, "price_yearly": 19000,
+                "regional_prices": {"INR": {"monthly": 99900, "yearly": 999000}},
+                "features": {
+                    "ai_credits": -1, "ats_scans": -1, "resume_limit": -1,
+                    "premium_templates": True, "pdf_download": True, "docx_download": True,
+                    "job_description_matcher": True, "cover_letter_generator": True,
+                    "advanced_ats_analysis": True, "priority_support": True
+                }
+            },
         ]
         
     return plans

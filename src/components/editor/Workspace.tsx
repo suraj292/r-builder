@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useResumeStore } from '../../store/useResumeStore';
 import { A4Page } from './A4Page';
 import { api } from '../../lib/api';
-import { ZoomIn, ZoomOut, Download, Undo, Redo, Share2, Sparkles, Wand2, Upload, FileText, Cloud } from 'lucide-react';
+import { ZoomIn, ZoomOut, Download, Undo, Redo, Share2, Sparkles, Wand2, Upload, FileText, Cloud, Lock as LockIcon } from 'lucide-react';
 import { usePagination } from '../../hooks/usePagination';
 import { TemplateGallery } from './TemplateGallery';
 import { ElementSidebar } from './ElementSidebar';
@@ -21,12 +21,13 @@ import {
 } from '@dnd-kit/core';
 import type { DragEndEvent } from '@dnd-kit/core';
 import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
-import { LayoutTemplate, PlusSquare, Palette, Briefcase, Activity, CheckCircle2, AlertTriangle, ArrowRight } from 'lucide-react';
+import { LayoutTemplate, PlusSquare, Palette, Briefcase, Activity, AlertTriangle, Lock } from 'lucide-react';
 
 import { useEditorStore } from '../../store/useEditorStore';
 import { useAIOptimizer } from '../../hooks/useAIOptimizer';
 import { TEMPLATE_REGISTRY } from '../../templates/registry';
 import { useTemplateStore } from '../../store/useTemplateStore';
+import { useSubscriptionStore } from '../../store/useSubscriptionStore';
 import { showAlert } from '../../lib/alerts';
 
 const PROFESSIONS = [
@@ -43,6 +44,35 @@ const PROFESSIONS = [
   'Student/Fresher'
 ];
 
+const PdfDownloadButton: React.FC = () => {
+  const { canUseFeature, openUpgradeModal } = useSubscriptionStore();
+  const canDownload = canUseFeature('pdf_download');
+
+  if (!canDownload) {
+    return (
+      <button
+        onClick={() => openUpgradeModal('pdf_download')}
+        className="flex items-center gap-2 px-4 py-2 text-sm font-semibold bg-white border border-slate-200 text-slate-500 hover:bg-amber-50 hover:border-amber-200 rounded-lg transition-all group"
+        title="Upgrade to download PDF"
+      >
+        <LockIcon className="w-4 h-4 text-amber-500 group-hover:scale-110 transition-transform" />
+        PDF
+        <span className="text-[8px] font-black bg-amber-100 text-amber-700 px-1 py-0.5 rounded">PRO</span>
+      </button>
+    );
+  }
+
+  return (
+    <button 
+      onClick={() => window.print()}
+      className="flex items-center gap-2 px-4 py-2 text-sm font-semibold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 rounded-lg transition-all"
+    >
+      <Download className="w-4 h-4" />
+      PDF
+    </button>
+  );
+};
+
 const AIOptimizerSidebar: React.FC = () => {
   const {
     isUploading,
@@ -57,6 +87,9 @@ const AIOptimizerSidebar: React.FC = () => {
     handleAnalyzeATS,
     handleOptimizeResume
   } = useAIOptimizer();
+
+  const { canUseFeature, openUpgradeModal } = useSubscriptionStore();
+  const canUseJDMatcher = canUseFeature('job_description_matcher');
 
   const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -176,14 +209,35 @@ const AIOptimizerSidebar: React.FC = () => {
         {/* 4. Job Description & Optimization */}
         <div className="space-y-3">
           <label className="text-xs font-bold uppercase tracking-widest text-gray-500 flex items-center gap-2">
-            <FileText className="w-3 h-3" /> Job Target Matching (Optional)
+            <FileText className="w-3 h-3" /> Job Target Matching
+            {!canUseJDMatcher && (
+              <span className="ml-auto text-[8px] font-black bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full uppercase">Career+</span>
+            )}
           </label>
-          <textarea 
-            value={jobDescription}
-            onChange={e => setJobDescription(e.target.value)}
-            className="w-full h-32 p-3 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none resize-none bg-slate-50 text-slate-700"
-            placeholder="Paste job description here to optimize against (optional)..."
-          />
+          
+          <div className="relative">
+            <textarea 
+              value={canUseJDMatcher ? jobDescription : ''}
+              onChange={e => canUseJDMatcher ? setJobDescription(e.target.value) : undefined}
+              className={cn(
+                "w-full h-32 p-3 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none resize-none bg-slate-50 text-slate-700",
+                !canUseJDMatcher && "opacity-40 pointer-events-none blur-[1px]"
+              )}
+              placeholder="Paste job description here to optimize against..."
+              disabled={!canUseJDMatcher}
+            />
+            {!canUseJDMatcher && (
+              <button
+                onClick={() => openUpgradeModal('job_description_matcher')}
+                className="absolute inset-0 flex flex-col items-center justify-center bg-white/60 backdrop-blur-[1px] rounded-xl cursor-pointer group"
+              >
+                <div className="w-8 h-8 rounded-full bg-amber-500 text-white flex items-center justify-center mb-1.5 shadow-lg group-hover:scale-110 transition-transform">
+                  <Lock className="w-3.5 h-3.5" />
+                </div>
+                <span className="text-[10px] font-bold text-slate-700">Upgrade to Career+</span>
+              </button>
+            )}
+          </div>
           
           <div className="flex flex-col gap-2 pt-2">
               <button 
@@ -405,13 +459,7 @@ export const Workspace: React.FC = () => {
             Share
           </button>
           
-          <button 
-            onClick={() => window.print()}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-semibold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 rounded-lg transition-all"
-          >
-            <Download className="w-4 h-4" />
-            PDF
-          </button>
+          <PdfDownloadButton />
 
           <button 
             onClick={() => handleSave()}

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { api } from '../lib/api';
 import { useResumeStore } from '../store/useResumeStore';
 import { useEditorStore } from '../store/useEditorStore';
+import { useSubscriptionStore } from '../store/useSubscriptionStore';
 import type { ResumeSchema } from '../types/resume';
 import { showAlert } from '../lib/alerts';
 
@@ -22,6 +23,7 @@ export interface ATSAnalysis {
 export const useAIOptimizer = () => {
   const { setFullResume, resume } = useResumeStore();
   const { isUploading, isAnalyzing, isOptimizing, atsAnalysis, setAIState } = useEditorStore();
+  const { canUseFeature, openUpgradeModal } = useSubscriptionStore();
   
   // Local state for JD and Profession (fine to keep local as they are only used in Sidebar)
   const [jobDescription, setJobDescription] = useState('');
@@ -47,6 +49,12 @@ export const useAIOptimizer = () => {
   };
 
   const handleAnalyzeATS = async (currentResume?: ResumeSchema) => {
+    // Feature gate: check ATS scan credits
+    if (!canUseFeature('ats_scan')) {
+      openUpgradeModal('ats_scan');
+      return;
+    }
+
     try {
       setAIState({ isAnalyzing: true });
       const dataToAnalyze = currentResume || resume;
@@ -68,6 +76,12 @@ export const useAIOptimizer = () => {
   };
 
   const handleOptimizeResume = async () => {
+    // Feature gate: check AI generation credits
+    if (!canUseFeature('ai_generation')) {
+      openUpgradeModal('ai_generation');
+      return;
+    }
+
     try {
       setAIState({ isOptimizing: true });
       
@@ -108,3 +122,4 @@ export const useAIOptimizer = () => {
     handleOptimizeResume
   };
 };
+

@@ -75,6 +75,8 @@ export default function Pricing() {
                     { name: 'Resume Upload', active: true },
                     { name: 'Premium Templates', active: false },
                     { name: 'PDF Downloads', active: false },
+                    { name: 'Job Description Matcher', active: false },
+                    { name: 'Cover Letter Generator', active: false },
                 ];
             case 'pro':
                 return [
@@ -84,6 +86,8 @@ export default function Pricing() {
                     { name: 'ATS Keyword Matching', active: true },
                     { name: 'PDF & DOCX Downloads', active: true },
                     { name: 'Priority Support', active: true },
+                    { name: 'Job Description Matcher', active: false },
+                    { name: 'Cover Letter Generator', active: false },
                 ];
             case 'career_plus':
             default:
