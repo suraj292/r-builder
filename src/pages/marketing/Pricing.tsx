@@ -194,7 +194,7 @@ export default function Pricing() {
                         </div>
                     ) : (
                         <div className="grid md:grid-cols-3 gap-8 items-stretch">
-                            {sortedPlans.map((plan) => {
+                            {sortedPlans.map((plan, idx) => {
                                 const features = getPlanFeatures(plan.tier_code);
                                 const priceAmount = getPriceForCurrency(plan, isYearly);
                                 const isFree = plan.tier_code === 'free';
@@ -202,7 +202,7 @@ export default function Pricing() {
 
                                 return (
                                     <div 
-                                        key={plan.id}
+                                        key={plan.id || plan.tier_code || idx}
                                         className={`rounded-3xl p-8 border flex flex-col relative transition-all duration-300 ${
                                             isPro 
                                             ? 'bg-slate-900 text-white border-indigo-500 shadow-2xl scale-105 z-10' 

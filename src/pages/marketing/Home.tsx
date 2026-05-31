@@ -600,7 +600,7 @@ export default function Home() {
 
                         return (
                             <div 
-                                key={plan.id}
+                                key={plan.id || plan.tier_code || idx}
                                 className={cn(
                                     "p-8 rounded-3xl border transition-all duration-300 flex flex-col reveal",
                                     idx === 0 ? "delay-100" : idx === 1 ? "delay-200" : "delay-300",
