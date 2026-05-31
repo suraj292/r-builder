@@ -1,4 +1,5 @@
-import { ReactNode, useEffect } from 'react';
+import { useEffect } from 'react';
+import type { ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/useAuthStore';
 import { getAuthToken } from '../../lib/api';
@@ -8,7 +9,7 @@ interface AuthGuardProps {
 }
 
 export default function AuthGuard({ children }: AuthGuardProps) {
-  const { user, isLoading } = useAuthStore();
+  const { isLoading } = useAuthStore();
   const navigate = useNavigate();
   const token = getAuthToken();
 

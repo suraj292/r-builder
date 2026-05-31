@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
 import { api } from '../../lib/api';
-import { useNavigate } from 'react-router-dom';
 import { cn, formatRelativeTime } from '../../lib/utils';
 import { FileText, Search, Activity, Monitor, Globe } from 'lucide-react';
 
@@ -29,7 +28,6 @@ export default function AdminResumes() {
   const [scans, setScans] = useState<AtsScan[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const navigate = useNavigate();
 
   const fetchData = async () => {
     try {

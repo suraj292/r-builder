@@ -9,6 +9,7 @@ const navItems = [
   { path: '/admin/coupons', label: 'Coupons', icon: 'fa-ticket' },
   { path: '/admin/plans', label: 'Plans', icon: 'fa-credit-card' },
   { path: '/admin/templates', label: 'Templates', icon: 'fa-table-columns' },
+  { path: '/admin/blog', label: 'Blog', icon: 'fa-blog' },
   { path: '/admin/ai', label: 'AI Management', icon: 'fa-robot' },
   { path: '/admin/settings', label: 'Settings', icon: 'fa-gear' },
 ];

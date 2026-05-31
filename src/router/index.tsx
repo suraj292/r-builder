@@ -26,9 +26,10 @@ import AdminTemplates from '../pages/admin/AdminTemplates';
 import AdminSubscriptions from '../pages/admin/AdminSubscriptions';
 import AdminSubscriptionDetail from '../pages/admin/AdminSubscriptionDetail';
 import AdminCoupons from '../pages/admin/AdminCoupons';
+import AdminBlog from '../pages/admin/AdminBlog';
+import BlogEditor from '../pages/admin/BlogEditor';
 import AdminAI from '../pages/admin/AdminAI';
 import AdminSettings from '../pages/admin/AdminSettings';
-import AdminPlaceholder from '../components/admin/AdminPlaceholder';
 import Privacy from '../pages/legal/Privacy';
 import Terms from '../pages/legal/Terms';
 import RefundPolicy from '../pages/legal/RefundPolicy';
@@ -40,52 +41,16 @@ import AuthLayout from '../layouts/AuthLayout';
 import UserDashboardLayout from '../layouts/UserDashboardLayout';
 import LegalLayout from '../layouts/LegalLayout';
 import UpgradeModal from '../components/subscription/UpgradeModal';
+import NotFound from '../pages/marketing/NotFound';
 
 const router = createBrowserRouter([
   {
     path: '/',
     element: <><Outlet /><UpgradeModal /></>,
+    errorElement: <NotFound />,
     children: [
       {
-        path: '/',
-        element: <MarketingLayout />,
-        children: [
-          { index: true, element: <Home /> },
-          { path: 'about', element: <About /> },
-          { path: 'ats-checker', element: <AtsChecker /> },
-          { path: 'contact', element: <Contact /> },
-          { path: 'faq', element: <Faq /> },
-          { path: 'pricing', element: <Pricing /> },
-        ]
-      },
-      {
-        path: '/blog',
-        element: <MarketingLayout />,
-        children: [
-          { index: true, element: <BlogListing /> },
-          { path: ':slug', element: <BlogDetail /> },
-        ]
-      },
-      {
-        path: '/builder',
-        element: <AuthGuard><BuilderLayout /></AuthGuard>,
-        children: [
-          { index: true, element: <Workspace /> },
-          { path: 'editor', element: <Workspace /> },
-        ]
-      },
-      {
-        path: '/auth',
-        element: <GuestGuard><AuthLayout /></GuestGuard>,
-        children: [
-          { path: 'login', element: <LoginSignup /> },
-          { path: 'signup', element: <LoginSignup /> },
-          { path: 'callback', element: <AuthCallback /> },
-          { path: 'reset-password', element: <ResetPassword /> },
-        ]
-      },
-      {
-        path: '/admin',
+        path: 'admin',
         element: <AuthGuard><AdminGuard><AdminLayout /></AdminGuard></AuthGuard>,
         children: [
           { index: true, element: <AdminDashboard /> },
@@ -97,13 +62,33 @@ const router = createBrowserRouter([
           { path: 'coupons', element: <AdminCoupons /> },
           { path: 'plans', element: <AdminPlans /> },
           { path: 'templates', element: <AdminTemplates /> },
+          { path: 'blog', element: <AdminBlog /> },
+          { path: 'blog/create', element: <BlogEditor /> },
+          { path: 'blog/edit/:id', element: <BlogEditor /> },
           { path: 'ai', element: <AdminAI /> },
-
           { path: 'settings', element: <AdminSettings /> },
         ]
       },
       {
-        path: '/user',
+        path: 'builder',
+        element: <AuthGuard><BuilderLayout /></AuthGuard>,
+        children: [
+          { index: true, element: <Workspace /> },
+          { path: 'editor', element: <Workspace /> },
+        ]
+      },
+      {
+        path: 'auth',
+        element: <GuestGuard><AuthLayout /></GuestGuard>,
+        children: [
+          { path: 'login', element: <LoginSignup /> },
+          { path: 'signup', element: <LoginSignup /> },
+          { path: 'callback', element: <AuthCallback /> },
+          { path: 'reset-password', element: <ResetPassword /> },
+        ]
+      },
+      {
+        path: 'user',
         element: <AuthGuard><UserDashboardLayout /></AuthGuard>,
         children: [
           { path: 'profile', element: <Profile /> },
@@ -112,7 +97,7 @@ const router = createBrowserRouter([
         ]
       },
       {
-        path: '/legal',
+        path: 'legal',
         element: <LegalLayout />,
         children: [
           { path: 'privacy', element: <Privacy /> },
@@ -120,6 +105,29 @@ const router = createBrowserRouter([
           { path: 'refund-policy', element: <RefundPolicy /> },
           { path: 'shipping-policy', element: <ShippingPolicy /> },
         ]
+      },
+      {
+        path: '/',
+        element: <MarketingLayout />,
+        children: [
+          { index: true, element: <Home /> },
+          { path: 'about', element: <About /> },
+          { path: 'ats-checker', element: <AtsChecker /> },
+          { path: 'contact', element: <Contact /> },
+          { path: 'faq', element: <Faq /> },
+          { path: 'pricing', element: <Pricing /> },
+          {
+            path: 'blog',
+            children: [
+              { index: true, element: <BlogListing /> },
+              { path: ':slug', element: <BlogDetail /> },
+            ]
+          },
+        ]
+      },
+      {
+        path: '*',
+        element: <NotFound />
       }
     ]
   }

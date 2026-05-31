@@ -29,3 +29,4 @@ backend/.env.example
 backend/laravel_env
 __pycache__/
 *.pyc
+backend/uploads/*

@@ -3,7 +3,6 @@ import { useResumeStore } from '../store/useResumeStore';
 
 export const usePagination = () => {
   const layout = useResumeStore((state) => state.resume.layout);
-  const templateId = useResumeStore((state) => state.resume.metadata.templateId);
   const setPages = useResumeStore((state) => state.setPages);
 
   const handleMeasure = useCallback((heights: Record<string, number>, usableHeight: number) => {

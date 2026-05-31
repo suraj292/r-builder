@@ -14,6 +14,8 @@ interface User {
   is_premium: boolean;
   phone_number?: string | null;
   location?: string | null;
+  created_at: string;
+  last_password_reset?: string | null;
 }
 
 interface AuthState {

@@ -4,7 +4,7 @@ import { useResumeStore } from '../../store/useResumeStore';
 import { cn } from '../../lib/utils';
 import { Check, Search, Sparkles, Shield, Palette, Briefcase, GraduationCap, Lock } from 'lucide-react';
 import { getRecommendedTemplates } from '../../lib/recommendations';
-import type { ExperienceLevel } from '../../types/template';
+import type { ResumeTemplate, ExperienceLevel } from '../../types/template';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useSubscriptionStore } from '../../store/useSubscriptionStore';
 import { useTemplateStore } from '../../store/useTemplateStore';
@@ -100,7 +100,7 @@ export const TemplateGallery: React.FC = () => {
     return true;
   };
 
-  const renderTemplateCard = (template: typeof templates[0]) => {
+  const renderTemplateCard = (template: ResumeTemplate) => {
     const locked = isLocked(template.requiredTier);
 
     return (

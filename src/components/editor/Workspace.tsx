@@ -193,7 +193,7 @@ const AIOptimizerSidebar: React.FC = () => {
                         <AlertTriangle className="w-3 h-3 text-amber-500" /> Missing Keywords
                     </p>
                     <div className="flex flex-wrap gap-1.5">
-                        {atsAnalysis.missingKeywords.slice(0, 5).map(kw => (
+                        {atsAnalysis.missingKeywords.slice(0, 5).map((kw: string) => (
                             <span key={kw} className="px-1.5 py-0.5 bg-amber-50 text-amber-700 rounded text-[9px] font-bold border border-amber-200">
                                 {kw}
                             </span>

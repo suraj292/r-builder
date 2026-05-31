@@ -3,9 +3,8 @@ import { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../../lib/api';
 import { useResumeStore } from '../../store/useResumeStore';
-import { cn, formatRelativeTime } from '../../lib/utils';
+import { formatRelativeTime } from '../../lib/utils';
 import { 
-  FileText, 
   Plus, 
   Search, 
   MoreVertical, 
@@ -31,7 +30,6 @@ export default function MyResumes() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeMenu, setActiveMenu] = useState<number | null>(null);
-  const [isDeleting, setIsDeleting] = useState<number | null>(null);
   
   const setFullResume = useResumeStore(state => state.setFullResume);
   const setResumeId = useResumeStore(state => state.setResumeId);

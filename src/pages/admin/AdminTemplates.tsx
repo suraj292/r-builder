@@ -1,8 +1,8 @@
 import { useState, useMemo, useEffect } from 'react';
 import { TEMPLATE_REGISTRY } from '../../templates/registry';
 import { cn } from '../../lib/utils';
-import { Shield, Palette, Briefcase, GraduationCap, Sparkles, Lock, CheckCircle2, LayoutTemplate, X, Wand2, Info, Activity } from 'lucide-react';
-import type { ResumeTemplate, ExperienceLevel } from '../../types/template';
+import { Shield, Palette, Briefcase, GraduationCap, Sparkles, CheckCircle2, LayoutTemplate, X, Wand2, Info, Activity } from 'lucide-react';
+import type { ResumeTemplate } from '../../types/template';
 import { useTemplateStore } from '../../store/useTemplateStore';
 import { showAlert } from '../../lib/alerts';
 

@@ -26,6 +26,7 @@ export default function Header() {
                     <Link to="/builder" className={`text-sm font-medium transition-colors ${currentPath.startsWith('/builder') ? 'text-indigo-600' : 'text-slate-600 hover:text-indigo-600'}`}>Resume Builder</Link>
                     <Link to="/ats-checker" className={`text-sm font-medium transition-colors ${currentPath === '/ats-checker' ? 'text-indigo-600' : 'text-slate-600 hover:text-indigo-600'}`}>ATS Checker</Link>
                     <Link to="/pricing" className={`text-sm font-medium transition-colors ${currentPath === '/pricing' ? 'text-indigo-600' : 'text-slate-600 hover:text-indigo-600'}`}>Pricing</Link>
+                    <Link to="/blog" className={`text-sm font-medium transition-colors ${currentPath.startsWith('/blog') ? 'text-indigo-600' : 'text-slate-600 hover:text-indigo-600'}`}>Blog</Link>
                 </div>
 
                 {/* CTA / Auth Dropdown */}
@@ -137,6 +138,7 @@ export default function Header() {
                     <Link to="/builder" className="block text-sm font-medium text-slate-600 hover:text-indigo-600" onClick={() => setIsMobileMenuOpen(false)}>Resume Builder</Link>
                     <Link to="/ats-checker" className="block text-sm font-medium text-slate-600 hover:text-indigo-600" onClick={() => setIsMobileMenuOpen(false)}>ATS Checker</Link>
                     <Link to="/pricing" className="block text-sm font-medium text-slate-600 hover:text-indigo-600" onClick={() => setIsMobileMenuOpen(false)}>Pricing</Link>
+                    <Link to="/blog" className="block text-sm font-medium text-slate-600 hover:text-indigo-600" onClick={() => setIsMobileMenuOpen(false)}>Blog</Link>
                     <hr className="border-slate-100" />
                     
                     {user ? (

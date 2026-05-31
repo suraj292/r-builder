@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { api } from '../../lib/api';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useCurrencyStore } from '../../store/useCurrencyStore';
@@ -27,8 +27,7 @@ export default function Pricing() {
     const [loading, setLoading] = useState(true);
     const [isYearly, setIsYearly] = useState(false);
     const { user } = useAuthStore();
-    const { config, setCurrency, detectCurrency, formatPrice } = useCurrencyStore();
-    const navigate = useNavigate();
+    const { config, detectCurrency, formatPrice } = useCurrencyStore();
 
     useEffect(() => {
         detectCurrency();
