@@ -48,8 +48,8 @@ class AIService:
             raise ValueError("Gemini API Key not configured")
             
         async with httpx.AsyncClient() as client:
-            # Gemini 1.5 format
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={settings.GEMINI_API_KEY}"
+            # Gemini 1.5 format - using v1 for better model support
+            url = f"https://generativelanguage.googleapis.com/v1/models/{model}:generateContent?key={settings.GEMINI_API_KEY}"
             response = await client.post(
                 url,
                 json={

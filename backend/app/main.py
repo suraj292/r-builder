@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
-from app.api.v1 import auth, users, resumes, payments, ai_workflow, admin, subscriptions, location, templates, blog_admin, media
+from app.api.v1 import auth, users, resumes, payments, ai_workflow, admin, subscriptions, location, templates, blog_admin, media, blog_ai
 from app.config import settings
 
 app = FastAPI(
@@ -32,6 +32,7 @@ app.include_router(payments.router, prefix="/api/v1/payments", tags=["payments"]
 app.include_router(ai_workflow.router, prefix="/api/v1/ai", tags=["ai"])
 app.include_router(templates.router, prefix="/api/v1/templates", tags=["templates"])
 app.include_router(blog_admin.router, prefix="/api/v1/admin/blog", tags=["blog_admin"])
+app.include_router(blog_ai.router, prefix="/api/v1/admin/blog/ai", tags=["blog_ai"])
 app.include_router(media.router, prefix="/api/v1/admin/media", tags=["media"])
 
 # Static Files

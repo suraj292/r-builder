@@ -22,6 +22,7 @@ export default function BlogEditor() {
     } = useBlogEditorStore();
 
     const [isSaving, setIsSaving] = useState(false);
+    const [isAILoading, setIsAILoading] = useState(false);
     const [isMediaOpen, setIsMediaOpen] = useState(false);
     const [categories, setCategories] = useState<any[]>([]);
 
@@ -33,6 +34,64 @@ export default function BlogEditor() {
             reset();
         }
     }, [id]);
+
+    const handleOptimizeTitle = async () => {
+        if (!title) return Swal.fire('Wait', 'Enter a draft title first.', 'info');
+        setIsAILoading(true);
+        try {
+            const data = await api.post<any>('/v1/admin/blog/ai/optimize-title', { current_title: title });
+            Swal.fire({
+                title: 'Title Suggestions',
+                text: data.suggestion,
+                icon: 'info',
+                confirmButtonText: 'Great'
+            });
+        } catch (error) {
+            Swal.fire('Error', 'Failed to get suggestions', 'error');
+        } finally {
+            setIsAILoading(false);
+        }
+    };
+
+    const handleGenerateOutline = async () => {
+        if (!title) return Swal.fire('Wait', 'Enter a title to guide the AI.', 'info');
+        setIsAILoading(true);
+        try {
+            const data = await api.post<any>('/v1/admin/blog/ai/generate-outline', { title });
+            Swal.fire({
+                title: 'Post Outline',
+                html: `<div class="text-left text-sm overflow-y-auto max-h-96 whitespace-pre-wrap">${data.suggestion}</div>`,
+                width: '600px',
+                confirmButtonText: 'Thanks'
+            });
+        } catch (error) {
+            Swal.fire('Error', 'Failed to generate outline', 'error');
+        } finally {
+            setIsAILoading(false);
+        }
+    };
+
+    const handleSEOSuggestions = async () => {
+        setIsAILoading(true);
+        try {
+            const content_preview = blocks.map(b => b.data.text || '').join('\n');
+            const data = await api.post<any>('/v1/admin/blog/ai/seo-suggestions', { 
+                title, 
+                excerpt, 
+                content_preview 
+            });
+            Swal.fire({
+                title: 'SEO Recommendations',
+                html: `<div class="text-left text-sm overflow-y-auto max-h-96 whitespace-pre-wrap">${data.suggestion}</div>`,
+                width: '600px',
+                confirmButtonText: 'Got it'
+            });
+        } catch (error) {
+            Swal.fire('Error', 'Failed to get recommendations', 'error');
+        } finally {
+            setIsAILoading(false);
+        }
+    };
 
     const fetchCategories = async () => {
         try {
@@ -176,17 +235,27 @@ export default function BlogEditor() {
                         )}
 
                         {/* Article Title */}
-                        <textarea 
-                            value={title}
-                            onChange={(e) => setTitle(e.target.value)}
-                            placeholder="Article Title..."
-                            rows={1}
-                            className="w-full bg-transparent border-none focus:outline-none text-4xl md:text-5xl font-display font-extrabold text-slate-900 placeholder:text-slate-200 resize-none overflow-hidden mb-4"
-                            onInput={(e: any) => {
-                                e.target.style.height = 'auto';
-                                e.target.style.height = e.target.scrollHeight + 'px';
-                            }}
-                        />
+                        <div className="relative group/title mb-4">
+                            <textarea 
+                                value={title}
+                                onChange={(e) => setTitle(e.target.value)}
+                                placeholder="Article Title..."
+                                rows={1}
+                                className="w-full bg-transparent border-none focus:outline-none text-4xl md:text-5xl font-display font-extrabold text-slate-900 placeholder:text-slate-200 resize-none overflow-hidden"
+                                onInput={(e: any) => {
+                                    e.target.style.height = 'auto';
+                                    e.target.style.height = e.target.scrollHeight + 'px';
+                                }}
+                            />
+                            <button 
+                                onClick={handleOptimizeTitle}
+                                disabled={isAILoading}
+                                className="absolute -right-12 top-2 w-8 h-8 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center opacity-0 group-hover/title:opacity-100 transition-opacity hover:bg-indigo-100 shadow-sm"
+                                title="Optimize Title with AI"
+                            >
+                                {isAILoading ? <i className="fa-solid fa-spinner animate-spin text-xs"></i> : <i className="fa-solid fa-wand-magic-sparkles text-xs"></i>}
+                            </button>
+                        </div>
 
                         {/* Blocks */}
                         <div className="space-y-4">
@@ -194,7 +263,7 @@ export default function BlogEditor() {
                         </div>
 
                         {/* Add Block Bottom */}
-                        <div className="pt-12 border-t border-slate-100 flex justify-center gap-4">
+                        <div className="pt-12 border-t border-slate-100 flex flex-wrap justify-center gap-4">
                             <button onClick={() => addBlock('heading')} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-50 text-slate-600 font-bold text-xs hover:bg-indigo-50 hover:text-indigo-600 transition-colors">
                                 <i className="fa-solid fa-heading"></i> Heading
                             </button>
@@ -203,6 +272,14 @@ export default function BlogEditor() {
                             </button>
                             <button onClick={() => addBlock('image')} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-50 text-slate-600 font-bold text-xs hover:bg-indigo-50 hover:text-indigo-600 transition-colors">
                                 <i className="fa-solid fa-image"></i> Image
+                            </button>
+                            <button 
+                                onClick={handleGenerateOutline}
+                                disabled={isAILoading}
+                                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-50 text-indigo-600 font-bold text-xs hover:bg-indigo-600 hover:text-white transition-all disabled:opacity-50"
+                            >
+                                {isAILoading ? <i className="fa-solid fa-spinner animate-spin"></i> : <i className="fa-solid fa-wand-magic-sparkles"></i>}
+                                Generate Outline
                             </button>
                         </div>
                     </div>
@@ -271,11 +348,18 @@ export default function BlogEditor() {
                             <div className="p-4 bg-indigo-50 rounded-2xl border border-indigo-100">
                                 <div className="flex items-center gap-2 text-indigo-600 mb-2">
                                     <i className="fa-solid fa-wand-magic-sparkles text-xs"></i>
-                                    <span className="text-[10px] font-bold uppercase">AI Suggestions</span>
+                                    <span className="text-[10px] font-bold uppercase">AI SEO Assistant</span>
                                 </div>
-                                <p className="text-[10px] text-slate-500 leading-relaxed">
-                                    Use our AI tool to generate outlines, optimize titles, and more in Phase 3.
+                                <p className="text-[10px] text-slate-500 leading-relaxed mb-4">
+                                    Get real-time SEO title suggestions, meta descriptions, and keyword ideas based on your current content.
                                 </p>
+                                <button 
+                                    onClick={handleSEOSuggestions}
+                                    disabled={isAILoading}
+                                    className="w-full py-2 bg-indigo-600 text-white rounded-xl font-bold text-[10px] uppercase tracking-wider hover:bg-indigo-500 transition-all shadow-md shadow-indigo-600/20 disabled:opacity-50"
+                                >
+                                    {isAILoading ? 'Analyzing...' : 'Run SEO Audit'}
+                                </button>
                             </div>
                         </div>
                     </div>
