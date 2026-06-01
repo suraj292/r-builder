@@ -1,7 +1,13 @@
 
 import { Link } from 'react-router-dom';
+import { useSystemStore } from '../../store/useSystemStore';
 
 export default function Contact() {
+    const { settings } = useSystemStore();
+    const contactEmail = settings?.contact_email || 'support@resumeai.com';
+    const contactPhone = settings?.contact_phone || '+1 (555) 000-0000';
+    const contactAddress = settings?.contact_address || 'San Francisco, CA';
+
     return (
         <>
 
@@ -45,8 +51,8 @@ export default function Contact() {
                             </div>
                             <h3 className="font-bold text-slate-900 text-lg mb-1">Email Support</h3>
                             <p className="text-sm text-slate-500 mb-3">Our team typically responds within 24 hours.</p>
-                            <a href="mailto:support@resumeai.com"
-                                className="text-indigo-600 font-semibold hover:underline">support@resumeai.com</a>
+                            <a href={`mailto:${contactEmail}`}
+                                className="text-indigo-600 font-semibold hover:underline">{contactEmail}</a>
                         </div>
 
                         {/*  Phone  */}
@@ -58,7 +64,7 @@ export default function Contact() {
                             </div>
                             <h3 className="font-bold text-slate-900 text-lg mb-1">Phone (Sales)</h3>
                             <p className="text-sm text-slate-500 mb-3">Mon-Fri from 9am to 6pm EST.</p>
-                            <a href="tel:+15550000000" className="text-blue-600 font-semibold hover:underline">+1 (555) 000-0000</a>
+                            <a href={`tel:${contactPhone}`} className="text-blue-600 font-semibold hover:underline">{contactPhone}</a>
                         </div>
 
                         {/*  Location  */}
@@ -70,7 +76,7 @@ export default function Contact() {
                             </div>
                             <h3 className="font-bold text-slate-900 text-lg mb-1">Headquarters</h3>
                             <p className="text-sm text-slate-500 mb-3">Visit our office for a coffee and chat.</p>
-                            <span className="text-purple-600 font-semibold">San Francisco, CA</span>
+                            <span className="text-purple-600 font-semibold">{contactAddress}</span>
                         </div>
                     </div>
 

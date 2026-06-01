@@ -1,6 +1,11 @@
 import { Link } from 'react-router-dom';
+import { useSystemStore } from '../../store/useSystemStore';
 
 export default function Footer() {
+  const { settings } = useSystemStore();
+  const projectName = settings?.project_name || 'ResumeAI';
+  const social = settings?.social_links;
+
   return (
     <footer className="bg-slate-950 text-slate-400 py-16 border-t border-slate-900 mt-auto">
       <div className="container mx-auto px-6">
@@ -8,11 +13,17 @@ export default function Footer() {
           {/* Logo & Description Column */}
           <div className="space-y-4 md:col-span-1">
             <div className="flex items-center gap-2.5 group cursor-pointer">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-600 to-violet-600 flex items-center justify-center text-white text-sm group-hover:rotate-12 transition-transform duration-300">
-                <i className="fa-solid fa-layer-group"></i>
-              </div>
+              {settings?.site_logo ? (
+                <img src={settings.site_logo} className="h-8 object-contain" alt={projectName} />
+              ) : (
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-600 to-violet-600 flex items-center justify-center text-white text-sm group-hover:rotate-12 transition-transform duration-300">
+                  <i className="fa-solid fa-layer-group"></i>
+                </div>
+              )}
               <span className="font-display font-bold text-white text-lg tracking-tight group-hover:text-indigo-400 transition-colors">
-                Resume<span className="text-indigo-500">AI</span>
+                {projectName.includes('AI') ? (
+                    <>{projectName.replace('AI', '')}<span className="text-indigo-500">AI</span></>
+                ) : projectName}
               </span>
             </div>
             <p className="text-sm text-slate-500 max-w-xs leading-relaxed">
@@ -110,18 +121,29 @@ export default function Footer() {
 
         <div className="border-t border-slate-900 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-slate-600">
           <div>
-            &copy; {new Date().getFullYear()} ResumeAI. All rights reserved.
+            &copy; {new Date().getFullYear()} {projectName}. All rights reserved.
           </div>
-          <div className="flex gap-4">
-            <span className="hover:text-slate-400 transition-colors cursor-pointer">
-              <i className="fa-brands fa-twitter text-lg"></i>
-            </span>
-            <span className="hover:text-slate-400 transition-colors cursor-pointer">
-              <i className="fa-brands fa-github text-lg"></i>
-            </span>
-            <span className="hover:text-slate-400 transition-colors cursor-pointer">
-              <i className="fa-brands fa-linkedin text-lg"></i>
-            </span>
+          <div className="flex gap-4 items-center">
+            {social?.twitter && (
+              <a href={social.twitter} target="_blank" rel="noreferrer" className="hover:text-white transition-colors">
+                <i className="fa-brands fa-x-twitter text-lg"></i>
+              </a>
+            )}
+            {social?.facebook && (
+              <a href={social.facebook} target="_blank" rel="noreferrer" className="hover:text-white transition-colors">
+                <i className="fa-brands fa-facebook text-lg"></i>
+              </a>
+            )}
+            {social?.linkedin && (
+              <a href={social.linkedin} target="_blank" rel="noreferrer" className="hover:text-white transition-colors">
+                <i className="fa-brands fa-linkedin text-lg"></i>
+              </a>
+            )}
+            {social?.instagram && (
+              <a href={social.instagram} target="_blank" rel="noreferrer" className="hover:text-white transition-colors">
+                <i className="fa-brands fa-instagram text-lg"></i>
+              </a>
+            )}
           </div>
         </div>
       </div>

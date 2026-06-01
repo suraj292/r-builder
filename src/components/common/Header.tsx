@@ -1,6 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useState } from 'react';
 import { useAuthStore } from '../../store/useAuthStore';
+import { useSystemStore } from '../../store/useSystemStore';
 
 export default function Header() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -9,16 +10,27 @@ export default function Header() {
     const location = useLocation();
     const currentPath = location.pathname;
     const { user, logout, isAdmin } = useAuthStore();
+    const { settings } = useSystemStore();
+
+    const projectName = settings?.project_name || 'ResumeAI';
 
     return (
         <nav id="navbar" className="glass-header fixed w-full z-50 top-0 bg-white/80 backdrop-blur-md border-b border-slate-200/60 transition-all duration-300">
             <div className="container mx-auto px-6 h-20 flex items-center justify-between">
                 {/* Logo */}
                 <Link to="/" className="flex items-center gap-2.5 group">
-                    <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600 flex items-center justify-center text-white text-lg shadow-lg group-hover:scale-105 transition-transform duration-300">
-                        <i className="fa-solid fa-layer-group"></i>
-                    </div>
-                    <span className="text-xl font-display font-bold text-slate-900 tracking-tight">Resume<span className="text-indigo-600">AI</span></span>
+                    {settings?.site_logo ? (
+                        <img src={settings.site_logo} className="h-8 object-contain" alt={projectName} />
+                    ) : (
+                        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600 flex items-center justify-center text-white text-lg shadow-lg group-hover:scale-105 transition-transform duration-300">
+                            <i className="fa-solid fa-layer-group"></i>
+                        </div>
+                    )}
+                    <span className="text-xl font-display font-bold text-slate-900 tracking-tight">
+                        {projectName.includes('AI') ? (
+                            <>{projectName.replace('AI', '')}<span className="text-indigo-600">AI</span></>
+                        ) : projectName}
+                    </span>
                 </Link>
 
                 {/* Desktop Links */}

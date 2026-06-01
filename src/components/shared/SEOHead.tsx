@@ -3,9 +3,14 @@ import { useLocation } from 'react-router-dom';
 import { api } from '../../lib/api';
 import type { SEOConfig } from '../../types/seo';
 
+import { useSystemStore } from '../../store/useSystemStore';
+
 export default function SEOHead() {
   const location = useLocation();
+  const { settings } = useSystemStore();
   const [config, setConfig] = useState<SEOConfig | null>(null);
+
+  const projectName = settings?.project_name || 'ResumeAI';
 
   useEffect(() => {
     fetchSEO();

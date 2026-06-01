@@ -376,20 +376,6 @@ async def get_ai_config(
         "gemini_key_configured": bool(settings.GEMINI_API_KEY)
     }
 
-@router.get("/settings")
-async def get_system_settings(
-    current_user: User = Depends(require_role([UserRole.SUPER_ADMIN, UserRole.ADMIN]))
-):
-    """
-    Get global system settings.
-    """
-    return {
-        "project_name": settings.PROJECT_NAME,
-        "maintenance_mode": False,
-        "allow_new_registrations": True,
-        "contact_email": "support@resumeai.com"
-    }
-
 @router.get("/users", response_model=List[UserOut])
 async def get_all_users(
     db: AsyncSession = Depends(get_db),
