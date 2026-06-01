@@ -10,6 +10,7 @@ const navItems = [
   { path: '/admin/plans', label: 'Plans', icon: 'fa-credit-card' },
   { path: '/admin/templates', label: 'Templates', icon: 'fa-table-columns' },
   { path: '/admin/blog', label: 'Blog', icon: 'fa-blog' },
+  { path: '/admin/seo', label: 'SEO Management', icon: 'fa-search-dollar' },
   { path: '/admin/ai', label: 'AI Management', icon: 'fa-robot' },
   { path: '/admin/settings', label: 'Settings', icon: 'fa-gear' },
 ];

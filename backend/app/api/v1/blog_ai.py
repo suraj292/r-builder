@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from app.api.deps import require_role
 from app.models.user import User, UserRole
-from app.schemas.blog_ai import BlogOutlineRequest, TitleOptimizationRequest, SEOSuggestionsRequest, AISuggestionOut
+from app.schemas.blog_ai import BlogOutlineRequest, TitleOptimizationRequest, SEOSuggestionsRequest, BlogDraftRequest, AISuggestionOut
 from app.services.blog_ai import BlogAIService
 
 router = APIRouter()
@@ -45,6 +45,20 @@ async def get_seo_suggestions(
             title=request.title,
             excerpt=request.excerpt,
             content_preview=request.content_preview
+        )
+        return AISuggestionOut(suggestion=suggestion)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/generate-draft", response_model=AISuggestionOut)
+async def generate_draft(
+    request: BlogDraftRequest,
+    current_user: User = Depends(require_role([UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.CONTENT_MANAGER]))
+):
+    try:
+        suggestion = await BlogAIService.generate_draft(
+            title=request.title,
+            outline=request.outline
         )
         return AISuggestionOut(suggestion=suggestion)
     except Exception as e:

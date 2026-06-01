@@ -11,3 +11,4 @@ from app.models.coupon import Coupon, UserCouponUsage
 from app.models.system import SystemSettings
 from app.models.blog import BlogCategory, BlogTag, BlogPost, BlogPostRevision, PostStatus
 from app.models.media import MediaLibrary
+from app.models.seo import SEOConfig

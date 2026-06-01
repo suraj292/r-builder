@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
-from app.api.v1 import auth, users, resumes, payments, ai_workflow, admin, subscriptions, location, templates, blog_admin, media, blog_ai
+from app.api.v1 import auth, users, resumes, payments, ai_workflow, admin, subscriptions, location, templates, blog_admin, media, blog_ai, seo_admin, seo_public
 from app.config import settings
 
 app = FastAPI(
@@ -34,6 +34,8 @@ app.include_router(templates.router, prefix="/api/v1/templates", tags=["template
 app.include_router(blog_admin.router, prefix="/api/v1/admin/blog", tags=["blog_admin"])
 app.include_router(blog_ai.router, prefix="/api/v1/admin/blog/ai", tags=["blog_ai"])
 app.include_router(media.router, prefix="/api/v1/admin/media", tags=["media"])
+app.include_router(seo_admin.router, prefix="/api/v1/admin/seo", tags=["seo_admin"])
+app.include_router(seo_public.router, prefix="/api/v1/seo", tags=["seo_public"])
 
 # Static Files
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")

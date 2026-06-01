@@ -15,6 +15,10 @@ class SEOSuggestionsRequest(BaseModel):
     excerpt: Optional[str] = None
     content_preview: str
 
+class BlogDraftRequest(BaseModel):
+    title: str
+    outline: str
+
 class AISuggestionOut(BaseModel):
     suggestion: str
     raw_response: Optional[str] = None

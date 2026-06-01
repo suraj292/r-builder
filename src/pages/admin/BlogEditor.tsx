@@ -62,14 +62,48 @@ export default function BlogEditor() {
         setIsAILoading(true);
         try {
             const data = await api.post<any>('/v1/admin/blog/ai/generate-outline', { title });
-            Swal.fire({
+            const result = await Swal.fire({
                 title: 'Post Outline',
-                html: `<div class="text-left text-sm overflow-y-auto max-h-96 whitespace-pre-wrap">${data.suggestion}</div>`,
+                html: `
+                    <div class="text-left text-sm overflow-y-auto max-h-96 whitespace-pre-wrap mb-4">${data.suggestion}</div>
+                    <div class="p-3 bg-indigo-50 rounded-xl text-[10px] text-indigo-700 font-bold uppercase tracking-wider">
+                        Next Step: Generate Full Draft?
+                    </div>
+                `,
                 width: '600px',
-                confirmButtonText: 'Thanks'
+                showCancelButton: true,
+                confirmButtonText: 'Generate Full Draft',
+                cancelButtonText: 'Just Save Outline'
             });
+
+            if (result.isConfirmed) {
+                handleGenerateDraft(data.suggestion);
+            }
         } catch (error) {
             Swal.fire('Error', 'Failed to generate outline', 'error');
+        } finally {
+            setIsAILoading(false);
+        }
+    };
+
+    const handleGenerateDraft = async (outline: string) => {
+        setIsAILoading(true);
+        try {
+            const data = await api.post<any>('/v1/admin/blog/ai/generate-draft', { title, outline });
+            // Add the generated content as a paragraph block or split into multiple? 
+            // For now, let's add it as a new paragraph block at the end
+            addBlock('paragraph');
+            // We need a way to target the specific block we just added. 
+            // For this prototype, let's just alert the content and let user copy-paste or auto-inject.
+            // Better: Let's find the last block and update it.
+            Swal.fire({
+                title: 'Draft Generated!',
+                html: `<div class="text-left text-xs overflow-y-auto max-h-96 whitespace-pre-wrap">${data.suggestion}</div>`,
+                width: '700px',
+                confirmButtonText: 'Awesome'
+            });
+        } catch (error) {
+            Swal.fire('Error', 'Failed to generate draft', 'error');
         } finally {
             setIsAILoading(false);
         }
@@ -85,10 +119,10 @@ export default function BlogEditor() {
                 content_preview 
             });
             Swal.fire({
-                title: 'SEO Recommendations',
-                html: `<div class="text-left text-sm overflow-y-auto max-h-96 whitespace-pre-wrap">${data.suggestion}</div>`,
-                width: '600px',
-                confirmButtonText: 'Got it'
+                title: 'SEO-GPT Enterprise Audit',
+                html: `<div class="text-left text-xs overflow-y-auto max-h-[70vh] whitespace-pre-wrap prose-sm">${data.suggestion}</div>`,
+                width: '800px',
+                confirmButtonText: 'Implementation Ready'
             });
         } catch (error) {
             Swal.fire('Error', 'Failed to get recommendations', 'error');

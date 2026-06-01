@@ -28,6 +28,7 @@ import AdminSubscriptionDetail from '../pages/admin/AdminSubscriptionDetail';
 import AdminCoupons from '../pages/admin/AdminCoupons';
 import AdminBlog from '../pages/admin/AdminBlog';
 import BlogEditor from '../pages/admin/BlogEditor';
+import AdminSEO from '../pages/admin/AdminSEO';
 import AdminAI from '../pages/admin/AdminAI';
 import AdminSettings from '../pages/admin/AdminSettings';
 import Privacy from '../pages/legal/Privacy';
@@ -42,11 +43,12 @@ import UserDashboardLayout from '../layouts/UserDashboardLayout';
 import LegalLayout from '../layouts/LegalLayout';
 import UpgradeModal from '../components/subscription/UpgradeModal';
 import NotFound from '../pages/marketing/NotFound';
+import SEOHead from '../components/shared/SEOHead';
 
 const router = createBrowserRouter([
   {
     path: '/',
-    element: <><Outlet /><UpgradeModal /></>,
+    element: <><SEOHead /><Outlet /><UpgradeModal /></>,
     errorElement: <NotFound />,
     children: [
       {
@@ -65,6 +67,7 @@ const router = createBrowserRouter([
           { path: 'blog', element: <AdminBlog /> },
           { path: 'blog/create', element: <BlogEditor /> },
           { path: 'blog/edit/:id', element: <BlogEditor /> },
+          { path: 'seo', element: <AdminSEO /> },
           { path: 'ai', element: <AdminAI /> },
           { path: 'settings', element: <AdminSettings /> },
         ]
