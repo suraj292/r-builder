@@ -41,6 +41,10 @@ async def discover_pages(
         {"path": "/contact", "label": "Contact Us", "type": "static"},
         {"path": "/blog", "label": "Blog Listing", "type": "static"},
         {"path": "/builder", "label": "Resume Builder", "type": "static"},
+        {"path": "/legal/privacy", "label": "Privacy Policy", "type": "static"},
+        {"path": "/legal/terms", "label": "Terms of Service", "type": "static"},
+        {"path": "/legal/refund-policy", "label": "Refund Policy", "type": "static"},
+        {"path": "/legal/shipping-policy", "label": "Shipping Policy", "type": "static"},
     ]
     
     # 2. Dynamic Blog Posts

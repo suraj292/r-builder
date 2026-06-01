@@ -5,6 +5,7 @@ import { useAuthStore } from '../../store/useAuthStore';
 export default function Header() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const [isResourcesOpen, setIsResourcesOpen] = useState(false);
     const location = useLocation();
     const currentPath = location.pathname;
     const { user, logout, isAdmin } = useAuthStore();
@@ -26,7 +27,71 @@ export default function Header() {
                     <Link to="/builder" className={`text-sm font-medium transition-colors ${currentPath.startsWith('/builder') ? 'text-indigo-600' : 'text-slate-600 hover:text-indigo-600'}`}>Resume Builder</Link>
                     <Link to="/ats-checker" className={`text-sm font-medium transition-colors ${currentPath === '/ats-checker' ? 'text-indigo-600' : 'text-slate-600 hover:text-indigo-600'}`}>ATS Checker</Link>
                     <Link to="/pricing" className={`text-sm font-medium transition-colors ${currentPath === '/pricing' ? 'text-indigo-600' : 'text-slate-600 hover:text-indigo-600'}`}>Pricing</Link>
-                    <Link to="/blog" className={`text-sm font-medium transition-colors ${currentPath.startsWith('/blog') ? 'text-indigo-600' : 'text-slate-600 hover:text-indigo-600'}`}>Blog</Link>
+                    
+                    {/* Resources Dropdown */}
+                    <div className="relative">
+                        <button
+                            onClick={() => setIsResourcesOpen(!isResourcesOpen)}
+                            className={`flex items-center gap-1.5 text-sm font-medium transition-colors focus:outline-none cursor-pointer ${
+                                currentPath.startsWith('/blog') || currentPath === '/about' || currentPath === '/faq' || currentPath === '/contact'
+                                    ? 'text-indigo-600'
+                                    : 'text-slate-600 hover:text-indigo-600'
+                            }`}
+                        >
+                            Resources
+                            <i className={`fa-solid fa-chevron-down text-[10px] transition-transform duration-200 ${isResourcesOpen ? 'rotate-180' : ''}`}></i>
+                        </button>
+
+                        {isResourcesOpen && (
+                            <>
+                                <div className="fixed inset-0 z-10" onClick={() => setIsResourcesOpen(false)} />
+                                <div className="absolute left-0 mt-2 w-48 rounded-2xl bg-white border border-slate-100 shadow-xl py-2 z-20 animate-in fade-in slide-in-from-top-3 duration-200">
+                                    <div className="p-1.5 space-y-0.5">
+                                        <Link
+                                            to="/blog"
+                                            className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium transition-colors ${
+                                                currentPath.startsWith('/blog') ? 'bg-slate-50 text-indigo-600' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                                            }`}
+                                            onClick={() => setIsResourcesOpen(false)}
+                                        >
+                                            <i className="fa-solid fa-blog text-slate-400 w-4 text-center"></i>
+                                            Blog
+                                        </Link>
+                                        <Link
+                                            to="/about"
+                                            className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium transition-colors ${
+                                                currentPath === '/about' ? 'bg-slate-50 text-indigo-600' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                                            }`}
+                                            onClick={() => setIsResourcesOpen(false)}
+                                        >
+                                            <i className="fa-solid fa-building text-slate-400 w-4 text-center"></i>
+                                            About Us
+                                        </Link>
+                                        <Link
+                                            to="/faq"
+                                            className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium transition-colors ${
+                                                currentPath === '/faq' ? 'bg-slate-50 text-indigo-600' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                                            }`}
+                                            onClick={() => setIsResourcesOpen(false)}
+                                        >
+                                            <i className="fa-solid fa-circle-question text-slate-400 w-4 text-center"></i>
+                                            FAQ
+                                        </Link>
+                                        <Link
+                                            to="/contact"
+                                            className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium transition-colors ${
+                                                currentPath === '/contact' ? 'bg-slate-50 text-indigo-600' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                                            }`}
+                                            onClick={() => setIsResourcesOpen(false)}
+                                        >
+                                            <i className="fa-solid fa-envelope text-slate-400 w-4 text-center"></i>
+                                            Contact Us
+                                        </Link>
+                                    </div>
+                                </div>
+                            </>
+                        )}
+                    </div>
                 </div>
 
                 {/* CTA / Auth Dropdown */}
@@ -139,6 +204,9 @@ export default function Header() {
                     <Link to="/ats-checker" className="block text-sm font-medium text-slate-600 hover:text-indigo-600" onClick={() => setIsMobileMenuOpen(false)}>ATS Checker</Link>
                     <Link to="/pricing" className="block text-sm font-medium text-slate-600 hover:text-indigo-600" onClick={() => setIsMobileMenuOpen(false)}>Pricing</Link>
                     <Link to="/blog" className="block text-sm font-medium text-slate-600 hover:text-indigo-600" onClick={() => setIsMobileMenuOpen(false)}>Blog</Link>
+                    <Link to="/about" className="block text-sm font-medium text-slate-600 hover:text-indigo-600" onClick={() => setIsMobileMenuOpen(false)}>About Us</Link>
+                    <Link to="/faq" className="block text-sm font-medium text-slate-600 hover:text-indigo-600" onClick={() => setIsMobileMenuOpen(false)}>FAQ</Link>
+                    <Link to="/contact" className="block text-sm font-medium text-slate-600 hover:text-indigo-600" onClick={() => setIsMobileMenuOpen(false)}>Contact Us</Link>
                     <hr className="border-slate-100" />
                     
                     {user ? (
