@@ -7,6 +7,8 @@ import HeadingBlock from '../../components/admin/blog/blocks/HeadingBlock';
 import ParagraphBlock from '../../components/admin/blog/blocks/ParagraphBlock';
 import ImageBlock from '../../components/admin/blog/blocks/ImageBlock';
 import MediaLibrary from '../../components/admin/MediaLibrary';
+import BlogRenderer from '../../components/blog/BlogRenderer';
+import CategoryManager from '../../components/admin/CategoryManager';
 
 export default function BlogEditor() {
     const { id } = useParams();
@@ -24,6 +26,8 @@ export default function BlogEditor() {
     const [isSaving, setIsSaving] = useState(false);
     const [isAILoading, setIsAILoading] = useState(false);
     const [isMediaOpen, setIsMediaOpen] = useState(false);
+    const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+    const [isCategoryManagerOpen, setIsCategoryManagerOpen] = useState(false);
     const [categories, setCategories] = useState<any[]>([]);
 
     useEffect(() => {
@@ -187,6 +191,15 @@ export default function BlogEditor() {
         );
     };
 
+    const currentPostPreview = {
+        title,
+        excerpt,
+        content_blocks: blocks,
+        featured_image,
+        category: categories.find(c => c.id === category_id) || (category_id ? { name: 'Selected Category' } : null),
+        created_at: new Date().toISOString()
+    };
+
     return (
         <div className="flex flex-col h-[calc(100vh-64px)] -m-8">
             {/* Editor Toolbar */}
@@ -198,6 +211,13 @@ export default function BlogEditor() {
                     <h1 className="font-bold text-slate-900 truncate max-w-md">{title || 'New Article'}</h1>
                 </div>
                 <div className="flex items-center gap-3">
+                    <button 
+                        onClick={() => setIsPreviewOpen(true)}
+                        className="px-6 py-2.5 bg-white border border-slate-200 text-slate-600 rounded-xl font-bold text-sm hover:bg-slate-50 transition-all flex items-center gap-2"
+                    >
+                        <i className="fa-solid fa-eye"></i>
+                        Preview
+                    </button>
                     <button 
                         onClick={handleSave}
                         disabled={isSaving}
@@ -303,7 +323,15 @@ export default function BlogEditor() {
                             </div>
 
                             <div className="space-y-1.5">
-                                <label className="text-[10px] font-bold text-slate-500 uppercase">Category</label>
+                                <div className="flex justify-between items-center">
+                                    <label className="text-[10px] font-bold text-slate-500 uppercase">Category</label>
+                                    <button 
+                                        onClick={() => setIsCategoryManagerOpen(true)}
+                                        className="text-[9px] font-bold text-indigo-600 hover:text-indigo-700 uppercase tracking-wider"
+                                    >
+                                        Manage
+                                    </button>
+                                </div>
                                 <select 
                                     value={category_id || ''}
                                     onChange={(e) => setCategoryId(parseInt(e.target.value) || null)}
@@ -375,6 +403,37 @@ export default function BlogEditor() {
                             setFeaturedImage(media.file_path);
                             setIsMediaOpen(false);
                         }}
+                    />
+                </div>
+            )}
+
+            {/* Live Preview Modal */}
+            {isPreviewOpen && (
+                <div className="fixed inset-0 z-[70] flex flex-col bg-slate-900/90 backdrop-blur-md">
+                    <header className="h-16 bg-white flex items-center justify-between px-8 shadow-xl">
+                        <div className="flex items-center gap-3">
+                            <span className="px-2 py-1 bg-indigo-100 text-indigo-700 text-[10px] font-bold rounded uppercase">Preview Mode</span>
+                            <p className="text-sm text-slate-500 italic">This is how your post will look to readers.</p>
+                        </div>
+                        <button 
+                            onClick={() => setIsPreviewOpen(false)}
+                            className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors"
+                        >
+                            <i className="fa-solid fa-xmark"></i>
+                        </button>
+                    </header>
+                    <div className="flex-1 overflow-y-auto bg-white mx-auto w-full max-w-7xl shadow-2xl">
+                        <BlogRenderer post={currentPostPreview as any} />
+                    </div>
+                </div>
+            )}
+
+            {/* Category Manager Modal */}
+            {isCategoryManagerOpen && (
+                <div className="fixed inset-0 z-[80] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-sm">
+                    <CategoryManager 
+                        onClose={() => setIsCategoryManagerOpen(false)}
+                        onUpdate={fetchCategories}
                     />
                 </div>
             )}
