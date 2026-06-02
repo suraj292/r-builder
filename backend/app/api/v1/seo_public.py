@@ -14,10 +14,17 @@ async def get_seo_config(
     db: AsyncSession = Depends(get_db)
 ) -> Any:
     """
-    Fetch SEO configuration for a specific path.
+    Fetch SEO configuration for a specific path. 
+    Fallbacks to '__default__' if not found.
     """
     result = await db.execute(select(SEOConfig).where(SEOConfig.path == path))
     config = result.scalars().first()
+    
+    if not config and path != "__default__":
+        # Try fallback to global default
+        result = await db.execute(select(SEOConfig).where(SEOConfig.path == "__default__"))
+        config = result.scalars().first()
+        
     return config
 
 @router.get("/sitemap.xml")
@@ -27,7 +34,11 @@ async def generate_sitemap(
     """
     Dynamically generate XML sitemap based on SEO configurations.
     """
-    result = await db.execute(select(SEOConfig).where(SEOConfig.include_in_sitemap == True))
+    result = await db.execute(
+        select(SEOConfig)
+        .where(SEOConfig.include_in_sitemap == True)
+        .where(SEOConfig.path != "__default__")
+    )
     configs = result.scalars().all()
     
     # Simple XML generation logic (can be expanded)
