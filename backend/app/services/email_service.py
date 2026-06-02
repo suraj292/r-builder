@@ -32,7 +32,7 @@ class EmailService:
         body = f"""
         <h1>Welcome, {full_name}!</h1>
         <p>Thank you for joining ResumeAI. Start building your professional resume today.</p>
-        <p><a href="http://localhost:5173/builder">Get Started</a></p>
+        <p><a href="{settings.FRONTEND_URL}/builder">Get Started</a></p>
         """
         cls.send_email(to_email, subject, body, is_html=True)
 
