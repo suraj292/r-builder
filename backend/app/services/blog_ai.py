@@ -130,8 +130,12 @@ class BlogAIService:
             "title, description, keywords, og_title, og_description."
         )
         
+        target_desc = f"Page Path: {path}"
+        if path == "__default__":
+            target_desc = "Target: GLOBAL DEFAULT FALLBACK (Applied when no specific page SEO is defined. Should be broad and platform-wide.)"
+
         prompt = (
-            f"Page Path: {path}\n"
+            f"{target_desc}\n"
             f"Additional Context: {context}\n\n"
             "Generate the best SEO and OG metadata to maximize Google rankings and AI search visibility (GEO)."
         )

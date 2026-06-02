@@ -173,7 +173,7 @@ async def social_callback(provider: str, request: Request, db: AsyncSession = De
     
     access_token = create_access_token(user.email)
     
-    return RedirectResponse(url=f"http://localhost:5173/auth/callback?token={access_token}")
+    return RedirectResponse(url=f"{settings.FRONTEND_URL}/auth/callback?token={access_token}")
 
 
 @router.post("/forgot-password")
@@ -195,7 +195,7 @@ async def forgot_password(
     reset_token = create_password_reset_token(user.email)
     
     # Construct reset link pointing to the React frontend route
-    reset_link = f"http://localhost:5173/auth/reset-password?token={reset_token}"
+    reset_link = f"{settings.FRONTEND_URL}/auth/reset-password?token={reset_token}"
     
     # Send email
     EmailService.send_password_reset_email(user.email, reset_link)

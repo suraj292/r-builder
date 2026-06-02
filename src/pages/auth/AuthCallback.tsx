@@ -1,10 +1,12 @@
 import { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { setAuthToken } from '../../lib/api';
+import { useAuthStore } from '../../store/useAuthStore';
 
 export default function AuthCallback() {
   const navigate = useNavigate();
   const location = useLocation();
+  const fetchUser = useAuthStore(state => state.fetchUser);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -12,12 +14,15 @@ export default function AuthCallback() {
 
     if (token) {
       setAuthToken(token);
-      navigate('/builder');
+      // Fetch user details immediately to sync authentication state before navigating
+      fetchUser().then(() => {
+        navigate('/builder');
+      });
     } else {
       console.error('No token found in callback URL');
       navigate('/auth/login');
     }
-  }, [location, navigate]);
+  }, [location, navigate, fetchUser]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50">

@@ -1,4 +1,4 @@
-import type { BlogPost } from '../types/blog';
+import type { BlogPost } from '../../types/blog';
 
 interface BlogRendererProps {
     post: Partial<BlogPost>;

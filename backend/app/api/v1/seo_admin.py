@@ -33,6 +33,7 @@ async def discover_pages(
     """
     # 1. Static Core Pages
     static_pages = [
+        {"path": "__default__", "label": "Global Default (Fallback)", "type": "system"},
         {"path": "/", "label": "Home Page", "type": "static"},
         {"path": "/about", "label": "About Us", "type": "static"},
         {"path": "/ats-checker", "label": "ATS Resume Checker", "type": "static"},
