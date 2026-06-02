@@ -30,3 +30,5 @@ backend/laravel_env
 __pycache__/
 *.pyc
 backend/uploads/*
+backend/*.zip
+*.zip
