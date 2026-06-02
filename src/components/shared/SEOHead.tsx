@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { api } from '../../lib/api';
 import type { SEOConfig } from '../../types/seo';
@@ -8,8 +8,6 @@ import { useSystemStore } from '../../store/useSystemStore';
 export default function SEOHead() {
   const location = useLocation();
   const { settings } = useSystemStore();
-  const [config, setConfig] = useState<SEOConfig | null>(null);
-
   const projectName = settings?.project_name || 'ResumeAI';
 
   useEffect(() => {
@@ -21,7 +19,6 @@ export default function SEOHead() {
       const data = await api.get<SEOConfig>(`/v1/seo/config?path=${encodeURIComponent(location.pathname)}`);
       if (data) {
         applySEO(data);
-        setConfig(data);
       } else {
         // Reset or use defaults if no custom config for this path
         resetSEO();
@@ -33,7 +30,7 @@ export default function SEOHead() {
 
   const applySEO = (cfg: SEOConfig) => {
     // 1. Title
-    const finalTitle = cfg.title || document.title;
+    const finalTitle = cfg.title || projectName;
     document.title = finalTitle;
 
     // 2. Meta Tags
