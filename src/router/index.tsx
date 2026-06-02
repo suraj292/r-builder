@@ -31,6 +31,20 @@ import BlogEditor from '../pages/admin/BlogEditor';
 import AdminSEO from '../pages/admin/AdminSEO';
 import AdminAI from '../pages/admin/AdminAI';
 import AdminSettings from '../pages/admin/AdminSettings';
+
+import VisibilitySettings from '../pages/admin/visibility/VisibilitySettings';
+import GoogleManagement from '../pages/admin/visibility/GoogleManagement';
+import SocialMediaManagement from '../pages/admin/visibility/SocialMediaManagement';
+import SchemaManager from '../pages/admin/visibility/SchemaManager';
+import SearchEngines from '../pages/admin/visibility/SearchEngines';
+import AIDiscoveryCenter from '../pages/admin/visibility/AIDiscoveryCenter';
+import ContentOptimizer from '../pages/admin/visibility/ContentOptimizer';
+import AIContentStudio from '../pages/admin/visibility/AIContentStudio';
+import TrustCenter from '../pages/admin/visibility/TrustCenter';
+import SiteAudit from '../pages/admin/visibility/SiteAudit';
+import VisibilityExecutiveDashboard from '../pages/admin/visibility/VisibilityExecutiveDashboard';
+import AnalyticsCenter from '../pages/admin/visibility/AnalyticsCenter';
+
 import Privacy from '../pages/legal/Privacy';
 import Terms from '../pages/legal/Terms';
 import RefundPolicy from '../pages/legal/RefundPolicy';
@@ -70,6 +84,19 @@ const router = createBrowserRouter([
           { path: 'seo', element: <AdminSEO /> },
           { path: 'ai', element: <AdminAI /> },
           { path: 'settings', element: <AdminSettings /> },
+          
+          { path: 'visibility/settings', element: <VisibilitySettings /> },
+          { path: 'visibility/google', element: <GoogleManagement /> },
+          { path: 'visibility/social', element: <SocialMediaManagement /> },
+          { path: 'visibility/schema', element: <SchemaManager /> },
+          { path: 'visibility/engines', element: <SearchEngines /> },
+          { path: 'visibility/ai', element: <AIDiscoveryCenter /> },
+          { path: 'visibility/optimizer', element: <ContentOptimizer /> },
+          { path: 'visibility/studio', element: <AIContentStudio /> },
+          { path: 'visibility/trust', element: <TrustCenter /> },
+          { path: 'visibility/audit', element: <SiteAudit /> },
+          { path: 'visibility/analytics', element: <AnalyticsCenter /> },
+          { path: 'visibility/dashboard', element: <VisibilityExecutiveDashboard /> },
         ]
       },
       {

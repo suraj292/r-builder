@@ -10,9 +10,21 @@ const navItems = [
   { path: '/admin/plans', label: 'Plans', icon: 'fa-credit-card' },
   { path: '/admin/templates', label: 'Templates', icon: 'fa-table-columns' },
   { path: '/admin/blog', label: 'Blog', icon: 'fa-blog' },
-  { path: '/admin/seo', label: 'SEO Management', icon: 'fa-search-dollar' },
-  { path: '/admin/ai', label: 'AI Management', icon: 'fa-robot' },
-  { path: '/admin/settings', label: 'Settings', icon: 'fa-gear' },
+  { type: 'divider', label: 'Growth & Visibility' },
+  { path: '/admin/visibility/dashboard', label: 'Executive Dashboard', icon: 'fa-chess-king' },
+  { path: '/admin/visibility/settings', label: 'Visibility Settings', icon: 'fa-eye' },
+  { path: '/admin/seo', label: 'SEO Center', icon: 'fa-search-dollar' },
+  { path: '/admin/visibility/schema', label: 'Schema Manager', icon: 'fa-code' },
+  { path: '/admin/visibility/google', label: 'Google Management', icon: 'fa-brands fa-google' },
+  { path: '/admin/visibility/social', label: 'Social Media', icon: 'fa-share-nodes' },
+  { path: '/admin/visibility/analytics', label: 'Analytics Center', icon: 'fa-chart-pie' },
+  { path: '/admin/visibility/ai', label: 'AI Discovery', icon: 'fa-robot' },
+  { path: '/admin/visibility/optimizer', label: 'Content Optimizer', icon: 'fa-gauge-high' },
+  { path: '/admin/visibility/studio', label: 'AI Content Studio', icon: 'fa-wand-magic-sparkles' },
+  { path: '/admin/visibility/engines', label: 'Search Engines', icon: 'fa-tower-broadcast' },
+  { path: '/admin/visibility/trust', label: 'Trust Center', icon: 'fa-certificate' },
+  { path: '/admin/visibility/audit', label: 'Site Audit', icon: 'fa-clipboard-check' },
+  { path: '/admin/settings', label: 'System Settings', icon: 'fa-gear' },
 ];
 
 export default function AdminLayout() {
@@ -31,19 +43,25 @@ export default function AdminLayout() {
         </div>
 
         <nav className="flex-1 px-4 py-2 space-y-1 overflow-y-auto">
-          {navItems.map((item) => (
-            <Link
-              key={item.path}
-              to={item.path}
-              className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
-                location.pathname === item.path
-                  ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20'
-                  : 'hover:bg-slate-800 hover:text-white'
-              }`}
-            >
-              <i className={`fa-solid ${item.icon} w-5`}></i>
-              <span className="text-sm font-medium">{item.label}</span>
-            </Link>
+          {navItems.map((item, idx) => (
+            item.type === 'divider' ? (
+              <div key={idx} className="px-4 pt-6 pb-2">
+                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{item.label}</span>
+              </div>
+            ) : (
+              <Link
+                key={item.path}
+                to={item.path!}
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
+                  location.pathname === item.path
+                    ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20'
+                    : 'hover:bg-slate-800 hover:text-white'
+                }`}
+              >
+                <i className={`fa-solid ${item.icon} w-5`}></i>
+                <span className="text-sm font-medium">{item.label}</span>
+              </Link>
+            )
           ))}
         </nav>
 
