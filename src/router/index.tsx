@@ -44,6 +44,7 @@ import TrustCenter from '../pages/admin/visibility/TrustCenter';
 import SiteAudit from '../pages/admin/visibility/SiteAudit';
 import VisibilityExecutiveDashboard from '../pages/admin/visibility/VisibilityExecutiveDashboard';
 import AnalyticsCenter from '../pages/admin/visibility/AnalyticsCenter';
+import BrandingManagement from '../pages/admin/visibility/BrandingManagement';
 
 import Privacy from '../pages/legal/Privacy';
 import Terms from '../pages/legal/Terms';
@@ -96,6 +97,7 @@ const router = createBrowserRouter([
           { path: 'visibility/trust', element: <TrustCenter /> },
           { path: 'visibility/audit', element: <SiteAudit /> },
           { path: 'visibility/analytics', element: <AnalyticsCenter /> },
+          { path: 'visibility/branding', element: <BrandingManagement /> },
           { path: 'visibility/dashboard', element: <VisibilityExecutiveDashboard /> },
         ]
       },

@@ -8,7 +8,10 @@ from app.schemas.seo import SEOConfigOut
 
 router = APIRouter()
 
+from fastapi_cache.decorator import cache
+...
 @router.get("/config", response_model=Optional[SEOConfigOut])
+@cache(expire=3600, namespace="seo")
 async def get_seo_config(
     path: str = Query(...),
     db: AsyncSession = Depends(get_db)

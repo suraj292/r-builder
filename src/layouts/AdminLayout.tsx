@@ -12,6 +12,7 @@ const navItems = [
   { path: '/admin/blog', label: 'Blog', icon: 'fa-blog' },
   { type: 'divider', label: 'Growth & Visibility' },
   { path: '/admin/visibility/dashboard', label: 'Executive Dashboard', icon: 'fa-chess-king' },
+  { path: '/admin/visibility/branding', label: 'Branding & UI', icon: 'fa-palette' },
   { path: '/admin/visibility/settings', label: 'Visibility Settings', icon: 'fa-eye' },
   { path: '/admin/seo', label: 'SEO Center', icon: 'fa-search-dollar' },
   { path: '/admin/visibility/schema', label: 'Schema Manager', icon: 'fa-code' },

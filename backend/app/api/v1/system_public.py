@@ -7,6 +7,7 @@ from app.models.system import SystemSettings
 from app.schemas.system import SystemSettingsOut
 from app.models.visibility import VisibilityConfig
 from app.schemas.visibility import VisibilityConfigOut
+from fastapi_cache.decorator import cache
 
 router = APIRouter()
 
@@ -27,6 +28,7 @@ async def get_public_system_settings(
     return settings
 
 @router.get("/visibility", response_model=VisibilityConfigOut)
+@cache(expire=3600, namespace="visibility")
 async def get_public_visibility_config(
     db: AsyncSession = Depends(get_db)
 ) -> Any:

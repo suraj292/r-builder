@@ -18,6 +18,7 @@ from app.models.guest_log import GuestScanLog
 from app.models.resume import Resume
 from app.schemas.guest_log import GuestAnalyzeRequest
 from app.services.ai_workflow import ResumeAIWorkflowService
+from app.core.limiter import limiter
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy import func
@@ -74,6 +75,7 @@ async def parse_resume_upload(
 
 
 @router.post("/analyze-ats")
+@limiter.limit("10/minute")
 async def analyze_resume_ats(
     req: AnalyzeRequest,
     request: Request,
@@ -152,6 +154,7 @@ async def optimize_resume_content(
         raise HTTPException(500, f"Error optimizing resume: {str(e)}")
 
 @router.post("/guest-analyze-ats")
+@limiter.limit("5/day")
 async def guest_analyze_ats(
     req: GuestAnalyzeRequest,
     request: Request,
@@ -201,3 +204,4 @@ async def guest_analyze_ats(
         return analysis
     except Exception as e:
         raise HTTPException(500, f"Analysis failed: {str(e)}")
+is failed: {str(e)}")

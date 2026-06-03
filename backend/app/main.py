@@ -2,14 +2,36 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
-from app.api.v1 import auth, users, resumes, payments, ai_workflow, admin, subscriptions, location, templates, blog_admin, media, blog_ai, seo_admin, seo_public, system_admin, system_public, visibility_admin
+from contextlib import asynccontextmanager
+from redis import asyncio as aioredis
+from fastapi_cache import FastAPICache
+from fastapi_cache.backends.redis import RedisBackend
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
+
+from app.api.v1 import auth, users, resumes, payments, ai_workflow, admin, subscriptions, location, templates, blog_admin, media, blog_ai, seo_admin, seo_public, system_admin, system_public, visibility_admin, visibility_public
 from app.config import settings
+from app.core.limiter import limiter
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Initialize Redis Cache
+    redis = aioredis.from_url(settings.REDIS_URL, encoding="utf8", decode_responses=True)
+    FastAPICache.init(RedisBackend(redis), prefix="fastapi-cache")
+    yield
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
     version="1.0.0",
     description="ResumeAI Backend API",
+    lifespan=lifespan
 )
+
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+app.add_middleware(SlowAPIMiddleware)
 
 # Middleware
 app.add_middleware(SessionMiddleware, secret_key=settings.SECRET_KEY)
@@ -39,6 +61,7 @@ app.include_router(seo_public.router, prefix="/api/v1/seo", tags=["seo_public"])
 app.include_router(system_admin.router, prefix="/api/v1/admin/system", tags=["system_admin"])
 app.include_router(system_public.router, prefix="/api/v1/system", tags=["system_public"])
 app.include_router(visibility_admin.router, prefix="/api/v1/admin/visibility", tags=["visibility_admin"])
+app.include_router(visibility_public.router, prefix="/api/v1/visibility", tags=["visibility_public"])
 
 # Static Files
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
