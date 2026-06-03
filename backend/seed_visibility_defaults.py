@@ -4,6 +4,8 @@ from sqlalchemy.future import select
 from app.db.session import SessionLocal
 from app.models.seo import SEOConfig
 from app.models.visibility import VisibilityConfig
+from app.models.user import User, UserRole
+from app.core.security import get_password_hash
 
 async def seed_defaults():
     async with SessionLocal() as db:
@@ -91,6 +93,29 @@ async def seed_defaults():
             print("Updating existing Visibility Configuration...")
             for key, value in vis_data.items():
                 setattr(vis_config, key, value)
+
+        # 3. Seed/Update Super Admin User
+        user_res = await db.execute(select(User).where(User.email == "surajkumarsharma123@gmail.com"))
+        user = user_res.scalars().first()
+
+        hashed_password = get_password_hash("Shreya@123")
+
+        user_data = {
+            "email": "surajkumarsharma123@gmail.com",
+            "hashed_password": hashed_password,
+            "full_name": "Suraj Sharma",
+            "phone_number": "7042611736",
+            "role": UserRole.SUPER_ADMIN,
+        }
+
+        if not user:
+            print("Creating Super Admin user...")
+            user = User(**user_data)
+            db.add(user)
+        else:
+            print("Updating existing Super Admin user...")
+            for key, value in user_data.items():
+                setattr(user, key, value)
 
         await db.commit()
         print("Seeding/Update completed successfully!")
