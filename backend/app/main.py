@@ -10,10 +10,18 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
+from pathlib import Path
 
 from app.api.v1 import auth, users, resumes, payments, ai_workflow, admin, subscriptions, location, templates, blog_admin, media, blog_ai, seo_admin, seo_public, system_admin, system_public, visibility_admin, visibility_public
 from app.config import settings
 from app.core.limiter import limiter
+
+# Define absolute path for uploads
+BASE_DIR = Path(__file__).resolve().parent.parent
+UPLOAD_DIR = BASE_DIR / "uploads"
+
+if not UPLOAD_DIR.exists():
+    UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -64,7 +72,7 @@ app.include_router(visibility_admin.router, prefix="/api/v1/admin/visibility", t
 app.include_router(visibility_public.router, prefix="/api/v1/visibility", tags=["visibility_public"])
 
 # Static Files
-app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+app.mount("/uploads", StaticFiles(directory=str(UPLOAD_DIR)), name="uploads")
 
 @app.get("/health")
 async def health_check():
