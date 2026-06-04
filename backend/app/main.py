@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
@@ -15,6 +15,8 @@ from pathlib import Path
 from app.api.v1 import auth, users, resumes, payments, ai_workflow, admin, subscriptions, location, templates, blog_admin, media, blog_ai, seo_admin, seo_public, system_admin, system_public, visibility_admin, visibility_public
 from app.config import settings
 from app.core.limiter import limiter
+from sqlalchemy.ext.asyncio import AsyncSession
+from app.api.deps import get_db
 
 # Define absolute path for uploads
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -73,6 +75,10 @@ app.include_router(visibility_public.router, prefix="/api/v1/visibility", tags=[
 
 # Static Files
 app.mount("/uploads", StaticFiles(directory=str(UPLOAD_DIR)), name="uploads")
+
+@app.get("/sitemap.xml")
+async def get_sitemap_at_root(db: AsyncSession = Depends(get_db)):
+    return await seo_public.generate_sitemap(db)
 
 @app.get("/health")
 async def health_check():

@@ -1,5 +1,5 @@
 from typing import Any, Optional
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from app.api.deps import get_db
@@ -59,4 +59,4 @@ async def generate_sitemap(
         xml += '</url>'
         
     xml += '</urlset>'
-    return xml # Note: In production use Response(content=xml, media_type="application/xml")
+    return Response(content=xml, media_type="application/xml")
