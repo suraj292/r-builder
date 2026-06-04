@@ -1,5 +1,10 @@
 
+import { useSystemStore } from '../../store/useSystemStore';
+
 export default function Terms() {
+  const { settings } = useSystemStore();
+  const projectName = settings?.project_name || 'ResumeAI';
+
   return (
     <>
       
@@ -77,14 +82,14 @@ export default function Terms() {
 
                     <div id="acceptance">
                         <h2>1. Acceptance of Terms</h2>
-                        <p>By accessing or using ResumeAI (the "Service"), you agree to be bound by these Terms &
+                        <p>By accessing or using {projectName} (the "Service"), you agree to be bound by these Terms &
                             Conditions. If you do not agree with any part of these terms, you may not use our Service.
                             These terms apply to all visitors, users, and others who access the Service.</p>
                     </div>
 
                     <div id="services">
                         <h2>2. Service Description</h2>
-                        <p>ResumeAI provides online tools for career development, including:</p>
+                        <p>{projectName} provides online tools for career development, including:</p>
                         <ul>
                             <li><strong>Resume Builder:</strong> An AI-powered tool to create and format professional
                                 resumes.</li>
@@ -149,16 +154,16 @@ export default function Terms() {
                     <div id="ip">
                         <h2>6. Intellectual Property</h2>
                         <p><strong>Your Content:</strong> You retain full ownership of the personal data and resume
-                            content you upload or create on ResumeAI. We claim no intellectual property rights over your
+                            content you upload or create on {projectName}. We claim no intellectual property rights over your
                             personal career history.</p>
-                        <p><strong>Our Content:</strong> The ResumeAI platform, including its code, design, logos, AI
-                            models, and templates, is the exclusive property of ResumeAI and is protected by copyright
+                        <p><strong>Our Content:</strong> The {projectName} platform, including its code, design, logos, AI
+                            models, and templates, is the exclusive property of {projectName} and is protected by copyright
                             and intellectual property laws.</p>
                     </div>
 
                     <div id="liability">
                         <h2>7. Limitation of Liability</h2>
-                        <p>To the maximum extent permitted by law, ResumeAI shall not be liable for any indirect,
+                        <p>To the maximum extent permitted by law, {projectName} shall not be liable for any indirect,
                             incidental, special, consequential, or punitive damages, including without limitation, loss
                             of profits, data, use, goodwill, or other intangible losses, resulting from:</p>
                         <ul>
@@ -181,9 +186,9 @@ export default function Terms() {
                         <h2 className="mt-0">9. Contact Us</h2>
                         <p>If you have any questions about these Terms, please contact us:</p>
                         <div className="bg-slate-50 p-6 rounded-xl border border-slate-200 inline-block">
-                            <p className="mb-2"><strong>Email:</strong> <a href="mailto:legal@resumeai.com"
-                                    className="text-indigo-600 hover:underline">legal@resumeai.com</a></p>
-                            <p className="mb-0"><strong>Address:</strong> 123 Tech Park, Bangalore, India</p>
+                            <p className="mb-2"><strong>Email:</strong> <a href={`mailto:${settings?.contact_email || 'legal@resumeai.com'}`}
+                                    className="text-indigo-600 hover:underline">{settings?.contact_email || 'legal@resumeai.com'}</a></p>
+                            <p className="mb-0"><strong>Address:</strong> {settings?.contact_address || '123 Tech Park, Bangalore, India'}</p>
                         </div>
                     </div>
 

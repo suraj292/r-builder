@@ -1,5 +1,10 @@
 
+import { useSystemStore } from '../../store/useSystemStore';
+
 export default function ShippingPolicy() {
+  const { settings } = useSystemStore();
+  const projectName = settings?.project_name || 'ResumeAI';
+
   return (
     <>
       
@@ -21,7 +26,7 @@ export default function ShippingPolicy() {
                 <h1 className="text-3xl md:text-4xl font-display font-bold text-slate-900 mb-4">Shipping & Delivery Policy
                 </h1>
                 <p className="text-slate-500 text-lg">
-                    ResumeAI is a fully digital platform. This policy explains how you access our services instantly.
+                    {projectName} is a fully digital platform. This policy explains how you access our services instantly.
                 </p>
                 <p className="text-sm text-slate-400 mt-4">Last Updated: October 24, 2023</p>
             </div>
@@ -64,7 +69,7 @@ export default function ShippingPolicy() {
 
                     <div id="digital-delivery">
                         <h2>1. Digital Delivery</h2>
-                        <p>ResumeAI provides purely digital services ("Software as a Service").</p>
+                        <p>{projectName} provides purely digital services ("Software as a Service").</p>
                         <ul>
                             <li><strong>Resume Builder:</strong> Access to the builder is available immediately upon
                                 signing up or logging in.</li>
@@ -115,8 +120,8 @@ export default function ShippingPolicy() {
                         <p>If you haven't received your plan upgrade or cannot access your account, contact us:</p>
                         <div className="bg-slate-50 p-6 rounded-xl border border-slate-200 inline-block w-full">
                             <ul >
-                                <li><strong>Email:</strong> <a href="mailto:support@resumeai.com"
-                                        className="text-indigo-600 hover:underline">support@resumeai.com</a></li>
+                                <li><strong>Email:</strong> <a href={`mailto:${settings?.contact_email || 'support@resumeai.com'}`}
+                                        className="text-indigo-600 hover:underline">{settings?.contact_email || 'support@resumeai.com'}</a></li>
                                 <li><strong>Turnaround:</strong> We typically respond within 24 hours.</li>
                             </ul>
                         </div>
