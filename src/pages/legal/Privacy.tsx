@@ -1,5 +1,9 @@
 
+import { useSystemStore } from '../../store/useSystemStore';
+
 export default function Privacy() {
+  const { settings } = useSystemStore();
+
   return (
     <>
       
@@ -181,9 +185,9 @@ export default function Privacy() {
                         <p>If you have any questions or concerns about this Privacy Policy or your data, please reach
                             out to us:</p>
                         <div className="bg-slate-50 p-6 rounded-xl border border-slate-200 inline-block">
-                            <p className="mb-2"><strong>Email:</strong> <a href="mailto:privacy@resumeai.com"
-                                    className="text-indigo-600 hover:underline">privacy@resumeai.com</a></p>
-                            <p className="mb-0"><strong>Address:</strong> 123 Tech Park, Bangalore, India</p>
+                            <p className="mb-2"><strong>Email:</strong> <a href={`mailto:${settings?.contact_email || 'privacy@resumeai.com'}`}
+                                    className="text-indigo-600 hover:underline">{settings?.contact_email || 'privacy@resumeai.com'}</a></p>
+                            <p className="mb-0"><strong>Address:</strong> {settings?.contact_address || '123 Tech Park, Bangalore, India'}</p>
                         </div>
                     </div>
 

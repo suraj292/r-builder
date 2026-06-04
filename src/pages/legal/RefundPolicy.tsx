@@ -1,5 +1,10 @@
 
+import { useSystemStore } from '../../store/useSystemStore';
+
 export default function RefundPolicy() {
+  const { settings } = useSystemStore();
+  const projectName = settings?.project_name || 'ResumeAI';
+
   return (
     <>
       
@@ -64,14 +69,14 @@ export default function RefundPolicy() {
                     <div className="p-4 bg-green-50 rounded-xl border border-green-100 mb-8 flex items-start gap-3">
                         <i className="fa-solid fa-hand-holding-heart text-green-600 mt-1"></i>
                         <p className="text-sm text-green-900 m-0">
-                            <strong>Our Promise:</strong> We want you to be happy with ResumeAI. If you have an issue,
+                            <strong>Our Promise:</strong> We want you to be happy with {projectName}. If you have an issue,
                             please contact us first, and we will do our best to resolve it.
                         </p>
                     </div>
 
                     <div id="free-plan">
                         <h2>1. Free Plan</h2>
-                        <p>ResumeAI offers a free tier that allows users to create a resume and test our features
+                        <p>{projectName} offers a free tier that allows users to create a resume and test our features
                             without any cost.</p>
                         <ul>
                             <li><strong>Charges:</strong> $0. No credit card is required.</li>
@@ -143,8 +148,8 @@ export default function RefundPolicy() {
                         <p>To request a refund, please email our billing team with the following details:</p>
                         <div className="bg-slate-50 p-6 rounded-xl border border-slate-200 inline-block w-full">
                             <ul >
-                                <li><strong>Email To:</strong> <a href="mailto:billing@resumeai.com"
-                                        className="text-indigo-600 hover:underline">billing@resumeai.com</a></li>
+                                <li><strong>Email To:</strong> <a href={`mailto:${settings?.contact_email || 'billing@resumeai.com'}`}
+                                        className="text-indigo-600 hover:underline">{settings?.contact_email || 'billing@resumeai.com'}</a></li>
                                 <li><strong>Subject Line:</strong> Refund Request - [Your Email Address]</li>
                                 <li><strong>Details:</strong> Please include your transaction ID (found in your email
                                     receipt) and a brief reason for the request.</li>
