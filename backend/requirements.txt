@@ -24,4 +24,5 @@ slowapi>=0.1.9
 Jinja2>=3.1.2
 razorpay
 greenlet
+gunicorn>=21.2.0
 
