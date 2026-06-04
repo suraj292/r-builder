@@ -1,70 +1,102 @@
+import { lazy, Suspense } from 'react';
 import { createBrowserRouter, RouterProvider, Outlet } from 'react-router-dom';
-import Home from '../pages/marketing/Home';
-import About from '../pages/marketing/About';
-import AtsChecker from '../pages/marketing/AtsChecker';
-import Contact from '../pages/marketing/Contact';
-import Faq from '../pages/marketing/Faq';
-import Pricing from '../pages/marketing/Pricing';
-import BlogListing from '../pages/blog/BlogListing';
-import BlogDetail from '../pages/blog/BlogDetail';
-import Checkout from '../pages/user/Checkout';
-import MyResumes from '../pages/user/MyResumes';
-import Profile from '../pages/user/Profile';
-import LoginSignup from '../pages/auth/LoginSignup';
-import AuthCallback from '../pages/auth/AuthCallback';
-import ResetPassword from '../pages/auth/ResetPassword';
-import AdminLayout from '../layouts/AdminLayout';
-import AdminGuard from '../components/auth/AdminGuard';
-import AuthGuard from '../components/auth/AuthGuard';
-import GuestGuard from '../components/auth/GuestGuard';
-import AdminDashboard from '../pages/admin/AdminDashboard';
-import AdminUsers from '../pages/admin/AdminUsers';
-import AdminUserDetail from '../pages/admin/AdminUserDetail';
-import AdminResumes from '../pages/admin/AdminResumes';
-import AdminPlans from '../pages/admin/AdminPlans';
-import AdminTemplates from '../pages/admin/AdminTemplates';
-import AdminSubscriptions from '../pages/admin/AdminSubscriptions';
-import AdminSubscriptionDetail from '../pages/admin/AdminSubscriptionDetail';
-import AdminCoupons from '../pages/admin/AdminCoupons';
-import AdminBlog from '../pages/admin/AdminBlog';
-import BlogEditor from '../pages/admin/BlogEditor';
-import AdminSEO from '../pages/admin/AdminSEO';
-import AdminAI from '../pages/admin/AdminAI';
-import AdminSettings from '../pages/admin/AdminSettings';
+import LoadingScreen from '../components/common/LoadingScreen';
 
-import VisibilitySettings from '../pages/admin/visibility/VisibilitySettings';
-import GoogleManagement from '../pages/admin/visibility/GoogleManagement';
-import SocialMediaManagement from '../pages/admin/visibility/SocialMediaManagement';
-import SchemaManager from '../pages/admin/visibility/SchemaManager';
-import SearchEngines from '../pages/admin/visibility/SearchEngines';
-import AIDiscoveryCenter from '../pages/admin/visibility/AIDiscoveryCenter';
-import ContentOptimizer from '../pages/admin/visibility/ContentOptimizer';
-import AIContentStudio from '../pages/admin/visibility/AIContentStudio';
-import TrustCenter from '../pages/admin/visibility/TrustCenter';
-import SiteAudit from '../pages/admin/visibility/SiteAudit';
-import VisibilityExecutiveDashboard from '../pages/admin/visibility/VisibilityExecutiveDashboard';
-import AnalyticsCenter from '../pages/admin/visibility/AnalyticsCenter';
-import BrandingManagement from '../pages/admin/visibility/BrandingManagement';
-
-import Privacy from '../pages/legal/Privacy';
-import Terms from '../pages/legal/Terms';
-import RefundPolicy from '../pages/legal/RefundPolicy';
-import ShippingPolicy from '../pages/legal/ShippingPolicy';
-import { Workspace } from '../components/editor/Workspace';
+// Layouts - Keep layouts static for better UX during navigation
 import MarketingLayout from '../layouts/MarketingLayout';
 import BuilderLayout from '../layouts/BuilderLayout';
 import AuthLayout from '../layouts/AuthLayout';
 import UserDashboardLayout from '../layouts/UserDashboardLayout';
 import LegalLayout from '../layouts/LegalLayout';
+import AdminLayout from '../layouts/AdminLayout';
+
+// Guards - Keep guards static
+import AdminGuard from '../components/auth/AdminGuard';
+import AuthGuard from '../components/auth/AuthGuard';
+import GuestGuard from '../components/auth/GuestGuard';
+
+// Shared Components
 import UpgradeModal from '../components/subscription/UpgradeModal';
-import NotFound from '../pages/marketing/NotFound';
 import SEOHead from '../components/shared/SEOHead';
+
+// Lazy Pages - Marketing
+const Home = lazy(() => import('../pages/marketing/Home'));
+const About = lazy(() => import('../pages/marketing/About'));
+const AtsChecker = lazy(() => import('../pages/marketing/AtsChecker'));
+const Contact = lazy(() => import('../pages/marketing/Contact'));
+const Faq = lazy(() => import('../pages/marketing/Faq'));
+const Pricing = lazy(() => import('../pages/marketing/Pricing'));
+const NotFound = lazy(() => import('../pages/marketing/NotFound'));
+
+// Lazy Pages - Blog
+const BlogListing = lazy(() => import('../pages/blog/BlogListing'));
+const BlogDetail = lazy(() => import('../pages/blog/BlogDetail'));
+
+// Lazy Pages - Auth
+const LoginSignup = lazy(() => import('../pages/auth/LoginSignup'));
+const AuthCallback = lazy(() => import('../pages/auth/AuthCallback'));
+const ResetPassword = lazy(() => import('../pages/auth/ResetPassword'));
+
+// Lazy Pages - User
+const Checkout = lazy(() => import('../pages/user/Checkout'));
+const MyResumes = lazy(() => import('../pages/user/MyResumes'));
+const Profile = lazy(() => import('../pages/user/Profile'));
+
+// Lazy Pages - Admin
+const AdminDashboard = lazy(() => import('../pages/admin/AdminDashboard'));
+const AdminUsers = lazy(() => import('../pages/admin/AdminUsers'));
+const AdminUserDetail = lazy(() => import('../pages/admin/AdminUserDetail'));
+const AdminResumes = lazy(() => import('../pages/admin/AdminResumes'));
+const AdminPlans = lazy(() => import('../pages/admin/AdminPlans'));
+const AdminTemplates = lazy(() => import('../pages/admin/AdminTemplates'));
+const AdminSubscriptions = lazy(() => import('../pages/admin/AdminSubscriptions'));
+const AdminSubscriptionDetail = lazy(() => import('../pages/admin/AdminSubscriptionDetail'));
+const AdminCoupons = lazy(() => import('../pages/admin/AdminCoupons'));
+const AdminBlog = lazy(() => import('../pages/admin/AdminBlog'));
+const BlogEditor = lazy(() => import('../pages/admin/BlogEditor'));
+const AdminSEO = lazy(() => import('../pages/admin/AdminSEO'));
+const AdminAI = lazy(() => import('../pages/admin/AdminAI'));
+const AdminSettings = lazy(() => import('../pages/admin/AdminSettings'));
+
+// Lazy Pages - Visibility
+const VisibilitySettings = lazy(() => import('../pages/admin/visibility/VisibilitySettings'));
+const GoogleManagement = lazy(() => import('../pages/admin/visibility/GoogleManagement'));
+const SocialMediaManagement = lazy(() => import('../pages/admin/visibility/SocialMediaManagement'));
+const SchemaManager = lazy(() => import('../pages/admin/visibility/SchemaManager'));
+const SearchEngines = lazy(() => import('../pages/admin/visibility/SearchEngines'));
+const AIDiscoveryCenter = lazy(() => import('../pages/admin/visibility/AIDiscoveryCenter'));
+const ContentOptimizer = lazy(() => import('../pages/admin/visibility/ContentOptimizer'));
+const AIContentStudio = lazy(() => import('../pages/admin/visibility/AIContentStudio'));
+const TrustCenter = lazy(() => import('../pages/admin/visibility/TrustCenter'));
+const SiteAudit = lazy(() => import('../pages/admin/visibility/SiteAudit'));
+const VisibilityExecutiveDashboard = lazy(() => import('../pages/admin/visibility/VisibilityExecutiveDashboard'));
+const AnalyticsCenter = lazy(() => import('../pages/admin/visibility/AnalyticsCenter'));
+const BrandingManagement = lazy(() => import('../pages/admin/visibility/BrandingManagement'));
+
+// Lazy Pages - Legal
+const Privacy = lazy(() => import('../pages/legal/Privacy'));
+const Terms = lazy(() => import('../pages/legal/Terms'));
+const RefundPolicy = lazy(() => import('../pages/legal/RefundPolicy'));
+const ShippingPolicy = lazy(() => import('../pages/legal/ShippingPolicy'));
+
+// Editor
+const Workspace = lazy(() => import('../components/editor/Workspace').then(m => ({ default: m.Workspace })));
 
 const router = createBrowserRouter([
   {
     path: '/',
-    element: <><SEOHead /><Outlet /><UpgradeModal /></>,
-    errorElement: <NotFound />,
+    element: (
+      <Suspense fallback={<LoadingScreen />}>
+        <SEOHead />
+        <Outlet />
+        <UpgradeModal />
+      </Suspense>
+    ),
+    errorElement: (
+      <Suspense fallback={<LoadingScreen />}>
+        <NotFound />
+      </Suspense>
+    ),
     children: [
       {
         path: 'admin',

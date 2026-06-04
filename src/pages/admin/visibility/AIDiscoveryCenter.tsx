@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { api } from '../../../lib/api';
 import { Link } from 'react-router-dom';
-import Swal from 'sweetalert2';
 
 export default function AIDiscoveryCenter() {
     const [stats, setStats] = useState<any>({
@@ -19,8 +18,8 @@ export default function AIDiscoveryCenter() {
 
     const fetchData = async () => {
         try {
-            const data = await api.get('/v1/admin/visibility/summary');
-            if (data.latest_audit) {
+            const data = await api.get<any>('/v1/admin/visibility/summary');
+            if (data?.latest_audit) {
                 setStats({
                     readiness_score: data.latest_audit.ai_score || 0,
                     schema_coverage: 0, // In a real system, these would be in the audit summary

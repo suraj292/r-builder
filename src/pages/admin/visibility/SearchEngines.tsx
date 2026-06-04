@@ -4,7 +4,6 @@ import Swal from 'sweetalert2';
 
 export default function SearchEngines() {
     const [robots, setRobots] = useState('User-agent: *\nAllow: /');
-    const [isLoading, setIsLoading] = useState(false);
     const [sitemapInfo, setSitemapInfo] = useState<any>(null);
 
     useEffect(() => {
@@ -21,21 +20,18 @@ export default function SearchEngines() {
     };
 
     const handleSaveRobots = async () => {
-        setIsLoading(true);
         try {
             await api.put('/v1/admin/visibility/robots.txt', { content: robots });
             Swal.fire('Success', 'Robots.txt updated.', 'success');
         } catch (error) {
             Swal.fire('Error', 'Failed to update', 'error');
-        } finally {
-            setIsLoading(false);
         }
     };
 
     const handleGenerateSitemap = async () => {
         try {
             Swal.fire({ title: 'Generating...', didOpen: () => Swal.showLoading() });
-            const data = await api.get('/v1/seo/sitemap.xml'); // Trigger generation
+            await api.get('/v1/seo/sitemap.xml'); // Trigger generation
             setSitemapInfo({ last_generated: new Date().toISOString(), url: '/api/v1/seo/sitemap.xml' });
             Swal.fire('Success', 'Sitemap.xml is live.', 'success');
         } catch (error) {

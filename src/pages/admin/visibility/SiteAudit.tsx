@@ -5,7 +5,6 @@ import Swal from 'sweetalert2';
 
 export default function SiteAudit() {
     const [audits, setAudits] = useState<any[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
     const [isRunning, setIsRunning] = useState(false);
     const navigate = useNavigate();
 
@@ -15,12 +14,10 @@ export default function SiteAudit() {
 
     const fetchAudits = async () => {
         try {
-            const data = await api.get('/v1/admin/visibility/audits');
+            const data = await api.get<any[]>('/v1/admin/visibility/audits');
             setAudits(data);
         } catch (error) {
             console.error('Failed to fetch audits');
-        } finally {
-            setIsLoading(false);
         }
     };
 

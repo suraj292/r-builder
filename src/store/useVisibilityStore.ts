@@ -23,7 +23,7 @@ export const useVisibilityStore = create<VisibilityStore>((set) => ({
         set({ isLoading: true });
         try {
             // Public endpoint for visibility config (minimal data)
-            const data = await api.get('/v1/system/visibility'); 
+            const data = await api.get<VisibilityConfig>('/v1/system/visibility'); 
             set({ config: data });
         } catch (error) {
             console.error('Failed to fetch visibility config');

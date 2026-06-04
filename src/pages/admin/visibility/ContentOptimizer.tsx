@@ -14,7 +14,7 @@ export default function ContentOptimizer() {
 
     const fetchPages = async () => {
         try {
-            const data = await api.get('/v1/admin/seo/discover-pages');
+            const data = await api.get<any[]>('/v1/admin/seo/discover-pages');
             setPages(data);
         } catch (error) {
             console.error('Failed to fetch pages');

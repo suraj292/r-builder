@@ -1,23 +1,22 @@
-import { useState, useEffect } from 'react';
-import { api } from '../../../lib/api';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
 export default function AnalyticsCenter() {
-    const [stats, setStats] = useState([
+    const [stats] = useState([
         { label: 'Total Visitors', value: '0', change: '0%', icon: 'fa-users', color: 'indigo' },
         { label: 'Organic Traffic', value: '0', change: '0%', icon: 'fa-leaf', color: 'emerald' },
         { label: 'AI Referral', value: '0', change: '0%', icon: 'fa-robot', color: 'amber' },
         { label: 'Avg. Bounce Rate', value: '0%', change: '0%', icon: 'fa-person-running', color: 'rose' },
     ]);
 
-    const [channels, setChannels] = useState([
+    const [channels] = useState([
         { name: 'Google Search', share: 0, color: 'bg-emerald-500' },
         { name: 'Direct', share: 0, color: 'bg-indigo-500' },
         { name: 'Social', share: 0, color: 'bg-amber-50' },
         { name: 'AI Bots', share: 0, color: 'bg-rose-50' },
     ]);
 
-    const [hasData, setHasData] = useState(false);
+    const [hasData] = useState(false);
 
     return (
         <div className="space-y-8 animate-fade-in relative">

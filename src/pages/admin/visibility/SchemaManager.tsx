@@ -16,7 +16,7 @@ export default function SchemaManager() {
 
     const fetchConfigs = async () => {
         try {
-            const data = await api.get('/v1/admin/seo/');
+            const data = await api.get<any[]>('/v1/admin/seo/');
             setConfigs(data.filter((c: any) => c.custom_schema || c.faqs));
         } catch (error) {
             console.error('Failed to fetch configs');
@@ -27,7 +27,7 @@ export default function SchemaManager() {
 
     const fetchDiscoverablePages = async () => {
         try {
-            const data = await api.get('/v1/admin/seo/discover-pages');
+            const data = await api.get<any[]>('/v1/admin/seo/discover-pages');
             setDiscoverablePages(data);
         } catch (error) {
             console.error('Failed to discover pages');
