@@ -1,6 +1,7 @@
 import os
 import uuid
 import shutil
+from pathlib import Path
 from typing import Any, List
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -12,9 +13,11 @@ from app.schemas.blog import MediaOut
 
 router = APIRouter()
 
-UPLOAD_DIR = "uploads"
-if not os.path.exists(UPLOAD_DIR):
-    os.makedirs(UPLOAD_DIR)
+BASE_DIR = Path(__file__).resolve().parent.parent.parent.parent
+UPLOAD_DIR = BASE_DIR / "uploads"
+
+if not UPLOAD_DIR.exists():
+    UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 @router.get("/", response_model=List[MediaOut])
 async def list_media(
@@ -36,7 +39,7 @@ async def upload_media(
     # Generate unique filename
     file_ext = os.path.splitext(file.filename)[1]
     unique_filename = f"{uuid.uuid4()}{file_ext}"
-    file_path = os.path.join(UPLOAD_DIR, unique_filename)
+    file_path = UPLOAD_DIR / unique_filename
     
     # Save file locally
     with open(file_path, "wb") as buffer:
@@ -72,9 +75,10 @@ async def delete_media(
         raise HTTPException(status_code=404, detail="Media not found")
     
     # Delete file from disk (simple check)
-    local_path = media.file_path.replace("/uploads/", f"{UPLOAD_DIR}/")
-    if os.path.exists(local_path):
-        os.remove(local_path)
+    filename = media.file_path.replace("/uploads/", "")
+    local_path = UPLOAD_DIR / filename
+    if local_path.exists():
+        local_path.unlink()
         
     await db.delete(media)
     await db.commit()
