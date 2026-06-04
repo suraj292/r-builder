@@ -24,6 +24,7 @@ dist-ssr
 *.sw?
 
 # backend
+backend/venv
 backend/.env
 backend/.env.example
 backend/laravel_env
