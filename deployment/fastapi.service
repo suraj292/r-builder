@@ -3,13 +3,13 @@ Description=FastAPI application for ResumeBP (Gunicorn & Uvicorn workers)
 After=network.target mysql.service redis-server.service
 
 [Service]
-User=root
-Group=root
-WorkingDirectory=/root/r-builder/backend
-EnvironmentFile=/root/r-builder/backend/.env
+User=deploy
+Group=deploy
+WorkingDirectory=/var/www/r-builder/backend
+EnvironmentFile=/var/www/r-builder/backend/.env
 
 # Start Gunicorn running 3 Uvicorn workers, listening on port 8000
-ExecStart=/root/r-builder/backend/venv/bin/gunicorn \
+ExecStart=/var/www/r-builder/backend/venv/bin/gunicorn \
     --workers 3 \
     --worker-class uvicorn.workers.UvicornWorker \
     --bind 127.0.0.1:8000 \
