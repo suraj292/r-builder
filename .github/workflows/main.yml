@@ -1,0 +1,45 @@
+name: Deploy Resumebp
+
+on:
+  push:
+    branches:
+      - backend # Set this to your default branch
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Deploy to Server via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+            # Navigate to the project directory
+            cd /var/www/r-builder
+
+            # Fetch latest changes from GitHub
+            echo "🚀 Fetching latest code..."
+            git fetch origin main
+            git reset --hard origin/main
+
+            # Ensure deployment utility is executable
+            chmod +x deploy_utils.sh
+
+            # Execute the full deployment (Backend + Frontend)
+            # This handles:
+            # 1. Python dependency updates
+            # 2. Database migrations (Alembic)
+            # 3. FastAPI service restart
+            # 4. NPM install & Frontend build
+            # 5. Asset syncing to Nginx root
+            echo "🛠️ Starting deployment script..."
+            ./deploy_utils.sh deploy
+
+            echo "✅ Deployment Successful!"
