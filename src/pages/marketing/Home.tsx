@@ -172,7 +172,7 @@ export default function Home() {
                         </div>
 
                         <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-slate-900 leading-[1.15] mb-6 animate-fade-in-up" >
-                            Build an 8<span className="text-gradient">ATS-Optimized</span> Resume in Minutes
+                            Build an <span className="text-gradient">ATS-Optimized</span> Resume in Minutes
                         </h1>
 
                         <p className="text-lg text-slate-600 mb-8 leading-relaxed max-w-xl mx-auto lg:mx-0 animate-fade-in-up" >
