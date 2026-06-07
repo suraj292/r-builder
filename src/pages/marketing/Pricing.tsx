@@ -174,7 +174,8 @@ export default function Pricing() {
                     <span className={`text-sm font-medium transition-colors ${!isYearly ? 'text-slate-900 font-semibold' : 'text-slate-400'}`}>Monthly</span>
                     <button 
                         onClick={() => setIsYearly(!isYearly)}
-                        className="relative inline-block w-14 h-8 align-middle select-none transition duration-200 ease-in bg-slate-200 rounded-full focus:outline-none p-1"
+                        className="relative inline-block w-14 h-8 align-middle select-none transition duration-200 ease-in rounded-full focus:outline-none p-1"
+                        style={{ backgroundColor: isYearly ? 'var(--color-indigo-600)' : 'var(--color-slate-200)' }}
                     >
                         <div 
                             className="w-6 h-6 rounded-full bg-white transition-transform duration-300 shadow-sm"

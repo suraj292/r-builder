@@ -75,8 +75,8 @@ export default function Checkout() {
   const getPriceForCurrency = () => {
     if (selectedPlan.tier_code === 'free') return 0;
     if (selectedPlan.regional_prices && selectedPlan.regional_prices[currencyParam]) {
-      return billingPeriod === 'yearly' 
-        ? selectedPlan.regional_prices[currencyParam].yearly 
+      return billingPeriod === 'yearly'
+        ? selectedPlan.regional_prices[currencyParam].yearly
         : selectedPlan.regional_prices[currencyParam].monthly;
     }
     return billingPeriod === 'yearly' ? selectedPlan.price_yearly : selectedPlan.price_monthly;
@@ -102,10 +102,10 @@ export default function Checkout() {
     if (!couponCode) return;
 
     try {
-      const data = await api.get<{valid: boolean; discount_percent: number; message: string}>(
+      const data = await api.get<{ valid: boolean; discount_percent: number; message: string }>(
         `/v1/subscriptions/validate-coupon?code=${encodeURIComponent(couponCode)}&plan_tier=${planTier}&amount=${basePrice}`
       );
-      
+
       if (data.valid) {
         setDiscountApplied(true);
         setDiscountPercent(data.discount_percent);
@@ -122,15 +122,15 @@ export default function Checkout() {
 
   const handlePayment = async () => {
     if (!phone || !location) {
-        showAlert.warning("Incomplete Information", "Please provide your phone number and city/location to continue.");
-        return;
+      showAlert.warning("Incomplete Information", "Please provide your phone number and city/location to continue.");
+      return;
     }
 
     try {
       setProcessing(true);
-      
+
       // 1. Create Order in Backend
-      const order = await api.post<{order_id: string; amount: number; currency: string; key_id: string}>(
+      const order = await api.post<{ order_id: string; amount: number; currency: string; key_id: string }>(
         `/v1/payments/create-order?plan_tier=${planTier}&period=${billingPeriod}&currency=${currencyParam}${discountApplied ? `&coupon_code=${encodeURIComponent(couponCode)}` : ''}`
       );
 
@@ -154,7 +154,7 @@ export default function Checkout() {
               country: currencyParam === 'INR' ? 'India' : 'International',
               device: `${navigator.platform} - ${navigator.vendor}`
             });
-            
+
             await fetchUser();
             setSuccess(true);
             setTimeout(() => {
@@ -186,7 +186,7 @@ export default function Checkout() {
 
       const rzp = (window as any).Razorpay(options);
       rzp.open();
-      
+
     } catch (err) {
       console.error('Failed to initiate payment', err);
       showAlert.error("Error", "Failed to start payment process. Please try again.");
@@ -235,13 +235,13 @@ export default function Checkout() {
 
   return (
     <>
-      <header className="glass-header sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200/60">
+      <header className="glass-header sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200/60 -mt-6 -ml-6 -mr-6 mb-6">
         <div className="container mx-auto px-6 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2.5 group">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-600 to-violet-600 flex items-center justify-center text-white text-sm shadow-md">
               <i className="fa-solid fa-layer-group"></i>
             </div>
-            <span className="text-lg font-display font-bold text-slate-800 tracking-tight">Resume<span className="text-indigo-600">AI</span></span>
+            <span className="text-lg font-display font-bold text-slate-800 tracking-tight">Resume<span className="text-indigo-600">BP</span></span>
           </Link>
 
           <div className="flex items-center gap-2 text-emerald-700 bg-green-50 px-3 py-1.5 rounded-full border border-green-100 text-xs font-bold">
@@ -287,20 +287,20 @@ export default function Checkout() {
                 <div className="grid md:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Full Name</label>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       value={user?.full_name || 'Anonymous User'}
                       className="form-input w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-900 text-sm focus:outline-none bg-slate-50"
-                      readOnly 
+                      readOnly
                     />
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Email Address</label>
-                    <input 
-                      type="email" 
+                    <input
+                      type="email"
                       value={user?.email || ''}
                       className="form-input w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-900 text-sm focus:outline-none bg-slate-50"
-                      readOnly 
+                      readOnly
                     />
                   </div>
                 </div>
@@ -308,8 +308,8 @@ export default function Checkout() {
                 <div className="grid md:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Phone Number</label>
-                    <input 
-                      type="tel" 
+                    <input
+                      type="tel"
                       placeholder="e.g. +91 98765 43210"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
@@ -319,8 +319,8 @@ export default function Checkout() {
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-slate-500 uppercase mb-2">City / Location</label>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       placeholder="e.g. Mumbai, India"
                       value={location}
                       onChange={(e) => setLocation(e.target.value)}
@@ -332,12 +332,12 @@ export default function Checkout() {
 
                 <div>
                   <label className="block text-xs font-bold text-slate-500 uppercase mb-2">GST Number <span className="text-slate-400 font-normal lowercase">(optional)</span></label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     placeholder="Enter GST Number for business invoice"
                     value={gstNumber}
                     onChange={(e) => setGstNumber(e.target.value)}
-                    className="form-input w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-900 text-sm focus:outline-none focus:border-indigo-500 placeholder-slate-400" 
+                    className="form-input w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-900 text-sm focus:outline-none focus:border-indigo-500 placeholder-slate-400"
                   />
                 </div>
               </div>
@@ -360,7 +360,7 @@ export default function Checkout() {
                 <h4 className="font-bold text-indigo-900 mb-1">Pay Securely with Razorpay</h4>
                 <p className="text-xs text-indigo-600 mb-6">Supports UPI, Credit/Debit Cards, Net Banking, and Wallets</p>
 
-                <button 
+                <button
                   onClick={handlePayment}
                   disabled={processing}
                   className="w-full sm:w-auto px-8 py-3.5 bg-indigo-600 text-white font-bold rounded-xl shadow-lg hover:bg-indigo-700 hover:shadow-indigo-500/30 transition-all transform active:scale-95 flex items-center justify-center gap-2 mx-auto cursor-pointer disabled:opacity-50"
@@ -409,14 +409,14 @@ export default function Checkout() {
               {/* COUPON CODE */}
               <form onSubmit={handleApplyCoupon} className="mb-6">
                 <div className="relative">
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     placeholder="Have a coupon code? (SAVE20)"
                     value={couponCode}
                     onChange={(e) => setCouponCode(e.target.value)}
-                    className="form-input w-full pl-4 pr-24 py-2.5 rounded-lg border border-slate-200 text-sm focus:outline-none focus:border-indigo-500 uppercase placeholder-slate-400" 
+                    className="form-input w-full pl-4 pr-24 py-2.5 rounded-lg border border-slate-200 text-sm focus:outline-none focus:border-indigo-500 uppercase placeholder-slate-400"
                   />
-                  <button 
+                  <button
                     type="submit"
                     className="absolute right-1.5 top-1.5 bottom-1.5 px-4 bg-slate-900 text-white text-xs font-bold rounded-md hover:bg-slate-800 transition-colors cursor-pointer"
                   >

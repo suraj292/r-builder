@@ -58,6 +58,13 @@ class EmailService:
         support_email = sys_settings.contact_email if sys_settings else "support@resumeai.com"
         logo_url = sys_settings.site_logo if sys_settings else ""
         
+        # Ensure logo_url has the domain if it is relative
+        if logo_url and not (logo_url.startswith("http://") or logo_url.startswith("https://")):
+            base_url = settings.FRONTEND_URL.rstrip("/")
+            if not logo_url.startswith("/"):
+                logo_url = f"/{logo_url}"
+            logo_url = f"{base_url}{logo_url}"
+        
         verification_link = f"{settings.FRONTEND_URL}/auth/verify-email?token={token}"
         
         subject = f"Verify Your Email Address - {project_name}"
