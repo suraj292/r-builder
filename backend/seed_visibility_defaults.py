@@ -5,6 +5,7 @@ from app.db.session import SessionLocal
 from app.models.seo import SEOConfig
 from app.models.visibility import VisibilityConfig
 from app.models.user import User, UserRole
+from app.models.system import SystemSettings
 from app.core.security import get_password_hash
 
 async def seed_defaults():
@@ -61,22 +62,27 @@ async def seed_defaults():
                 "website_url": "https://resumebp.com",
                 "description": "ResumeBP is a premier AI career platform dedicated to helping job seekers maximize their potential through high-performance resume building and AI-driven job discovery.",
                 "email": "support@resumebp.com",
-                "phone": "+1 (555) RESUME-BP",
+                "phone": "+91 7042611736",
                 "address": "Global Operations",
                 "city": "Remote",
                 "country": "Worldwide"
             },
             "social_links": {
-                "facebook": "https://facebook.com/resumebp",
-                "instagram": "https://instagram.com/resumebp",
-                "linkedin": "https://linkedin.com/company/resumebp",
+                "facebook": "https://www.facebook.com/profile.php?id=61590475776900",
+                "instagram": "https://www.instagram.com/resumebp/",
+                "linkedin": "https://www.linkedin.com/company/resumebp/",
                 "twitter": "https://twitter.com/resumebp",
+                "youtube": "https://www.youtube.com/@ResumeBP-ai",
                 "github": "https://github.com/resumebp",
+                "pinterest": "https://pinterest.com/resumebp",
+                "tiktok": "https://tiktok.com/@resumebp",
                 "og_image": "https://resumebp.com/api/v1/visibility/og-image?title=ResumeBP&subtitle=AI-Powered Career Success"
             },
             "google_settings": {
-                "ga4_measurement_id": "G-RESUMEBPR",
-                "search_console_tag": "pending"
+                "ga4_measurement_id": "G-Q9FFYDH8YC",
+                "search_console_tag": "pending",
+                "google_business_url": "",
+                "google_maps_url": ""
             },
             "trust_center": {
                 "google_stars": True,
@@ -116,6 +122,37 @@ async def seed_defaults():
             print("Updating existing Super Admin user...")
             for key, value in user_data.items():
                 setattr(user, key, value)
+
+        # 4. Seed/Update Global System Settings
+        sys_res = await db.execute(select(SystemSettings).limit(1))
+        sys_config = sys_res.scalars().first()
+
+        sys_data = {
+            "project_name": "ResumeBP",
+            "site_domain": "resumebp.com",
+            "site_logo": "https://resumebp.com/logo.png",
+            "site_icon": "https://resumebp.com/favicon.ico",
+            "contact_email": "support@resumebp.com",
+            "contact_phone": "+91 7042611736",
+            "contact_address": "Remote, Global Operations",
+            "social_links": {
+                "facebook": "https://www.facebook.com/profile.php?id=61590475776900",
+                "twitter": "https://twitter.com/resumebp",
+                "linkedin": "https://www.linkedin.com/company/resumebp/",
+                "instagram": "https://www.instagram.com/resumebp/"
+            },
+            "maintenance_mode": False,
+            "allow_new_registrations": True
+        }
+
+        if not sys_config:
+            print("Initializing Global System Settings...")
+            sys_config = SystemSettings(**sys_data)
+            db.add(sys_config)
+        else:
+            print("Updating existing System Settings...")
+            for key, value in sys_data.items():
+                setattr(sys_config, key, value)
 
         await db.commit()
         print("Seeding/Update completed successfully!")
