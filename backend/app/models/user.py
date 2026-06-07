@@ -40,6 +40,13 @@ class User(Base):
     registration_source = Column(Enum(RegistrationSource), default=RegistrationSource.EMAIL, nullable=False)
     last_login = Column(DateTime(timezone=True), nullable=True)
     last_password_reset = Column(DateTime(timezone=True), nullable=True)
+    
+    # Email Verification
+    is_email_verified = Column(Boolean, default=False, nullable=False)
+    email_verification_token = Column(String(255), nullable=True)
+    email_verification_expires = Column(DateTime(timezone=True), nullable=True)
+    email_verified_at = Column(DateTime(timezone=True), nullable=True)
+    
     is_active = Column(Boolean, default=True)
     is_premium = Column(Boolean, default=False)
     stripe_customer_id = Column(String(255), nullable=True)

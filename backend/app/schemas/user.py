@@ -38,6 +38,7 @@ class UserOut(UserBase):
     registration_source: RegistrationSource
     last_login: datetime | None = None
     last_password_reset: datetime | None = None
+    is_email_verified: bool
     is_active: bool
     is_premium: bool
     created_at: datetime

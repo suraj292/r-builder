@@ -1,9 +1,12 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { api, setAuthToken } from '../../lib/api';
+import { useAuthStore } from '../../store/useAuthStore';
+import { Mail, CheckCircle2, ArrowRight, Loader2, Send, AlertCircle } from 'lucide-react';
 
 export default function LoginSignup() {
   const navigate = useNavigate();
+  const fetchUser = useAuthStore(state => state.fetchUser);
   const [activeTab, setActiveTab] = useState<'login' | 'signup'>('login');
   const [error, setError] = useState<string | null>(null);
   
@@ -20,11 +23,18 @@ export default function LoginSignup() {
   const [showSignupPassword, setShowSignupPassword] = useState(false);
   const [signupLoading, setSignupLoading] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
+
   // Forgot Password States
   const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [forgotEmail, setForgotEmail] = useState('');
   const [forgotLoading, setForgotLoading] = useState(false);
   const [forgotSuccess, setForgotSuccess] = useState(false);
+
+  // Verification Pending States
+  const [verificationPending, setVerificationPending] = useState(false);
+  const [pendingEmail, setPendingEmail] = useState('');
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendSuccess, setResendSuccess] = useState(false);
 
   const handleForgotSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,7 +51,20 @@ export default function LoginSignup() {
     }
   };
 
-  // Password strength logic
+  const handleResendVerification = async () => {
+    setResendLoading(true);
+    setResendSuccess(false);
+    setError(null);
+
+    try {
+      await api.post('/v1/auth/resend-verification', { email: pendingEmail });
+      setResendSuccess(true);
+    } catch (err: any) {
+      setError(err.message || 'Failed to resend verification email.');
+    } finally {
+      setResendLoading(false);
+    }
+  };
 
   const getPasswordStrength = (pass: string) => {
     let strength = 0;
@@ -66,8 +89,18 @@ export default function LoginSignup() {
 
       const response = await api.post<{ access_token: string }>('/v1/auth/login', formData);
       setAuthToken(response.access_token);
+      
+      // Fetch user to sync store before navigating
+      await fetchUser();
+      
       navigate('/builder');
     } catch (err: any) {
+      // Handle Email Not Verified
+      if (err.data?.detail?.error === 'EMAIL_NOT_VERIFIED') {
+        setPendingEmail(err.data.detail.email);
+        setVerificationPending(true);
+        return;
+      }
       setError(err.message || 'Login failed. Please check your credentials.');
     } finally {
       setLoginLoading(false);
@@ -87,14 +120,9 @@ export default function LoginSignup() {
         full_name: signupName,
       });
       
-      // Auto-login after signup
-      const formData = new FormData();
-      formData.append('username', signupEmail);
-      formData.append('password', signupPassword);
-      const loginResp = await api.post<{ access_token: string }>('/v1/auth/login', formData);
-      setAuthToken(loginResp.access_token);
-      
-      navigate('/builder');
+      // After registration, show verification pending screen
+      setPendingEmail(signupEmail);
+      setVerificationPending(true);
     } catch (err: any) {
       setError(err.message || 'Signup failed. Email might already be in use.');
     } finally {
@@ -103,28 +131,23 @@ export default function LoginSignup() {
   };
 
   const handleSocialLogin = (provider: string) => {
-    // Redirect to backend social login endpoint
     window.location.href = `/api/v1/auth/${provider}/login`;
   };
 
   return (
     <>
-      {/* Background Elements */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
         <div className="absolute top-10 left-10 w-72 h-72 bg-indigo-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
         <div className="absolute bottom-10 right-10 w-72 h-72 bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
       </div>
 
-      {/* Main Card */}
-      <main className="bg-white w-full max-w-4xl rounded-2xl shadow-2xl overflow-hidden flex flex-col md:flex-row relative z-10 animate-slide-up mx-auto">
+      <main className="bg-white w-full max-w-4xl rounded-2xl shadow-2xl overflow-hidden flex flex-col md:flex-row relative z-10 animate-slide-up mx-auto min-h-[600px]">
         {/* LEFT: Branding Section */}
         <div className="md:w-5/12 bg-gradient-to-br from-indigo-600 to-violet-700 p-8 md:p-12 text-white flex flex-col justify-between relative overflow-hidden">
-          {/* Decorative overlay */}
           <div className="absolute inset-0 bg-white/5 backdrop-blur-[1px]"></div>
           <div className="absolute top-[-50px] right-[-50px] w-40 h-40 bg-white/10 rounded-full blur-2xl animate-float"></div>
           <div className="absolute bottom-[-20px] left-[-20px] w-60 h-60 bg-indigo-500/30 rounded-full blur-2xl animate-float"></div>
 
-          {/* Content */}
           <div className="relative z-10">
             <Link to="/" className="flex items-center gap-2 mb-8 group w-max">
               <div className="w-8 h-8 rounded-lg bg-white/20 backdrop-blur-md flex items-center justify-center text-white text-sm border border-white/20 group-hover:scale-105 transition-transform">
@@ -136,7 +159,6 @@ export default function LoginSignup() {
             <h1 className="text-3xl font-display font-bold mb-4 leading-tight">Build Smarter Resumes with AI</h1>
             <p className="text-indigo-100 text-sm leading-relaxed mb-6">Create ATS-friendly resumes in minutes and land 3x more interviews with our intelligent optimization engine.</p>
             
-            {/* Mini Testimonial */}
             <div className="bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/10 mt-auto">
               <div className="flex text-yellow-400 text-xs mb-2">
                 <i className="fa-solid fa-star"></i><i className="fa-solid fa-star"></i><i className="fa-solid fa-star"></i><i className="fa-solid fa-star"></i><i className="fa-solid fa-star"></i>
@@ -149,17 +171,72 @@ export default function LoginSignup() {
             </div>
           </div>
 
-          {/* Footer Links (Desktop) */}
           <div className="relative z-10 mt-8 hidden md:flex gap-4 text-xs text-indigo-200">
-            <a href="#" className="hover:text-white transition-colors">Privacy</a>
-            <a href="#" className="hover:text-white transition-colors">Terms</a>
-            <a href="#" className="hover:text-white transition-colors">Contact</a>
+            <Link to="/legal/privacy" className="hover:text-white transition-colors">Privacy</Link>
+            <Link to="/legal/terms" className="hover:text-white transition-colors">Terms</Link>
+            <Link to="/contact" className="hover:text-white transition-colors">Contact</Link>
           </div>
         </div>
 
         {/* RIGHT: Auth Forms */}
         <div className="md:w-7/12 p-8 md:p-12 bg-white flex flex-col justify-center">
-          {isForgotPassword ? (
+          
+          {verificationPending ? (
+            <div className="max-w-sm mx-auto w-full animate-fade-in text-center">
+              <div className="w-20 h-20 bg-indigo-50 rounded-full flex items-center justify-center mx-auto text-indigo-600 mb-6 border-4 border-indigo-100/50">
+                <Mail className="w-10 h-10" />
+              </div>
+              <h2 className="text-2xl font-bold text-slate-900 mb-2">Verify your email</h2>
+              <p className="text-sm text-slate-500 mb-8 leading-relaxed">
+                We've sent a verification link to <span className="font-bold text-slate-900">{pendingEmail}</span>. 
+                Please click the link in the email to activate your account.
+              </p>
+
+              {resendSuccess && (
+                <div className="mb-6 p-3 bg-green-50 border border-green-100 text-green-700 text-xs rounded-xl flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>Verification link resent successfully!</span>
+                </div>
+              )}
+
+              {error && (
+                <div className="mb-6 p-3 bg-red-50 border border-red-100 text-red-600 text-xs rounded-xl flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4" />
+                  <span>{error}</span>
+                </div>
+              )}
+
+              <div className="space-y-4">
+                <button
+                  onClick={() => window.open(`https://mail.google.com/`, '_blank')}
+                  className="w-full py-3 rounded-xl bg-indigo-600 text-white font-bold shadow-lg hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 group"
+                >
+                  <span>Open Mail App</span>
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </button>
+
+                <button
+                  onClick={handleResendVerification}
+                  disabled={resendLoading}
+                  className="w-full py-3 rounded-xl bg-white border border-slate-200 text-slate-700 font-bold hover:bg-slate-50 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                >
+                  {resendLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                  <span>Resend Verification Email</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    setVerificationPending(false);
+                    setError(null);
+                    setResendSuccess(false);
+                  }}
+                  className="text-xs text-indigo-600 font-semibold hover:underline mt-4 block mx-auto"
+                >
+                  Back to Login
+                </button>
+              </div>
+            </div>
+          ) : isForgotPassword ? (
             <div className="max-w-xs mx-auto w-full animate-slide-up">
               <div className="text-center mb-6">
                 <h2 className="text-2xl font-bold text-slate-900 animate-fade-in">Forgot Password</h2>
@@ -172,7 +249,7 @@ export default function LoginSignup() {
                     <i className="fa-solid fa-circle-check animate-bounce"></i>
                   </div>
                   <div className="p-3 bg-green-50 border border-green-100 text-green-700 text-xs rounded-xl">
-                    Password reset link sent! Please check your email inbox (and server logs).
+                    Password reset link sent! Please check your email inbox.
                   </div>
                   <button
                     type="button"
@@ -215,13 +292,13 @@ export default function LoginSignup() {
                   >
                     {forgotLoading ? (
                       <>
-                        <i className="fa-solid fa-circle-notch fa-spin"></i>
+                        <Loader2 className="w-4 h-4 animate-spin" />
                         <span>Sending Link...</span>
                       </>
                     ) : (
                       <>
                         <span>Send Reset Link</span>
-                        <i className="fa-solid fa-paper-plane group-hover:translate-x-1 group-hover:-translate-y-0.5 transition-transform"></i>
+                        <Send className="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-0.5 transition-transform" />
                       </>
                     )}
                   </button>
@@ -249,7 +326,6 @@ export default function LoginSignup() {
                 <button 
                   type="button"
                   onClick={() => { setActiveTab('login'); setError(null); }} 
-                  id="tab-btn-login" 
                   className={`flex-1 py-2 rounded-lg text-sm transition-all cursor-pointer ${
                     activeTab === 'login' 
                       ? 'font-bold text-slate-800 bg-white shadow-sm' 
@@ -261,7 +337,6 @@ export default function LoginSignup() {
                 <button 
                   type="button"
                   onClick={() => { setActiveTab('signup'); setError(null); }} 
-                  id="tab-btn-signup" 
                   className={`flex-1 py-2 rounded-lg text-sm transition-all cursor-pointer ${
                     activeTab === 'signup' 
                       ? 'font-bold text-slate-800 bg-white shadow-sm' 
@@ -274,7 +349,7 @@ export default function LoginSignup() {
 
               {error && (
                 <div className="mb-6 p-3 bg-red-50 border border-red-100 text-red-600 text-sm rounded-xl flex items-center gap-2 animate-shake max-w-xs mx-auto w-full">
-                  <i className="fa-solid fa-circle-exclamation"></i>
+                  <AlertCircle className="w-4 h-4" />
                   <span>{error}</span>
                 </div>
               )}
@@ -303,7 +378,6 @@ export default function LoginSignup() {
                     <i className="fa-solid fa-lock input-icon"></i>
                     <input 
                       type={showLoginPassword ? "text" : "password"} 
-                      id="login-pass" 
                       placeholder="Password" 
                       className="form-input" 
                       value={loginPassword}
@@ -338,19 +412,18 @@ export default function LoginSignup() {
 
                   <button 
                     type="submit" 
-                    id="login-btn" 
                     disabled={loginLoading}
                     className="w-full py-3 rounded-xl bg-slate-900 text-white font-bold shadow-lg hover:bg-slate-800 hover:shadow-xl transition-all flex items-center justify-center gap-2 group disabled:opacity-75 disabled:cursor-not-allowed cursor-pointer"
                   >
                     {loginLoading ? (
                       <>
-                        <i className="fa-solid fa-circle-notch fa-spin"></i>
+                        <Loader2 className="w-4 h-4 animate-spin" />
                         <span>Logging in...</span>
                       </>
                     ) : (
                       <>
                         <span>Login</span>
-                        <i className="fa-solid fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                       </>
                     )}
                   </button>
@@ -393,7 +466,6 @@ export default function LoginSignup() {
                     <i className="fa-solid fa-lock input-icon"></i>
                     <input 
                       type={showSignupPassword ? "text" : "password"} 
-                      id="signup-pass" 
                       placeholder="Password" 
                       className="form-input" 
                       value={signupPassword}
@@ -409,12 +481,11 @@ export default function LoginSignup() {
                     </button>
                   </div>
 
-                  {/* Password Strength */}
-                  <div className={`flex gap-1 h-1 mt-1 transition-opacity ${signupPassword.length > 0 ? 'opacity-100' : 'opacity-0'}`} id="strength-bar">
-                    <div className={`flex-1 rounded-full transition-colors duration-300 ${signupStrength >= 1 ? (signupStrength === 1 ? 'bg-red-400' : signupStrength === 2 ? 'bg-yellow-400' : signupStrength === 3 ? 'bg-blue-400' : 'bg-green-500') : 'bg-slate-200'}`} id="bar-1"></div>
-                    <div className={`flex-1 rounded-full transition-colors duration-300 ${signupStrength >= 2 ? (signupStrength === 2 ? 'bg-yellow-400' : signupStrength === 3 ? 'bg-blue-400' : 'bg-green-500') : 'bg-slate-200'}`} id="bar-2"></div>
-                    <div className={`flex-1 rounded-full transition-colors duration-300 ${signupStrength >= 3 ? (signupStrength === 3 ? 'bg-blue-400' : 'bg-green-500') : 'bg-slate-200'}`} id="bar-3"></div>
-                    <div className={`flex-1 rounded-full transition-colors duration-300 ${signupStrength >= 4 ? 'bg-green-500' : 'bg-slate-200'}`} id="bar-4"></div>
+                  <div className={`flex gap-1 h-1 mt-1 transition-opacity ${signupPassword.length > 0 ? 'opacity-100' : 'opacity-0'}`}>
+                    <div className={`flex-1 rounded-full transition-colors duration-300 ${signupStrength >= 1 ? (signupStrength === 1 ? 'bg-red-400' : signupStrength === 2 ? 'bg-yellow-400' : signupStrength === 3 ? 'bg-blue-400' : 'bg-green-500') : 'bg-slate-200'}`}></div>
+                    <div className={`flex-1 rounded-full transition-colors duration-300 ${signupStrength >= 2 ? (signupStrength === 2 ? 'bg-yellow-400' : signupStrength === 3 ? 'bg-blue-400' : 'bg-green-500') : 'bg-slate-200'}`}></div>
+                    <div className={`flex-1 rounded-full transition-colors duration-300 ${signupStrength >= 3 ? (signupStrength === 3 ? 'bg-blue-400' : 'bg-green-500') : 'bg-slate-200'}`}></div>
+                    <div className={`flex-1 rounded-full transition-colors duration-300 ${signupStrength >= 4 ? 'bg-green-500' : 'bg-slate-200'}`}></div>
                   </div>
 
                   <label className="flex items-start gap-2 cursor-pointer text-xs text-slate-600 mt-2">
@@ -425,18 +496,17 @@ export default function LoginSignup() {
                       required 
                       className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 mt-0.5" 
                     />
-                    <span>I agree to the <a href="#" className="text-indigo-600 hover:underline">Terms of Service</a> & <a href="#" className="text-indigo-600 hover:underline">Privacy Policy</a></span>
+                    <span>I agree to the <Link to="/legal/terms" className="text-indigo-600 hover:underline">Terms of Service</Link> & <Link to="/legal/privacy" className="text-indigo-600 hover:underline">Privacy Policy</Link></span>
                   </label>
 
                   <button 
                     type="submit" 
-                    id="signup-btn" 
                     disabled={signupLoading}
                     className="w-full py-3 rounded-xl bg-indigo-600 text-white font-bold shadow-lg hover:bg-indigo-500 hover:shadow-indigo-500/30 transition-all flex items-center justify-center gap-2 group disabled:opacity-75 disabled:cursor-not-allowed cursor-pointer"
                   >
                     {signupLoading ? (
                       <>
-                        <i className="fa-solid fa-circle-notch fa-spin"></i>
+                        <Loader2 className="w-4 h-4 animate-spin" />
                         <span>Creating Account...</span>
                       </>
                     ) : (
@@ -486,9 +556,9 @@ export default function LoginSignup() {
 
           {/* Footer Links (Mobile Only) */}
           <div className="md:hidden mt-8 text-center text-xs text-slate-400 flex justify-center gap-4">
-            <a href="#">Privacy</a>
-            <a href="#">Terms</a>
-            <a href="#">Help</a>
+            <Link to="/legal/privacy">Privacy</Link>
+            <Link to="/legal/terms">Terms</Link>
+            <Link to="/contact">Help</Link>
           </div>
         </div>
       </main>

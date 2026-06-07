@@ -51,3 +51,20 @@ def verify_password_reset_token(token: str) -> str | None:
         return None
 
 
+def create_email_verification_token(email: str) -> str:
+    expire = datetime.now(timezone.utc) + timedelta(hours=24)
+    to_encode = {"exp": expire, "sub": email, "purpose": "email_verification"}
+    encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
+    return encoded_jwt
+
+
+def verify_email_verification_token(token: str) -> str | None:
+    try:
+        decoded_token = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        if decoded_token.get("purpose") != "email_verification":
+            return None
+        return decoded_token.get("sub")
+    except Exception:
+        return None
+
+

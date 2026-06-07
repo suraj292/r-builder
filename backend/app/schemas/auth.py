@@ -25,3 +25,6 @@ class ResetPasswordRequest(BaseModel):
     token: str
     new_password: str
 
+class ResendVerificationRequest(BaseModel):
+    email: EmailStr
+

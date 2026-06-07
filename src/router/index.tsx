@@ -36,6 +36,7 @@ const BlogDetail = lazy(() => import('../pages/blog/BlogDetail'));
 const LoginSignup = lazy(() => import('../pages/auth/LoginSignup'));
 const AuthCallback = lazy(() => import('../pages/auth/AuthCallback'));
 const ResetPassword = lazy(() => import('../pages/auth/ResetPassword'));
+const VerifyEmail = lazy(() => import('../pages/auth/VerifyEmail'));
 
 // Lazy Pages - User
 const Checkout = lazy(() => import('../pages/user/Checkout'));
@@ -149,6 +150,7 @@ const router = createBrowserRouter([
           { path: 'signup', element: <LoginSignup /> },
           { path: 'callback', element: <AuthCallback /> },
           { path: 'reset-password', element: <ResetPassword /> },
+          { path: 'verify-email', element: <VerifyEmail /> },
         ]
       },
       {
