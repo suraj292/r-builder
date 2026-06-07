@@ -47,7 +47,7 @@ async def upload_media(
     
     # Save to DB
     media = MediaLibrary(
-        file_path=f"/uploads/{unique_filename}",
+        file_path=f"/api/uploads/{unique_filename}",
         file_name=file.filename,
         alt_text=alt_text,
         caption=caption,
@@ -75,7 +75,7 @@ async def delete_media(
         raise HTTPException(status_code=404, detail="Media not found")
     
     # Delete file from disk (simple check)
-    filename = media.file_path.replace("/uploads/", "")
+    filename = media.file_path.replace("/api/uploads/", "")
     local_path = UPLOAD_DIR / filename
     if local_path.exists():
         local_path.unlink()

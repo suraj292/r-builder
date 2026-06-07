@@ -74,7 +74,7 @@ app.include_router(visibility_admin.router, prefix="/api/v1/admin/visibility", t
 app.include_router(visibility_public.router, prefix="/api/v1/visibility", tags=["visibility_public"])
 
 # Static Files
-app.mount("/uploads", StaticFiles(directory=str(UPLOAD_DIR)), name="uploads")
+app.mount("/api/uploads", StaticFiles(directory=str(UPLOAD_DIR)), name="uploads")
 
 @app.get("/sitemap.xml")
 async def get_sitemap_at_root(db: AsyncSession = Depends(get_db)):
