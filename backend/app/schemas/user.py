@@ -1,0 +1,53 @@
+from pydantic import BaseModel, EmailStr
+from datetime import datetime
+from enum import Enum
+
+class UserRole(str, Enum):
+    USER = "user"
+    SUPER_ADMIN = "super_admin"
+    ADMIN = "admin"
+    CONTENT_MANAGER = "content_manager"
+    SUPPORT = "support"
+
+class SubscriptionTier(str, Enum):
+    FREE = "free"
+    PRO = "pro"
+    CAREER_PLUS = "career_plus"
+
+class RegistrationSource(str, Enum):
+    EMAIL = "email"
+    GOOGLE = "google"
+    LINKEDIN = "linkedin"
+    GITHUB = "github"
+
+class UserBase(BaseModel):
+    email: EmailStr
+    full_name: str | None = None
+    job_title: str | None = None
+    phone_number: str | None = None
+    location: str | None = None
+    avatar_url: str | None = None
+
+class UserOut(UserBase):
+    id: int
+    role: UserRole
+    tier: SubscriptionTier
+    ai_credits_used: int
+    ats_scans_used: int
+    quota_reset_date: datetime | None = None
+    registration_source: RegistrationSource
+    last_login: datetime | None = None
+    last_password_reset: datetime | None = None
+    is_active: bool
+    is_premium: bool
+    created_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+class UserUpdate(BaseModel):
+    full_name: str | None = None
+    job_title: str | None = None
+    phone_number: str | None = None
+    location: str | None = None
+    avatar_url: str | None = None

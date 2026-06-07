@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Resumes | ResumeAI</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Plus Jakarta Sans', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: { 50: '#eff6ff', 100: '#dbeafe', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8' },
+                        slate: { 850: '#1e293b', 900: '#0f172a' }
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-out forwards',
+                        'slide-up': 'slideUp 0.5s ease-out forwards',
+                        'pop': 'pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(10px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        },
+                        pop: {
+                            '0%': { transform: 'scale(0.95)', opacity: '0' },
+                            '100%': { transform: 'scale(1)', opacity: '1' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #f8fafc;
+            color: #0f172a;
+        }
+
+        .glass-header {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+        }
+
+        /* Resume Card Hover */
+        .resume-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .resume-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            border-color: #a5b4fc;
+        }
+
+        /* Thumbnail Hover Overlay */
+        .card-overlay {
+            opacity: 0;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(2px);
+            transition: all 0.3s ease;
+        }
+
+        .resume-card:hover .card-overlay {
+            opacity: 1;
+        }
+
+        /* Search Input */
+        .search-input:focus {
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+            border-color: #6366f1;
+        }
+
+        /* Toast Animation */
+        .toast {
+            transform: translateY(100px);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .toast.show {
+            transform: translateY(0);
+        }
+    </style>
+</head>
+
+<body class="flex flex-col min-h-screen">
+
+    <!-- 1. HEADER -->
+    <header class="glass-header sticky top-0 z-50">
+        <div class="container mx-auto px-6 h-16 flex items-center justify-between">
+            <a href="index.html" class="flex items-center gap-2.5 group">
+                <div
+                    class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-600 to-blue-600 flex items-center justify-center text-white text-sm shadow-md group-hover:rotate-6 transition-transform">
+                    <i class="fa-solid fa-file-contract"></i>
+                </div>
+                <span class="text-lg font-display font-bold text-slate-800 tracking-tight">Resume<span
+                        class="text-indigo-600">AI</span></span>
+            </a>
+
+            <nav class="hidden md:flex items-center gap-8">
+                <a href="resume_builder.html"
+                    class="text-sm font-medium text-slate-600 hover:text-indigo-600 transition-colors">Dashboard</a>
+                <a href="#" class="text-sm font-medium text-indigo-600 bg-indigo-50 px-3 py-1 rounded-md">My Resumes</a>
+                <a href="ats_checker.html"
+                    class="text-sm font-medium text-slate-600 hover:text-indigo-600 transition-colors">ATS Check</a>
+                <a href="templates.html"
+                    class="text-sm font-medium text-slate-600 hover:text-indigo-600 transition-colors">Templates</a>
+            </nav>
+
+            <div class="flex items-center gap-4">
+                <button
+                    class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 flex items-center justify-center transition-colors">
+                    <i class="fa-regular fa-bell"></i>
+                </button>
+                <div class="relative group cursor-pointer">
+                    <img src="https://ui-avatars.com/api/?name=Alex+Morgan&background=6366f1&color=fff"
+                        class="w-9 h-9 rounded-full border-2 border-white shadow-sm hover:border-indigo-200 transition-all">
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow container mx-auto px-6 py-8">
+
+        <!-- 2. PAGE TITLE & ACTIONS -->
+        <div class="flex flex-col md:flex-row justify-between items-end md:items-center mb-8 gap-4 animate-fade-in">
+            <div>
+                <h1 class="text-3xl font-display font-bold text-slate-900">My Resumes</h1>
+                <p class="text-slate-500 text-sm mt-1">Manage and optimize your career documents.</p>
+            </div>
+            <div class="flex gap-3">
+                <button
+                    class="px-4 py-2.5 bg-white border border-slate-200 text-slate-700 text-sm font-bold rounded-xl hover:bg-slate-50 transition-colors flex items-center gap-2 shadow-sm">
+                    <i class="fa-solid fa-file-import"></i> Import
+                </button>
+                <a href="resume_builder.html"
+                    class="px-5 py-2.5 bg-slate-900 text-white text-sm font-bold rounded-xl hover:bg-slate-800 transition-colors flex items-center gap-2 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transform duration-200">
+                    <i class="fa-solid fa-plus"></i> New Resume
+                </a>
+            </div>
+        </div>
+
+        <!-- 5. FILTERS & SEARCH -->
+        <div
+            class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 mb-8 flex flex-col md:flex-row justify-between items-center gap-4 animate-slide-up">
+            <div class="relative w-full md:w-96">
+                <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                <input type="text" id="resume-search" placeholder="Search resumes..."
+                    class="search-input w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800 focus:outline-none transition-all"
+                    onkeyup="filterResumes()">
+            </div>
+
+            <div class="flex items-center gap-3 w-full md:w-auto overflow-x-auto no-scrollbar">
+                <span class="text-xs font-bold text-slate-400 uppercase whitespace-nowrap">Sort By:</span>
+                <select
+                    class="text-sm border-none bg-transparent font-medium text-slate-700 focus:ring-0 cursor-pointer">
+                    <option>Last Edited</option>
+                    <option>Name (A-Z)</option>
+                    <option>ATS Score (High-Low)</option>
+                </select>
+                <div class="h-4 w-px bg-slate-200"></div>
+                <div class="flex gap-1 bg-slate-100 p-1 rounded-lg">
+                    <button class="p-1.5 bg-white rounded shadow-sm text-slate-800"><i
+                            class="fa-solid fa-grid-2"></i></button>
+                    <button class="p-1.5 text-slate-400 hover:text-slate-600"><i class="fa-solid fa-list"></i></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 6. ATS INSIGHT BAR (Optional) -->
+        <div class="mb-8 p-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl border border-indigo-100 flex items-center justify-between animate-slide-up"
+            style="animation-delay: 0.1s;">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center">
+                    <i class="fa-solid fa-chart-line"></i>
+                </div>
+                <div>
+                    <p class="text-sm font-bold text-slate-800">Resume Performance</p>
+                    <p class="text-xs text-slate-500">Your average ATS score is <span
+                            class="text-green-600 font-bold">78/100</span>. Aim for 85+.</p>
+                </div>
+            </div>
+            <a href="ats_checker.html" class="text-xs font-bold text-indigo-600 hover:underline">Check ATS Score →</a>
+        </div>
+
+        <!-- 2. RESUME GRID -->
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 animate-slide-up"
+            style="animation-delay: 0.2s;" id="resume-grid">
+
+            <!-- Create New Card (Placeholder) -->
+            <a href="resume_builder.html"
+                class="border-2 border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center p-8 hover:border-indigo-400 hover:bg-indigo-50/30 transition-all group h-[320px] cursor-pointer">
+                <div
+                    class="w-14 h-14 rounded-full bg-slate-50 group-hover:bg-white text-slate-400 group-hover:text-indigo-600 flex items-center justify-center mb-4 shadow-sm transition-colors text-xl">
+                    <i class="fa-solid fa-plus"></i>
+                </div>
+                <h3 class="font-bold text-slate-600 group-hover:text-slate-900 transition-colors">Create New Resume</h3>
+                <p class="text-xs text-slate-400 mt-1">Start from scratch or template</p>
+            </a>
+
+            <!-- Resume Card 1 -->
+            <div
+                class="resume-card bg-white rounded-2xl border border-slate-200 overflow-hidden flex flex-col h-[320px] group relative">
+                <!-- Thumbnail -->
+                <div class="h-40 bg-slate-100 relative overflow-hidden">
+                    <!-- Mock Document -->
+                    <div
+                        class="absolute top-4 left-4 right-4 bottom-[-20px] bg-white shadow-sm p-4 text-[6px] text-slate-300 leading-relaxed rounded-t-lg pointer-events-none select-none">
+                        <div class="w-1/3 h-2 bg-slate-800 mb-2 rounded"></div>
+                        <div class="w-full h-1 bg-slate-200 mb-1 rounded"></div>
+                        <div class="w-full h-1 bg-slate-200 mb-1 rounded"></div>
+                        <div class="w-2/3 h-1 bg-slate-200 mb-4 rounded"></div>
+                        <div class="w-1/4 h-1.5 bg-slate-400 mb-2 rounded"></div>
+                        <div class="w-full h-1 bg-slate-200 mb-1 rounded"></div>
+                        <div class="w-full h-1 bg-slate-200 mb-1 rounded"></div>
+                    </div>
+
+                    <!-- Overlay Actions -->
+                    <div class="card-overlay absolute inset-0 flex flex-col items-center justify-center gap-2">
+                        <a href="resume_builder.html"
+                            class="px-4 py-2 bg-white text-slate-900 rounded-lg text-xs font-bold shadow hover:bg-indigo-50 transition-colors transform hover:scale-105">
+                            <i class="fa-solid fa-pen mr-1"></i> Edit
+                        </a>
+                        <button
+                            class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-xs font-bold shadow hover:bg-indigo-500 transition-colors transform hover:scale-105">
+                            <i class="fa-solid fa-download mr-1"></i> PDF
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Info -->
+                <div class="p-5 flex flex-col flex-grow">
+                    <div class="flex justify-between items-start mb-2">
+                        <h3 class="font-bold text-slate-800 text-sm truncate pr-2"
+                            title="Senior Product Manager Resume">Senior Product Manager...</h3>
+                        <button class="text-slate-400 hover:text-slate-600" onclick="toggleMenu(this)">
+                            <i class="fa-solid fa-ellipsis-vertical"></i>
+                        </button>
+                        <!-- Dropdown Menu (Hidden) -->
+                        <div
+                            class="absolute right-4 top-48 bg-white border border-slate-100 shadow-xl rounded-xl w-36 py-1 hidden z-10 menu-dropdown">
+                            <button
+                                class="w-full text-left px-4 py-2 text-xs text-slate-600 hover:bg-slate-50 hover:text-indigo-600"><i
+                                    class="fa-regular fa-copy mr-2"></i> Duplicate</button>
+                            <button
+                                class="w-full text-left px-4 py-2 text-xs text-slate-600 hover:bg-slate-50 hover:text-indigo-600"><i
+                                    class="fa-regular fa-pen-to-square mr-2"></i> Rename</button>
+                            <div class="h-px bg-slate-100 my-1"></div>
+                            <button class="w-full text-left px-4 py-2 text-xs text-red-500 hover:bg-red-50"
+                                onclick="showDeleteModal()"><i class="fa-regular fa-trash-can mr-2"></i> Delete</button>
+                        </div>
+                    </div>
+
+                    <p class="text-xs text-slate-400 mb-4">Edited 2 hours ago</p>
+
+                    <div class="mt-auto flex items-center justify-between">
+                        <span
+                            class="inline-flex items-center gap-1.5 px-2 py-1 bg-green-50 text-green-700 text-[10px] font-bold rounded border border-green-100">
+                            <span class="w-1.5 h-1.5 bg-green-500 rounded-full"></span> 85/100 ATS
+                        </span>
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Modern</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resume Card 2 -->
+            <div
+                class="resume-card bg-white rounded-2xl border border-slate-200 overflow-hidden flex flex-col h-[320px] group relative">
+                <div class="h-40 bg-slate-100 relative overflow-hidden">
+                    <div
+                        class="absolute top-4 left-4 right-4 bottom-[-20px] bg-white shadow-sm p-4 text-[6px] text-slate-300 leading-relaxed rounded-t-lg pointer-events-none select-none">
+                        <div class="flex gap-2 mb-2">
+                            <div class="w-8 h-8 rounded-full bg-slate-200"></div>
+                            <div class="flex-1 space-y-1">
+                                <div class="w-full h-1.5 bg-slate-800 rounded"></div>
+                                <div class="w-2/3 h-1 bg-slate-200 rounded"></div>
+                            </div>
+                        </div>
+                        <div class="w-full h-1 bg-slate-200 mb-1 rounded"></div>
+                        <div class="w-full h-1 bg-slate-200 mb-1 rounded"></div>
+                    </div>
+                    <div class="card-overlay absolute inset-0 flex flex-col items-center justify-center gap-2">
+                        <a href="resume_builder.html"
+                            class="px-4 py-2 bg-white text-slate-900 rounded-lg text-xs font-bold shadow hover:bg-indigo-50 transition-colors">Edit</a>
+                        <a href="ats_checker.html"
+                            class="px-4 py-2 bg-slate-900 text-white rounded-lg text-xs font-bold shadow hover:bg-slate-800 transition-colors">Check
+                            ATS</a>
+                    </div>
+                </div>
+                <div class="p-5 flex flex-col flex-grow">
+                    <div class="flex justify-between items-start mb-2">
+                        <h3 class="font-bold text-slate-800 text-sm truncate pr-2">Marketing Lead 2024</h3>
+                        <button class="text-slate-400 hover:text-slate-600"><i
+                                class="fa-solid fa-ellipsis-vertical"></i></button>
+                    </div>
+                    <p class="text-xs text-slate-400 mb-4">Edited 2 days ago</p>
+                    <div class="mt-auto flex items-center justify-between">
+                        <span
+                            class="inline-flex items-center gap-1.5 px-2 py-1 bg-yellow-50 text-yellow-700 text-[10px] font-bold rounded border border-yellow-100">
+                            <span class="w-1.5 h-1.5 bg-yellow-500 rounded-full"></span> 62/100 ATS
+                        </span>
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Creative</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resume Card 3 (Draft) -->
+            <div
+                class="resume-card bg-white rounded-2xl border border-slate-200 overflow-hidden flex flex-col h-[320px] group relative">
+                <div class="h-40 bg-slate-100 relative overflow-hidden">
+                    <div
+                        class="absolute top-4 left-4 right-4 bottom-[-20px] bg-white shadow-sm p-4 text-[6px] text-slate-300 leading-relaxed rounded-t-lg pointer-events-none select-none opacity-50">
+                        <div class="w-1/2 h-2 bg-slate-800 mb-4 rounded"></div>
+                        <div class="w-full h-1 bg-slate-200 mb-1 rounded"></div>
+                    </div>
+                    <div class="card-overlay absolute inset-0 flex flex-col items-center justify-center gap-2">
+                        <a href="resume_builder.html"
+                            class="px-4 py-2 bg-white text-slate-900 rounded-lg text-xs font-bold shadow hover:bg-indigo-50 transition-colors">Continue
+                            Editing</a>
+                    </div>
+                </div>
+                <div class="p-5 flex flex-col flex-grow">
+                    <div class="flex justify-between items-start mb-2">
+                        <h3 class="font-bold text-slate-800 text-sm truncate pr-2">Untitled Resume</h3>
+                        <button class="text-slate-400 hover:text-slate-600"><i
+                                class="fa-solid fa-ellipsis-vertical"></i></button>
+                    </div>
+                    <p class="text-xs text-slate-400 mb-4">Edited 5 days ago</p>
+                    <div class="mt-auto flex items-center justify-between">
+                        <span
+                            class="inline-flex items-center gap-1.5 px-2 py-1 bg-slate-100 text-slate-500 text-[10px] font-bold rounded border border-slate-200">
+                            Draft
+                        </span>
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Standard</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- 8. DELETE MODAL -->
+    <div id="delete-modal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity" onclick="hideDeleteModal()">
+        </div>
+        <div
+            class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm animate-pop">
+            <div
+                class="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center mx-auto mb-4 text-xl">
+                <i class="fa-solid fa-trash-can"></i>
+            </div>
+            <h3 class="text-lg font-bold text-slate-900 text-center mb-2">Delete Resume?</h3>
+            <p class="text-sm text-slate-500 text-center mb-6">Are you sure you want to delete this resume? This action
+                cannot be undone.</p>
+            <div class="flex gap-3">
+                <button onclick="hideDeleteModal()"
+                    class="flex-1 py-2.5 border border-slate-200 rounded-xl text-slate-600 font-bold hover:bg-slate-50 transition-colors">Cancel</button>
+                <button onclick="confirmDelete()"
+                    class="flex-1 py-2.5 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 transition-colors shadow-lg shadow-red-200">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="toast"
+        class="fixed bottom-6 right-6 bg-slate-900 text-white px-6 py-3 rounded-xl shadow-2xl flex items-center gap-3 z-50 toast">
+        <i class="fa-solid fa-circle-check text-green-400"></i>
+        <span class="text-sm font-medium">Resume deleted successfully</span>
+    </div>
+
+    <script>
+        // --- Search Filter Logic ---
+        function filterResumes() {
+            const input = document.getElementById('resume-search').value.toLowerCase();
+            const cards = document.querySelectorAll('.resume-card');
+
+            cards.forEach(card => {
+                const title = card.querySelector('h3').innerText.toLowerCase();
+                if (title.includes(input)) {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        // --- Menu Logic ---
+        function toggleMenu(btn) {
+            // Close all other menus first
+            document.querySelectorAll('.menu-dropdown').forEach(menu => {
+                if (menu !== btn.nextElementSibling) {
+                    menu.classList.add('hidden');
+                }
+            });
+
+            // Toggle current
+            const menu = btn.nextElementSibling;
+            menu.classList.toggle('hidden');
+        }
+
+        // Close menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.resume-card')) {
+                document.querySelectorAll('.menu-dropdown').forEach(menu => {
+                    menu.classList.add('hidden');
+                });
+            }
+        });
+
+        // --- Modal Logic ---
+        const modal = document.getElementById('delete-modal');
+
+        function showDeleteModal() {
+            modal.classList.remove('hidden');
+        }
+
+        function hideDeleteModal() {
+            modal.classList.add('hidden');
+        }
+
+        function confirmDelete() {
+            hideDeleteModal();
+            showToast('Resume deleted successfully');
+            // Logic to remove card from DOM would go here
+        }
+
+        // --- Toast Logic ---
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.querySelector('span').innerText = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+    </script>
+</body>
+
+</html>
