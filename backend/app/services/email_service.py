@@ -33,10 +33,15 @@ class EmailService:
         message.attach(MIMEText(body, "html" if is_html else "plain"))
 
         try:
-            with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT) as server:
-                server.starttls()
-                server.login(settings.SMTP_USERNAME, settings.SMTP_PASSWORD)
-                server.send_message(message)
+            if settings.SMTP_PORT == 465:
+                with smtplib.SMTP_SSL(settings.SMTP_HOST, settings.SMTP_PORT) as server:
+                    server.login(settings.SMTP_USERNAME, settings.SMTP_PASSWORD)
+                    server.send_message(message)
+            else:
+                with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT) as server:
+                    server.starttls()
+                    server.login(settings.SMTP_USERNAME, settings.SMTP_PASSWORD)
+                    server.send_message(message)
         except Exception as e:
             print(f"Error sending email: {e}")
 

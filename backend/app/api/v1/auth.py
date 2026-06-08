@@ -1,5 +1,5 @@
 from datetime import datetime, timezone, timedelta
-from fastapi import APIRouter, Depends, HTTPException, status, Request
+from fastapi import APIRouter, Depends, HTTPException, status, Request, BackgroundTasks
 from fastapi.responses import RedirectResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
@@ -56,7 +56,7 @@ oauth.register(
 )
 
 @router.post("/register", response_model=UserOut)
-async def register(user_in: UserCreate, db: AsyncSession = Depends(get_db)):
+async def register(user_in: UserCreate, background_tasks: BackgroundTasks, db: AsyncSession = Depends(get_db)):
     # Check if user exists
     stmt = select(User).where(User.email == user_in.email)
     result = await db.execute(stmt)
@@ -86,7 +86,7 @@ async def register(user_in: UserCreate, db: AsyncSession = Depends(get_db)):
     await db.refresh(db_user)
     
     # Send verification email
-    await EmailService.send_verification_email(db_user.email, db_user.full_name or "", verification_token)
+    background_tasks.add_task(EmailService.send_verification_email, db_user.email, db_user.full_name or "", verification_token)
     
     return db_user
 
@@ -148,7 +148,7 @@ async def social_login(provider: str, request: Request):
     return await oauth.create_client(provider).authorize_redirect(request, redirect_uri)
 
 @router.get("/{provider}/callback")
-async def social_callback(provider: str, request: Request, db: AsyncSession = Depends(get_db)):
+async def social_callback(provider: str, request: Request, background_tasks: BackgroundTasks, db: AsyncSession = Depends(get_db)):
     if provider not in ['google', 'github', 'linkedin']:
         raise HTTPException(status_code=400, detail="Invalid provider")
     
@@ -192,7 +192,7 @@ async def social_callback(provider: str, request: Request, db: AsyncSession = De
             email_verified_at=datetime.now(timezone.utc)
         )
         db.add(user)
-        EmailService.send_welcome_email(user.email, user.full_name or "")
+        background_tasks.add_task(EmailService.send_welcome_email, user.email, user.full_name or "")
     
     # Update last login
     user.last_login = datetime.now(timezone.utc)
@@ -206,7 +206,7 @@ async def social_callback(provider: str, request: Request, db: AsyncSession = De
 
 @router.post("/forgot-password")
 async def forgot_password(
-    request_data: ForgotPasswordRequest, db: AsyncSession = Depends(get_db)
+    request_data: ForgotPasswordRequest, background_tasks: BackgroundTasks, db: AsyncSession = Depends(get_db)
 ):
     # Find user
     stmt = select(User).where(User.email == request_data.email)
@@ -226,7 +226,7 @@ async def forgot_password(
     reset_link = f"{settings.FRONTEND_URL}/auth/reset-password?token={reset_token}"
     
     # Send email
-    EmailService.send_password_reset_email(user.email, reset_link)
+    background_tasks.add_task(EmailService.send_password_reset_email, user.email, reset_link)
     
     return {"message": "Password reset link has been sent to your email."}
 
@@ -264,7 +264,7 @@ async def reset_password(
 
 
 @router.get("/verify-email")
-async def verify_email(token: str, db: AsyncSession = Depends(get_db)):
+async def verify_email(token: str, background_tasks: BackgroundTasks, db: AsyncSession = Depends(get_db)):
     try:
         # Verify token
         email = verify_email_verification_token(token)
@@ -311,7 +311,7 @@ async def verify_email(token: str, db: AsyncSession = Depends(get_db)):
         await db.commit()
         
         # Send welcome email now
-        EmailService.send_welcome_email(user_email, user_full_name)
+        background_tasks.add_task(EmailService.send_welcome_email, user_email, user_full_name)
         
         return {"message": "Email verified successfully"}
     except HTTPException:
@@ -324,7 +324,7 @@ async def verify_email(token: str, db: AsyncSession = Depends(get_db)):
 
 
 @router.post("/resend-verification")
-async def resend_verification(request_data: ResendVerificationRequest, db: AsyncSession = Depends(get_db)):
+async def resend_verification(request_data: ResendVerificationRequest, background_tasks: BackgroundTasks, db: AsyncSession = Depends(get_db)):
     # Find user
     stmt = select(User).where(User.email == request_data.email)
     result = await db.execute(stmt)
@@ -352,7 +352,7 @@ async def resend_verification(request_data: ResendVerificationRequest, db: Async
     await db.commit()
     
     # Send email
-    await EmailService.send_verification_email(user_email, user_full_name, verification_token)
+    background_tasks.add_task(EmailService.send_verification_email, user_email, user_full_name, verification_token)
     
     return {"message": "Verification email has been resent"}
 

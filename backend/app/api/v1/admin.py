@@ -1,5 +1,5 @@
 from datetime import datetime
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
 from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -31,8 +31,21 @@ from app.models.payment import Transaction, PaymentStatus
 
 from app.schemas.coupon import CouponCreate, CouponUpdate, CouponOut
 from app.models.coupon import Coupon
+from app.services.email_service import EmailService
 
 router = APIRouter()
+
+async def log_activity(db: AsyncSession, user_id: int, action: str, details: str = None, ip_address: str = None):
+    try:
+        log = UserActivityLog(
+            user_id=user_id,
+            action=action,
+            details=details,
+            ip_address=ip_address
+        )
+        db.add(log)
+    except Exception as e:
+        print(f"Error logging activity: {e}")
 ...
 # --- COUPON MANAGEMENT ---
 
@@ -754,6 +767,7 @@ async def update_subscription_validity(
 @router.post("/users/send-email")
 async def send_admin_user_email(
     payload: dict, # Expects {"email": str, "subject": str, "message": str}
+    background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_role([UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.SUPPORT]))
 ):
@@ -767,7 +781,7 @@ async def send_admin_user_email(
     if not all([email, subject, message]):
         raise HTTPException(400, "Missing email, subject, or message")
         
-    EmailService.send_admin_email(email, subject, message)
+    background_tasks.add_task(EmailService.send_admin_email, email, subject, message)
     
     # Log the action
     # Find user ID for logging
