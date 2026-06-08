@@ -183,6 +183,124 @@ async def seed_defaults():
             for key, value in sys_data.items():
                 setattr(sys_config, key, value)
 
+        # 5. Seed default plans
+        from app.models.subscription import Plan, SubscriptionTier
+        
+        default_plans = [
+            {
+                "tier_code": SubscriptionTier.FREE,
+                "name": "Free",
+                "price_monthly": 0,
+                "price_yearly": 0,
+                "regional_prices": {
+                    "INR": {
+                        "monthly": 0,
+                        "yearly": 0
+                    },
+                    "EUR": {
+                        "monthly": 0,
+                        "yearly": 0
+                    }
+                },
+                "features": {
+                    "ai_credits": 20,
+                    "ats_scans": 3,
+                    "resume_limit": 2,
+                    "cover_letters": 1,
+                    "premium_templates": False,
+                    "pdf_download": True,
+                    "docx_download": False,
+                    "linkedin_optimizer": False,
+                    "job_match_analysis": False,
+                    "interview_preparation": False,
+                    "resume_versions": 2,
+                    "priority_support": False
+                },
+                "is_active": True
+            },
+            {
+                "tier_code": SubscriptionTier.PRO,
+                "name": "Pro",
+                "price_monthly": 500,
+                "price_yearly": 4900,
+                "regional_prices": {
+                    "INR": {
+                        "monthly": 14900,
+                        "yearly": 149900
+                    },
+                    "EUR": {
+                        "monthly": 500,
+                        "yearly": 4900
+                    }
+                },
+                "features": {
+                    "ai_credits": 300,
+                    "ats_scans": 50,
+                    "resume_limit": 25,
+                    "cover_letters": 25,
+                    "premium_templates": True,
+                    "pdf_download": True,
+                    "docx_download": True,
+                    "linkedin_optimizer": True,
+                    "job_match_analysis": True,
+                    "interview_preparation": False,
+                    "resume_versions": 25,
+                    "priority_support": True,
+                    "advanced_ats_analysis": False,
+                    "cover_letter_generator": False,
+                    "job_description_matcher": False
+                },
+                "is_active": True
+            },
+            {
+                "tier_code": SubscriptionTier.CAREER_PLUS,
+                "name": "Career+",
+                "price_monthly": 900,
+                "price_yearly": 9900,
+                "regional_prices": {
+                    "INR": {
+                        "monthly": 39900,
+                        "yearly": 399900
+                    },
+                    "EUR": {
+                        "monthly": 9900,
+                        "yearly": 900
+                    }
+                },
+                "features": {
+                    "ai_credits": 1000,
+                    "ats_scans": 200,
+                    "resume_limit": 100,
+                    "cover_letters": 100,
+                    "premium_templates": True,
+                    "pdf_download": True,
+                    "docx_download": True,
+                    "linkedin_optimizer": True,
+                    "job_match_analysis": True,
+                    "interview_preparation": True,
+                    "resume_versions": 100,
+                    "priority_support": True,
+                    "dedicated_support": True,
+                    "advanced_ats_analysis": False,
+                    "cover_letter_generator": False,
+                    "job_description_matcher": False
+                },
+                "is_active": True
+            }
+        ]
+
+        for p_data in default_plans:
+            res = await db.execute(select(Plan).where(Plan.tier_code == p_data["tier_code"]))
+            existing_plan = res.scalars().first()
+            if not existing_plan:
+                print(f"Creating subscription plan: {p_data['name']}...")
+                new_plan = Plan(**p_data)
+                db.add(new_plan)
+            else:
+                print(f"Updating subscription plan: {p_data['name']}...")
+                for key, val in p_data.items():
+                    setattr(existing_plan, key, val)
+
         await db.commit()
         print("Seeding/Update completed successfully!")
 
