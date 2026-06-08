@@ -33,14 +33,10 @@ async def create_payment_order(
     
     # Calculate amount
     base_amount = 0
-    if currency == "INR":
-        # Check regional prices
-        if plan.regional_prices and "INR" in plan.regional_prices:
-            base_amount = plan.regional_prices["INR"]["yearly" if period == "yearly" else "monthly"]
-        else:
-            # Fallback
-            base_amount = plan.price_yearly if period == "yearly" else plan.price_monthly
+    if plan.regional_prices and currency in plan.regional_prices:
+        base_amount = plan.regional_prices[currency]["yearly" if period == "yearly" else "monthly"]
     else:
+        # Fallback to default base prices (USD)
         base_amount = plan.price_yearly if period == "yearly" else plan.price_monthly
 
     # Apply Coupon if valid

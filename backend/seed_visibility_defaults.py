@@ -263,8 +263,8 @@ async def seed_defaults():
                         "yearly": 399900
                     },
                     "EUR": {
-                        "monthly": 9900,
-                        "yearly": 900
+                        "monthly": 900,
+                        "yearly": 9900
                     }
                 },
                 "features": {
