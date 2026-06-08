@@ -51,6 +51,35 @@ async def seed_defaults():
             for key, value in seo_data.items():
                 setattr(default_seo, key, value)
 
+        # 1.1 Seed Common Public Pages for Sitemap
+        public_pages = [
+            {"path": "/", "title": "ResumeBP - AI-Powered Resume Builder", "priority": "1.0", "changefreq": "daily"},
+            {"path": "/pricing", "title": "Pricing Plans - ResumeBP", "priority": "0.9", "changefreq": "weekly"},
+            {"path": "/about", "title": "About Us - ResumeBP", "priority": "0.7", "changefreq": "monthly"},
+            {"path": "/contact", "title": "Contact Us - ResumeBP", "priority": "0.7", "changefreq": "monthly"},
+            {"path": "/faq", "title": "Frequently Asked Questions - ResumeBP", "priority": "0.8", "changefreq": "weekly"},
+            {"path": "/ats-checker", "title": "Free ATS Resume Checker - ResumeBP", "priority": "0.9", "changefreq": "weekly"},
+            {"path": "/blog", "title": "Career Advice Blog - ResumeBP", "priority": "0.9", "changefreq": "daily"},
+            {"path": "/legal/privacy", "title": "Privacy Policy - ResumeBP", "priority": "0.5", "changefreq": "monthly"},
+            {"path": "/legal/terms", "title": "Terms of Service - ResumeBP", "priority": "0.5", "changefreq": "monthly"},
+            {"path": "/legal/refund-policy", "title": "Refund Policy - ResumeBP", "priority": "0.5", "changefreq": "monthly"},
+        ]
+
+        for page in public_pages:
+            res = await db.execute(select(SEOConfig).where(SEOConfig.path == page["path"]))
+            existing = res.scalars().first()
+            if not existing:
+                print(f"Creating SEO config for {page['path']}...")
+                new_config = SEOConfig(
+                    path=page["path"],
+                    title=page["title"],
+                    description=f"Professional {page['title']} page for ResumeBP.",
+                    include_in_sitemap=True,
+                    sitemap_priority=page["priority"],
+                    sitemap_changefreq=page["changefreq"]
+                )
+                db.add(new_config)
+
         # 2. Update/Seed Global Visibility Config
         res = await db.execute(select(VisibilityConfig).limit(1))
         vis_config = res.scalars().first()

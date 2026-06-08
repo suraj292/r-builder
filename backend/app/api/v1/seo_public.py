@@ -44,18 +44,35 @@ async def generate_sitemap(
     )
     configs = result.scalars().all()
     
+    # Also include published blog posts
+    from app.models.blog import BlogPost, PostStatus
+    blog_result = await db.execute(
+        select(BlogPost).where(BlogPost.status == PostStatus.PUBLISHED)
+    )
+    blogs = blog_result.scalars().all()
+    
     # Simple XML generation logic (can be expanded)
     xml = '<?xml version="1.0" encoding="UTF-8"?>'
     xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
     
     # Base URL should come from settings
-    base_url = "https://resumeai.com" # Example
+    from app.config import settings
+    base_url = str(settings.FRONTEND_URL).rstrip("/")
     
     for config in configs:
         xml += '<url>'
-        xml += f'<loc>{base_url}{config.path}</loc>'
+        # Ensure path starts with /
+        path = config.path if config.path.startswith("/") else f"/{config.path}"
+        xml += f'<loc>{base_url}{path}</loc>'
         xml += f'<priority>{config.sitemap_priority}</priority>'
         xml += f'<changefreq>{config.sitemap_changefreq}</changefreq>'
+        xml += '</url>'
+
+    for blog in blogs:
+        xml += '<url>'
+        xml += f'<loc>{base_url}/blog/{blog.slug}</loc>'
+        xml += f'<priority>0.8</priority>'
+        xml += f'<changefreq>weekly</changefreq>'
         xml += '</url>'
         
     xml += '</urlset>'
