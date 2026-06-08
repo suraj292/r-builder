@@ -34,7 +34,7 @@ async def validate_coupon(
         return CouponValidate(code=code, discount_percent=0, valid=False, message="Invalid or inactive coupon code.")
         
     # 1. Global Expiry Check
-    if coupon.valid_until and coupon.valid_until < datetime.now(timezone.utc):
+    if coupon.valid_until and coupon.valid_until < datetime.now(coupon.valid_until.tzinfo):
         return CouponValidate(code=code, discount_percent=0, valid=False, message="This coupon has expired.")
         
     # 2. Global Usage Limit Check

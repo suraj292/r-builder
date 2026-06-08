@@ -46,11 +46,35 @@ async def create_payment_order(
         c_res = await db.execute(c_stmt)
         coupon = c_res.scalars().first()
         if coupon:
-            # Check expiry and max uses
             is_valid = True
-            if coupon.valid_until and coupon.valid_until < datetime.now(coupon.valid_until.tzinfo): is_valid = False
-            if coupon.max_uses and coupon.used_count >= coupon.max_uses: is_valid = False
             
+            # 1. Global Expiry Check
+            if coupon.valid_until and coupon.valid_until < datetime.now(coupon.valid_until.tzinfo):
+                is_valid = False
+                
+            # 2. Global Usage Limit Check
+            if coupon.max_uses_total and coupon.used_count_total >= coupon.max_uses_total:
+                is_valid = False
+                
+            # 3. Per-User Limit Check
+            from app.models.coupon import UserCouponUsage
+            usage_stmt = select(UserCouponUsage).where(
+                UserCouponUsage.user_id == current_user.id,
+                UserCouponUsage.coupon_id == coupon.id
+            )
+            usage_res = await db.execute(usage_stmt)
+            user_usage = usage_res.scalars().first()
+            if user_usage and user_usage.usage_count >= coupon.per_user_limit:
+                is_valid = False
+                
+            # 4. Plan Restriction Check
+            if coupon.restricted_to_plan and coupon.restricted_to_plan != plan_tier:
+                is_valid = False
+                
+            # 5. Minimum Purchase Check
+            if coupon.min_purchase_amount and base_amount < coupon.min_purchase_amount:
+                is_valid = False
+                
             if is_valid:
                 discount_percent = coupon.discount_percent
     
