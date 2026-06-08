@@ -46,36 +46,24 @@ class EmailService:
             print(f"Error sending email: {e}")
 
     @classmethod
-    def send_welcome_email(cls, to_email: str, full_name: str):
-        subject = "Welcome to ResumeAI!"
-        body = f"""
-        <h1>Welcome, {full_name}!</h1>
-        <p>Thank you for joining ResumeAI. Start building your professional resume today.</p>
-        <p><a href="{settings.FRONTEND_URL}/builder">Get Started</a></p>
-        """
-        cls.send_email(to_email, subject, body, is_html=True)
-
-    @classmethod
-    async def send_verification_email(cls, to_email: str, full_name: str, token: str):
-        sys_settings = await cls._get_settings()
-        
-        project_name = sys_settings.project_name if sys_settings else "ResumeAI"
-        support_email = sys_settings.contact_email if sys_settings else "support@resumeai.com"
-        logo_url = sys_settings.site_logo if sys_settings else ""
-        
-        # Ensure logo_url has the domain if it is relative
+    def _resolve_logo_url(cls, logo_url: str) -> str:
         if logo_url and not (logo_url.startswith("http://") or logo_url.startswith("https://")):
             base_url = settings.FRONTEND_URL.rstrip("/")
             if not logo_url.startswith("/"):
                 logo_url = f"/{logo_url}"
             logo_url = f"{base_url}{logo_url}"
+        return logo_url
+
+    @classmethod
+    def _get_html_layout(cls, sys_settings: SystemSettings, title: str, content_html: str) -> str:
+        project_name = sys_settings.project_name if sys_settings else "ResumeAI"
+        support_email = sys_settings.contact_email if sys_settings else "support@resumeai.com"
+        logo_url = sys_settings.site_logo if sys_settings else ""
         
-        verification_link = f"{settings.FRONTEND_URL}/auth/verify-email?token={token}"
+        logo_url = cls._resolve_logo_url(logo_url)
+        header_html = f'<img src="{logo_url}" alt="{project_name}" class="logo">' if logo_url else f'<h2 style="color: #4f46e5; margin: 0;">{project_name}</h2>'
         
-        subject = f"Verify Your Email Address - {project_name}"
-        
-        # Modern Responsive Template
-        body = f"""
+        return f"""
         <!DOCTYPE html>
         <html>
         <head>
@@ -99,18 +87,11 @@ class EmailService:
         <body>
             <div class="container">
                 <div class="header">
-                    {f'<img src="{logo_url}" alt="{project_name}" class="logo">' if logo_url else f'<h2 style="color: #4f46e5; margin: 0;">{project_name}</h2>'}
+                    {header_html}
                 </div>
                 <div class="content">
-                    <h1 class="title">Verify Your Email Address</h1>
-                    <p class="text">Hi {full_name},</p>
-                    <p class="text">Thank you for creating your {project_name} account. To activate your account and secure your access, please verify your email address by clicking the button below.</p>
-                    
-                    <div class="button-container">
-                        <a href="{verification_link}" class="button">Verify Email Address</a>
-                    </div>
-                    
-                    <p class="text" style="font-size: 14px; color: #64748b;">This verification link will expire in 24 hours. If you did not create an account, you can safely ignore this email.</p>
+                    <h1 class="title">{title}</h1>
+                    {content_html}
                     
                     <div class="help-text">
                         Need help? Contact us at <a href="mailto:{support_email}" style="color: #4f46e5; text-decoration: none;">{support_email}</a>
@@ -123,36 +104,76 @@ class EmailService:
         </body>
         </html>
         """
+
+    @classmethod
+    async def send_welcome_email(cls, to_email: str, full_name: str):
+        sys_settings = await cls._get_settings()
+        project_name = sys_settings.project_name if sys_settings else "ResumeAI"
+        
+        subject = f"Welcome to {project_name}!"
+        
+        content = f"""
+        <p class="text">Hi {full_name},</p>
+        <p class="text">Thank you for joining {project_name}. Start building your professional resume today and land your dream job.</p>
+        <div class="button-container">
+            <a href="{settings.FRONTEND_URL}/builder" class="button">Get Started</a>
+        </div>
+        """
+        
+        body = cls._get_html_layout(sys_settings, f"Welcome to {project_name}", content)
         cls.send_email(to_email, subject, body, is_html=True)
 
     @classmethod
-    def send_password_reset_email(cls, to_email: str, reset_link: str):
-        subject = "Reset Your Password - ResumeAI"
-        body = f"""
-        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
-            <h2 style="color: #4f46e5; margin-bottom: 20px;">Password Reset Request</h2>
-            <p style="color: #334155; font-size: 16px; line-height: 1.6;">You requested to reset your password for your ResumeAI account. Click the button below to choose a new password:</p>
-            <div style="margin: 30px 0; text-align: center;">
-                <a href="{reset_link}" style="background-color: #4f46e5; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px; display: inline-block;">Reset Password</a>
-            </div>
-            <p style="color: #64748b; font-size: 14px; line-height: 1.6;">Or copy and paste this link into your browser:</p>
-            <p style="color: #4f46e5; font-size: 14px; word-break: break-all;"><a href="{reset_link}">{reset_link}</a></p>
-            <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 30px 0;" />
-            <p style="color: #94a3b8; font-size: 12px; line-height: 1.6;">This link will expire in 15 minutes. If you did not request this, please ignore this email.</p>
+    async def send_verification_email(cls, to_email: str, full_name: str, token: str):
+        sys_settings = await cls._get_settings()
+        project_name = sys_settings.project_name if sys_settings else "ResumeAI"
+        
+        verification_link = f"{settings.FRONTEND_URL}/auth/verify-email?token={token}"
+        subject = f"Verify Your Email Address - {project_name}"
+        
+        content = f"""
+        <p class="text">Hi {full_name},</p>
+        <p class="text">Thank you for creating your {project_name} account. To activate your account and secure your access, please verify your email address by clicking the button below.</p>
+        <div class="button-container">
+            <a href="{verification_link}" class="button">Verify Email Address</a>
         </div>
+        <p class="text" style="font-size: 14px; color: #64748b;">This verification link will expire in 24 hours. If you did not create an account, you can safely ignore this email.</p>
         """
+        
+        body = cls._get_html_layout(sys_settings, "Verify Your Email Address", content)
         cls.send_email(to_email, subject, body, is_html=True)
 
     @classmethod
-    def send_admin_email(cls, to_email: str, subject: str, message: str):
-        body = f"""
-        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px;">
-            <h2 style="color: #4f46e5; margin-bottom: 20px;">Support Message from ResumeAI</h2>
-            <div style="color: #334155; font-size: 16px; line-height: 1.6; white-space: pre-wrap;">
-                {message}
-            </div>
-            <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 30px 0;" />
-            <p style="color: #94a3b8; font-size: 12px;">This is a message from the ResumeAI Administration Team.</p>
+    async def send_password_reset_email(cls, to_email: str, reset_link: str):
+        sys_settings = await cls._get_settings()
+        project_name = sys_settings.project_name if sys_settings else "ResumeAI"
+        
+        subject = f"Reset Your Password - {project_name}"
+        
+        content = f"""
+        <p class="text">You requested to reset your password for your {project_name} account. Click the button below to choose a new password:</p>
+        <div class="button-container">
+            <a href="{reset_link}" class="button">Reset Password</a>
         </div>
+        <p class="text" style="font-size: 14px; color: #64748b;">Or copy and paste this link into your browser:</p>
+        <p style="font-size: 14px; word-break: break-all;"><a href="{reset_link}" style="color: #4f46e5; text-decoration: none;">{reset_link}</a></p>
+        <p class="text" style="font-size: 12px; color: #94a3b8; margin-top: 24px; border-top: 1px solid #f1f5f9; padding-top: 16px;">This link will expire in 15 minutes. If you did not request this, please ignore this email.</p>
         """
+        
+        body = cls._get_html_layout(sys_settings, "Password Reset Request", content)
+        cls.send_email(to_email, subject, body, is_html=True)
+
+    @classmethod
+    async def send_admin_email(cls, to_email: str, subject: str, message: str):
+        sys_settings = await cls._get_settings()
+        project_name = sys_settings.project_name if sys_settings else "ResumeAI"
+        
+        content = f"""
+        <div class="text" style="white-space: pre-wrap;">
+            {message}
+        </div>
+        <p class="text" style="font-size: 12px; color: #94a3b8; margin-top: 24px; border-top: 1px solid #f1f5f9; padding-top: 16px;">This is an administrative email from the {project_name} Team.</p>
+        """
+        
+        body = cls._get_html_layout(sys_settings, subject, content)
         cls.send_email(to_email, subject, body, is_html=True)
