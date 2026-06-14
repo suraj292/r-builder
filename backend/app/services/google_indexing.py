@@ -14,23 +14,30 @@ class GoogleIndexingService:
         """
         Loads credentials from backend/service_account.json
         """
-        # Look for service_account.json in the backend directory
         cred_path = os.path.join(os.getcwd(), "service_account.json")
         
         if not os.path.exists(cred_path):
-            # Try one level up if we are in app/api/v1 (though os.getcwd() should be backend root)
             alt_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "service_account.json")
             if os.path.exists(alt_path):
                 cred_path = alt_path
             else:
                 raise HTTPException(
                     status_code=400, 
-                    detail="Google Service Account key (service_account.json) missing in backend root."
+                    detail="Google Service Account key (service_account.json) missing."
                 )
         
         try:
+            with open(cred_path, "r") as f:
+                creds_data = json.load(f)
+            
+            subject = creds_data.get("analytics_email")
+            if subject and (subject.strip().lower().endswith("@gmail.com") or "@" not in subject):
+                subject = None
+            
             return service_account.Credentials.from_service_account_file(
-                cred_path, scopes=cls.SCOPES
+                cred_path, 
+                scopes=cls.SCOPES,
+                subject=subject
             )
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Failed to load Google credentials: {str(e)}")

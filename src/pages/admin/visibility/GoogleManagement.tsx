@@ -116,6 +116,17 @@ export default function GoogleManagement() {
                                     />
                                     <p className="text-[10px] text-slate-400">Your Google Analytics 4 tracking ID. Scripts will be auto-injected.</p>
                                 </div>
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] font-bold text-slate-500 uppercase">GA4 Property ID</label>
+                                    <input 
+                                        type="text" 
+                                        value={config.google_settings?.ga4_property_id || ''} 
+                                        onChange={e => updateGoogle('ga4_property_id', e.target.value)}
+                                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500/20 text-sm"
+                                        placeholder="123456789"
+                                    />
+                                    <p className="text-[10px] text-slate-400">Numeric Property ID from GA4 Settings &rarr; Property Details. Required for fetching live metrics.</p>
+                                </div>
                             </div>
                         </section>
 

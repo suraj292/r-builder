@@ -10,8 +10,54 @@ from app.schemas.visibility import (
     SiteAuditOut, VisibilityExecutiveSummary
 )
 from app.services.google_indexing import GoogleIndexingService
+from app.services.google_analytics import GoogleAnalyticsService
 
 router = APIRouter()
+
+@router.get("/google/analytics")
+async def get_google_analytics_stats(
+    days: Optional[int] = 30,
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = "today",
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_role([UserRole.SUPER_ADMIN, UserRole.ADMIN]))
+):
+    """
+    Fetch live GA4 metrics using the Analytics Data API.
+    """
+    result = await db.execute(select(VisibilityConfig).limit(1))
+    config = result.scalars().first()
+    
+    if not config or not config.google_settings or not config.google_settings.get("ga4_property_id"):
+        return {
+            "has_data": False,
+            "error": "GA4 Property ID not configured."
+        }
+        
+    property_id = config.google_settings.get("ga4_property_id")
+    
+    # Calculate start_date if days is provided and start_date is not
+    if not start_date and days:
+        actual_start = f"{days}daysAgo"
+    else:
+        actual_start = start_date or "30daysAgo"
+    
+    try:
+        stats = await GoogleAnalyticsService.get_basic_stats(property_id, actual_start, end_date)
+        sources = await GoogleAnalyticsService.get_traffic_sources(property_id, actual_start, end_date)
+        regions = await GoogleAnalyticsService.get_regional_stats(property_id, actual_start, end_date)
+        
+        return {
+            "has_data": True,
+            "stats": stats,
+            "sources": sources,
+            "regions": regions
+        }
+    except Exception as e:
+        return {
+            "has_data": False,
+            "error": str(e)
+        }
 
 @router.post("/google/index")
 async def submit_google_indexing(
