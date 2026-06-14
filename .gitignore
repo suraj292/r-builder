@@ -32,4 +32,5 @@ __pycache__/
 *.pyc
 backend/uploads/*
 backend/*.zip
+backend/service_account.json
 *.zip

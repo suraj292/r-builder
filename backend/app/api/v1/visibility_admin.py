@@ -9,8 +9,27 @@ from app.schemas.visibility import (
     VisibilityConfigOut, VisibilityConfigUpdate, 
     SiteAuditOut, VisibilityExecutiveSummary
 )
+from app.services.google_indexing import GoogleIndexingService
 
 router = APIRouter()
+
+@router.post("/google/index")
+async def submit_google_indexing(
+    data: Dict[str, Any],
+    current_user: User = Depends(require_role([UserRole.SUPER_ADMIN, UserRole.ADMIN]))
+):
+    """
+    Manually trigger Google Indexing for a list of URLs.
+    Expects: { "urls": ["https://..."], "action": "URL_UPDATED" }
+    """
+    urls = data.get("urls", [])
+    action = data.get("action", "URL_UPDATED")
+    
+    if not urls:
+        raise HTTPException(status_code=400, detail="No URLs provided")
+        
+    results = await GoogleIndexingService.submit_urls(urls, action)
+    return {"results": results}
 
 @router.get("/summary", response_model=VisibilityExecutiveSummary)
 async def get_visibility_summary(
