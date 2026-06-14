@@ -33,11 +33,11 @@ export default function GoogleManagement() {
         if (result.isConfirmed) {
             setIsIndexing(true);
             try {
-                const response = await api.post('/v1/admin/visibility/google/index', {
+                const response: any = await api.post('/v1/admin/visibility/google/index', {
                     urls: urls,
                     action: 'URL_UPDATED'
                 });
-                
+
                 const successes = response.results.filter((r: any) => r.status === 'success').length;
                 Swal.fire('Indexing Request Sent', `Successfully submitted ${successes} out of ${urls.length} URLs.`, 'success');
             } catch (error: any) {
@@ -107,9 +107,9 @@ export default function GoogleManagement() {
                             <div className="space-y-4">
                                 <div className="space-y-1.5">
                                     <label className="text-[10px] font-bold text-slate-500 uppercase">GA4 Measurement ID</label>
-                                    <input 
-                                        type="text" 
-                                        value={config.google_settings?.ga4_measurement_id || ''} 
+                                    <input
+                                        type="text"
+                                        value={config.google_settings?.ga4_measurement_id || ''}
                                         onChange={e => updateGoogle('ga4_measurement_id', e.target.value)}
                                         className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500/20 text-sm"
                                         placeholder="G-XXXXXXXXXX"
@@ -125,9 +125,9 @@ export default function GoogleManagement() {
                             <div className="space-y-4">
                                 <div className="space-y-1.5">
                                     <label className="text-[10px] font-bold text-slate-500 uppercase">HTML Verification Tag</label>
-                                    <input 
-                                        type="text" 
-                                        value={config.google_settings?.search_console_tag || ''} 
+                                    <input
+                                        type="text"
+                                        value={config.google_settings?.search_console_tag || ''}
                                         onChange={e => updateGoogle('search_console_tag', e.target.value)}
                                         className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500/20 text-sm"
                                         placeholder='<meta name="google-site-verification" content="..." />'
@@ -150,7 +150,7 @@ export default function GoogleManagement() {
                                             <h4 className="text-sm font-bold text-slate-900">Force Instant Crawling</h4>
                                             <p className="text-xs text-slate-500 mt-1">Submit your core pages directly to Google's indexing queue. Use this after making major content updates or design changes.</p>
                                         </div>
-                                        
+
                                         <div className="flex flex-wrap gap-2">
                                             {keyPages.map(page => (
                                                 <span key={page} className="px-2 py-1 bg-white border border-slate-200 rounded-lg text-[10px] font-medium text-slate-600">
@@ -159,7 +159,7 @@ export default function GoogleManagement() {
                                             ))}
                                         </div>
 
-                                        <button 
+                                        <button
                                             type="button"
                                             onClick={handleForceIndexing}
                                             disabled={isIndexing}
@@ -180,9 +180,9 @@ export default function GoogleManagement() {
                             <div className="grid grid-cols-2 gap-6">
                                 <div className="col-span-2 space-y-1.5">
                                     <label className="text-[10px] font-bold text-slate-500 uppercase">Business Profile URL</label>
-                                    <input 
-                                        type="url" 
-                                        value={config.google_settings?.google_business_url || ''} 
+                                    <input
+                                        type="url"
+                                        value={config.google_settings?.google_business_url || ''}
                                         onChange={e => updateGoogle('google_business_url', e.target.value)}
                                         className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500/20 text-sm"
                                         placeholder="https://business.google.com/..."
@@ -190,9 +190,9 @@ export default function GoogleManagement() {
                                 </div>
                                 <div className="col-span-2 space-y-1.5">
                                     <label className="text-[10px] font-bold text-slate-500 uppercase">Google Maps Share URL</label>
-                                    <input 
-                                        type="url" 
-                                        value={config.google_settings?.google_maps_url || ''} 
+                                    <input
+                                        type="url"
+                                        value={config.google_settings?.google_maps_url || ''}
                                         onChange={e => updateGoogle('google_maps_url', e.target.value)}
                                         className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500/20 text-sm"
                                         placeholder="https://goo.gl/maps/..."
@@ -203,7 +203,7 @@ export default function GoogleManagement() {
                     </div>
 
                     <div className="px-8 py-6 bg-slate-50 border-t border-slate-100 flex justify-end">
-                        <button 
+                        <button
                             type="submit"
                             disabled={isSaving}
                             className="px-8 py-3 bg-indigo-600 text-white rounded-2xl font-bold text-sm shadow-lg shadow-indigo-600/20 hover:bg-indigo-500 transition-all flex items-center gap-2"
